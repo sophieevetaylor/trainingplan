@@ -113,9 +113,9 @@ function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Streng
 function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength B – Posterior Chain + Upper Pull",duration:h?"70 min":m?"45–55 min":"60–70 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation"},{name:"Single-leg glute bridge",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight → add 5 kg plate",tempo:"2-sec hold at top",note:""},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"35–40 kg → build to 45 kg":"32–35 kg → build to 40 kg",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},...(m?[]:[{name:"Good mornings (light)",sets:3,reps:"12–15",load:"15–20 kg barbell (bar + 5–7.5 kg plates)",tempo:"3-sec eccentric",note:"Injury prevention – controlled, never heavy"},{name:"Cable kickback",sets:3,reps:"15 each leg",load:"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top",note:"Glute isolation"}]),{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health. Use pad under knees."},{name:"Lat pulldown",sets:4,reps:"8–10",load:h?"32–37 kg → build to 40 kg":"30 kg → build to 35 kg",tempo:"Squeeze at bottom",note:""},...(m?[]:[{name:"Seated cable row",sets:3,reps:"10–12",load:h?"28–32 kg":"22–27 kg → build to 30 kg",tempo:"Squeeze shoulder blades 1 sec",note:""},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → build to 8 kg",tempo:"2-sec lower",note:""}]),{name:"Dead bug",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, maintain low back contact",note:"Core"}]}}
 function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Glute Activation + Core",duration:m?"25–30 min":h?"50 min":"40–50 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:""},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Step-ups (low box)",sets:3,reps:"12 each leg",load:h?"8–10 kg DBs":m?"Bodyweight":"Bodyweight → 5 kg DBs",tempo:"Lean forward, drive through heel",note:"Glute focus – don't push off back foot"},{name:"Abductor machine",sets:3,reps:h?"12–15":"15",load:h?"35–40 kg → build to 45 kg":"25–30 kg → build to 35 kg",tempo:"Squeeze at full open for 1 sec",note:"Glute medius – sit tall, don't lean back"},...(h?[{name:"Frog pump",sets:3,reps:"20",load:"Bodyweight",tempo:"Squeeze at top",note:"High-rep burnout"}]:[]),{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"},...(m?[]:[{name:"Adductor machine",sets:3,reps:"15",load:h?"35–40 kg":"25–30 kg → build to 35 kg",tempo:"Squeeze at full close for 1 sec",note:"Inner thigh + pelvic stability"},{name:"Bird dog",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, controlled",note:""}]),...(h?[{name:"Single-leg calf raises",sets:3,reps:"15 each",load:"Bodyweight (hold wall for balance)",tempo:"Full range – heel below step",note:"Running health"}]:[])]}};
 
-function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
-function getBlock(d){for(const b of BLOCKS){if(d>=parseLocal(b.startDate)&&d<=parseLocal(b.endDate))return b}return null}
-function getWeek(d,b){return Math.floor((d-parseLocal(b.startDate))/(864e5*7))+1}
+function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
+function getBlock(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);for(const b of BLOCKS){if(c>=parseLocal(b.startDate)&&c<=parseLocal(b.endDate))return b}return null}
+function getWeek(d,b){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);return Math.floor((c-parseLocal(b.startDate))/(864e5*7))+1}
 function phase(id){if(id==="block6")return"hypertrophy";if(id==="block5"||id==="block9")return"maintenance";return"base"}
 
 function getPlan(date){
@@ -192,7 +192,7 @@ return{block:b,week:w,run,str,other,notes,race};
 }
 
 // ─── RENDERING ──────────────────────────────────────────────────────
-let currentDate=new Date();
+let currentDate=new Date();currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
 const $=id=>document.getElementById(id);
 const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -366,12 +366,12 @@ html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No traini
 $("content").innerHTML=html;
 }
 
-function nav(days){currentDate=new Date(currentDate);currentDate.setDate(currentDate.getDate()+days);render()}
+function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);render()}
 $("prev").onclick=()=>nav(-1);
 $("next").onclick=()=>nav(1);
-$("goToday").onclick=()=>{currentDate=new Date();render()};
-$("goStart").onclick=()=>{currentDate=new Date(2026,2,30);render()};
-$("goRace").onclick=()=>{currentDate=new Date(2026,4,3);render()};
+$("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);render()};
+$("goStart").onclick=()=>{currentDate=new Date(2026,2,30,12,0,0);render()};
+$("goRace").onclick=()=>{currentDate=new Date(2026,4,3,12,0,0);render()};
 
 // Checkbox toggles
 function toggleEx(i){
