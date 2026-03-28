@@ -90,6 +90,9 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .treadmill-header{font-size:16px;font-weight:700;color:#fbbf24;margin-bottom:8px}
 .treadmill-detail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .treadmill-note{font-size:12px;color:#d1d5db;line-height:1.5}
+.steps-card{background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(79,70,229,0.08));border-radius:12px;padding:14px 16px;border:1px solid rgba(99,102,241,0.25)}
+.steps-header{font-size:16px;font-weight:700;color:#a5b4fc;margin-bottom:4px}
+.steps-target{font-size:14px;color:#c7d2fe;font-weight:500;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -236,6 +239,7 @@ const FORM={
 "Bird dog":{form:"On all fours, wrists under shoulders, knees under hips. Extend opposite arm and leg simultaneously — reach long. Keep hips level (put a water bottle on your lower back — it shouldn't fall). Pause 2 sec extended, return controlled.",link:"https://www.youtube.com/watch?v=wiFNA3sqjCA"},
 "Single-leg calf raises":{form:"Stand on the edge of a step on one foot. Lower heel below the step for full stretch. Rise up onto your toes, pause 1 sec at the top. Slow lowering. Hold a wall for balance if needed. Full range of motion matters here.",link:"https://www.youtube.com/watch?v=OsTQ4GKMMVU"},
 "Face pulls":{form:"Cable at face height, rope attachment. Pull toward your face, splitting the rope — hands finish beside your ears. Elbows high, squeeze shoulder blades together. This is a rear delt/rotator cuff exercise — keep it light.",link:"https://www.youtube.com/watch?v=V8dZ3pyiCBo"},
+"Incline treadmill walk":{form:"Set incline to 10–12%, speed 5.5–6.5 km/h. Walk tall — don't lean on the console or hold the handrails. Swing your arms naturally. Push through your heels on each step to engage glutes. You should feel this in your glutes and hamstrings, not your calves. If you're gripping the rails, drop the incline or speed.",link:"https://www.youtube.com/watch?v=aTxEJG2L-GI"},
 };
 
 // Normalize exercise name for lookup (strip weighted/barbell variants)
@@ -327,7 +331,7 @@ return`<div class="strength-card"><div class="strength-header"><div class="stren
 }
 
 function renderTreadmill(){
-return`<div class="treadmill-card"><div class="treadmill-header">🚶‍♀️ Incline Treadmill Walk</div><div class="treadmill-detail"><span class="tag tag-tempo">⏱️ 30 minutes</span> <span class="tag tag-load">📐 10–12% incline, 5.5–6.5 km/h</span></div><div class="treadmill-note">Finish every gym session with this. Steady pace, strong glute drive on the incline. Don't hold the handrails — swing your arms. Great for burning fat, building glutes, and flushing the legs.</div><div class="run-check-row" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label">Mark treadmill complete</div></div></div>`;
+return`<div class="treadmill-card"><div class="treadmill-header">🚶‍♀️ Incline Treadmill Walk — 30 min</div><div class="treadmill-detail"><span class="tag tag-load">📐 10–12% incline, 5.5–6.5 km/h</span></div><div class="treadmill-note">Finish every gym session with this. Don't hold the handrails — swing your arms. Strong glute drive on the incline.</div><div class="run-check-row" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label">Mark treadmill complete</div></div></div>`;
 }
 
 function render(){
@@ -372,6 +376,11 @@ html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No traini
 }
 
 $("content").innerHTML=html;
+
+// Always add steps card (every day, even rest days)
+const stepsHtml=`<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>`;
+$("content").innerHTML+=stepsHtml;
+
 restoreChecks();
 }
 
@@ -385,7 +394,7 @@ $("goRace").onclick=()=>{currentDate=new Date(2026,4,3,12,0,0);render()};
 // Checkbox state storage (persists while app is open)
 const checkState={};
 function dateKey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
-function getState(){const k=dateKey(currentDate);if(!checkState[k])checkState[k]={ex:{},run:false,str:false,pil:false,tm:false};return checkState[k]}
+function getState(){const k=dateKey(currentDate);if(!checkState[k])checkState[k]={ex:{},run:false,str:false,pil:false,tm:false,steps:false};return checkState[k]}
 function saveEx(i,done){getState().ex[i]=done}
 function saveRun(done){getState().run=done}
 function saveStr(done){getState().str=done}
@@ -410,6 +419,9 @@ if(pc&&s.pil){pc.classList.add("done");pl.classList.add("done");pl.textContent="
 // Restore treadmill check
 const tc=$("tm-check"),tl=$("tm-label");
 if(tc&&s.tm){tc.classList.add("done");tl.classList.add("done");tl.textContent="Treadmill complete ✓"}
+// Restore steps check
+const stc=$("steps-check"),stl=$("steps-label");
+if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent="14k steps complete ✓"}
 }
 
 // Checkbox toggles
@@ -453,6 +465,15 @@ const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Treadmill complete ✓":"Mark treadmill complete";
 getState().tm=done;
+}
+function toggleSteps(){
+const ch=$("steps-check");
+const lb=$("steps-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"14k steps complete ✓":"Mark 14k steps complete";
+getState().steps=done;
 }
 
 render();
