@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<title>Daily Training Plan</title>
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;-webkit-tap-highlight-color:transparent;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:10}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:4px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.nav button{background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 14px;color:#e0e0e0;cursor:pointer;font-size:16px;-webkit-appearance:none}
+.nav button:active{background:rgba(255,255,255,0.15)}
+.date-display{text-align:center;font-size:18px;font-weight:700;color:#f8fafc}
+.quick-nav{display:flex;gap:6px}
+.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#94a3b8;cursor:pointer;-webkit-appearance:none}
+.quick-nav button:active{background:rgba(255,255,255,0.12)}
+.quick-nav .race-btn{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.block-info{margin-top:12px;padding:10px 12px;border-radius:8px}
+.block-name{font-size:14px;font-weight:700}
+.block-detail{font-size:12px;color:#9ca3af;margin-top:2px}
+.content{padding:16px;display:flex;flex-direction:column;gap:14px}
+.race-banner{text-align:center;padding:16px;background:linear-gradient(135deg,#7f1d1d,#991b1b,#7f1d1d);border-radius:12px;border:2px solid #f87171}
+.race-banner .icon{font-size:28px;margin-bottom:4px}
+.race-banner .title{font-size:18px;font-weight:800;color:#fca5a5;letter-spacing:1px}
+.race-banner .sub{font-size:13px;color:#fecaca;margin-top:4px}
+.run-card{border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.08)}
+.run-card.normal{background:linear-gradient(135deg,#1e3a5f,#1e4976)}
+.run-card.race{background:linear-gradient(135deg,#7f1d1d,#991b1b);border-color:#f87171}
+.run-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.run-type{font-size:16px;font-weight:700}
+.run-type.normal{color:#93c5fd}
+.run-type.race{color:#fca5a5}
+.run-km{font-size:13px;font-weight:600;background:rgba(255,255,255,0.12);padding:3px 10px;border-radius:20px;color:#e0e0e0}
+.run-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.run-label{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px}
+.run-value{font-size:14px;color:#f0f0f0;font-weight:600}
+.run-note{margin-top:10px;font-size:13px;color:#d1d5db;line-height:1.5;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px}
+.strength-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.08)}
+.strength-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.strength-name{font-size:16px;font-weight:700;color:#a78bfa}
+.strength-dur{font-size:12px;color:#9ca3af;background:rgba(255,255,255,0.08);padding:3px 8px;border-radius:12px}
+.exercise{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:10px 14px;border-radius:8px;border-left:3px solid rgba(255,255,255,0.1)}
+.exercise:nth-child(odd){background:rgba(255,255,255,0.04)}
+.ex-name{font-weight:600;color:#f0f0f0;font-size:14px}
+.ex-sets{color:#93c5fd;font-weight:600;font-size:14px;text-align:right;white-space:nowrap}
+.ex-tags{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.tag{font-size:12px;padding:2px 8px;border-radius:4px}
+.tag-load{background:rgba(147,197,253,0.15);color:#93c5fd}
+.tag-tempo{background:rgba(251,191,36,0.15);color:#fbbf24}
+.tag-note{font-size:12px;color:#9ca3af;font-style:italic}
+.other-card{background:rgba(255,255,255,0.04);border-radius:12px;padding:12px 16px;border:1px solid rgba(255,255,255,0.06)}
+.other-card.pilates{background:linear-gradient(135deg,rgba(236,72,153,0.12),rgba(219,39,119,0.08));border:1px solid rgba(236,72,153,0.25)}
+.other-label{font-size:13px;color:#9ca3af}
+.other-label.pilates{color:#f9a8d4;font-weight:600}
+.other-text{font-size:14px;color:#e0e0e0;font-weight:500;margin-top:2px}
+.other-text.pilates{color:#fce7f3}
+.notes-card{background:rgba(251,191,36,0.08);border-radius:12px;padding:12px 16px;border:1px solid rgba(251,191,36,0.2)}
+.notes-title{font-size:13px;color:#fbbf24;font-weight:600;margin-bottom:4px}
+.notes-text{font-size:13px;color:#d1d5db;line-height:1.5}
+.rest-card{text-align:center;padding:40px 20px;background:rgba(255,255,255,0.03);border-radius:12px}
+.rest-icon{font-size:32px;margin-bottom:8px}
+.rest-title{font-size:16px;font-weight:600;color:#64748b}
+.rest-sub{font-size:13px;color:#475569;margin-top:4px}
+.ex-form{grid-column:1/-1;margin-top:6px;padding:8px 10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:6px}
+.ex-form-text{font-size:12px;color:#a7f3d0;line-height:1.5}
+.ex-video-link{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#34d399;text-decoration:none;padding:3px 10px;background:rgba(16,185,129,0.15);border-radius:4px;border:1px solid rgba(16,185,129,0.25)}
+.ex-video-link:active{background:rgba(16,185,129,0.25)}
+.fuel-card{margin-top:10px;padding:10px 12px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.2);border-radius:8px}
+.fuel-title{font-size:13px;font-weight:700;color:#fb923c;margin-bottom:6px}
+.fuel-row{font-size:12px;color:#d1d5db;line-height:1.6;margin-bottom:4px}
+.fuel-label{font-weight:600;color:#fdba74}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="label">Daily Training Plan</div>
+  <div class="nav">
+    <button id="prev">←</button>
+    <div class="date-display" id="dateDisplay"></div>
+    <button id="next">→</button>
+  </div>
+  <div class="quick-nav">
+    <button id="goToday">Today</button>
+    <button id="goStart">Plan Start</button>
+    <button id="goRace" class="race-btn">May 3 HM</button>
+  </div>
+  <div id="blockInfo" class="block-info" style="display:none"></div>
+</div>
+<div class="content" id="content"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────
+const BLOCKS=[{id:"preplan",name:"Pre-Plan: Getting Ready",startDate:"2026-03-27",endDate:"2026-03-29",weeks:1,weeklyKm:"~16",focus:"Final prep before plan starts Monday. 16 km long run Sunday.",color:"#10b981"},{id:"block1",name:"Block 1: Return to Base",startDate:"2026-03-30",endDate:"2026-04-26",weeks:4,weeklyKm:"28–38",focus:"Rebuild frequency to 4 runs, establish strength patterns, prep for May 3 HM",color:"#2563eb"},{id:"raceweek_hm1",name:"May 3 HM – Race Week",startDate:"2026-04-27",endDate:"2026-05-03",weeks:1,weeklyKm:"~20",focus:"Taper & race – target ~2:05",color:"#dc2626"},{id:"recovery1",name:"Post-Race Recovery",startDate:"2026-05-04",endDate:"2026-05-17",weeks:2,weeklyKm:"15–25",focus:"Absorb race, reset for aerobic build",color:"#6b7280"},{id:"block2",name:"Block 2: Aerobic Development",startDate:"2026-05-18",endDate:"2026-06-28",weeks:6,weeklyKm:"30–48",focus:"Build to 40–45 km/wk, introduce tempo, long runs to 18 km",color:"#0891b2"},{id:"block3",name:"Block 3: City2Surf Prep",startDate:"2026-06-29",endDate:"2026-08-09",weeks:6,weeklyKm:"40–48",focus:"Hill work, target sub-75 C2S",color:"#7c3aed"},{id:"block4",name:"Block 4: Volume Build",startDate:"2026-08-10",endDate:"2026-09-27",weeks:7,weeklyKm:"25→55",focus:"Post-C2S recovery → build to 55 km/wk",color:"#059669"},{id:"block5",name:"Block 5: HM Specific Build",startDate:"2026-09-28",endDate:"2026-11-08",weeks:6,weeklyKm:"50–55",focus:"Race-pace work → PEAK: Sub-2:00 Half Marathon",color:"#dc2626"},{id:"block6",name:"Block 6: Recovery & Strength",startDate:"2026-11-09",endDate:"2026-12-31",weeks:8,weeklyKm:"25–35",focus:"Glute hypertrophy focus, enjoy running",color:"#d97706"},{id:"block7",name:"Block 7: Aerobic Rebuild + Speed",startDate:"2027-01-01",endDate:"2027-02-28",weeks:8,weeklyKm:"40–50",focus:"400m/800m reps, speed development",color:"#2563eb"},{id:"block8",name:"Block 8: C2S Specific Peak",startDate:"2027-03-01",endDate:"2027-05-31",weeks:13,weeklyKm:"45–50",focus:"Hill power, sustained tempo",color:"#7c3aed"},{id:"block9",name:"Block 9: C2S Final Sharpening",startDate:"2027-06-01",endDate:"2027-08-15",weeks:11,weeklyKm:"45–50",focus:"PEAK: Sub-70 City2Surf",color:"#dc2626"}];
+
+function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength A – Glute + Upper Push",duration:h?"70 min":m?"45–55 min":"60–70 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – glute squeeze at top, don't hyperextend"},{name:"Cable pull-through",sets:3,reps:"12–15",load:h?"20–25 kg cable":m?"15–20 kg cable":"15–20 kg cable",tempo:"Slow eccentric, squeeze 1 sec at top",note:"Focus on squeeze not load"},...(m?[]:[{name:"Bulgarian split squat (light)",sets:3,reps:"12 each leg",load:h?"8 kg DBs":"Bodyweight → 5 kg DBs",tempo:"Forward lean for glute emphasis",note:"NOT for quads – lean forward, drive through heel"}]),{name:h?"Bench press (barbell)":"DB bench press",sets:h?4:m?3:4,reps:h?"6–8":"8–10",load:h?"Start 25 kg → build":"10 kg DBs → build to 12.5 kg",tempo:"Controlled",note:""},...(m?[]:[{name:"DB shoulder press",sets:3,reps:"10–12",load:"7.5 kg DBs → build to 10 kg",tempo:"Controlled",note:""},{name:"Tricep pushdowns",sets:3,reps:"12–15",load:h?"18–22 kg cable":"12–15 kg cable → build to 18 kg",tempo:"Squeeze at bottom, 2-sec hold",note:"If elbows swing, drop weight"}]),{name:"Pallof press",sets:3,reps:"10 each side",load:"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
+function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength B – Posterior Chain + Upper Pull",duration:h?"70 min":m?"45–55 min":"60–70 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation"},{name:"Single-leg glute bridge",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight → add 5 kg plate",tempo:"2-sec hold at top",note:""},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"35–40 kg → build to 45 kg":"32–35 kg → build to 40 kg",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},...(m?[]:[{name:"Good mornings (light)",sets:3,reps:"12–15",load:"15–20 kg barbell (bar + 5–7.5 kg plates)",tempo:"3-sec eccentric",note:"Injury prevention – controlled, never heavy"},{name:"Cable kickback",sets:3,reps:"15 each leg",load:"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top",note:"Glute isolation"}]),{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health. Use pad under knees."},{name:"Lat pulldown",sets:4,reps:"8–10",load:h?"32–37 kg → build to 40 kg":"30 kg → build to 35 kg",tempo:"Squeeze at bottom",note:""},...(m?[]:[{name:"Seated cable row",sets:3,reps:"10–12",load:h?"28–32 kg":"22–27 kg → build to 30 kg",tempo:"Squeeze shoulder blades 1 sec",note:""},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → build to 8 kg",tempo:"2-sec lower",note:""}]),{name:"Dead bug",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, maintain low back contact",note:"Core"}]}}
+function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Glute Activation + Core",duration:m?"25–30 min":h?"50 min":"40–50 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:""},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Step-ups (low box)",sets:3,reps:"12 each leg",load:h?"8–10 kg DBs":m?"Bodyweight":"Bodyweight → 5 kg DBs",tempo:"Lean forward, drive through heel",note:"Glute focus – don't push off back foot"},{name:"Side-lying hip abduction",sets:3,reps:"15 each leg",load:h?"2–3 kg ankle weight":"1–2 kg ankle weight",tempo:"Controlled",note:""},...(h?[{name:"Frog pump",sets:3,reps:"20",load:"Bodyweight",tempo:"Squeeze at top",note:"High-rep burnout"}]:[]),{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"},...(m?[]:[{name:"Copenhagen plank",sets:3,reps:"20–30 sec each side",load:"Bodyweight",tempo:"Hips stacked",note:"Adductor + core"},{name:"Bird dog",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, controlled",note:""}]),...(h?[{name:"Single-leg calf raises",sets:3,reps:"15 each",load:"Bodyweight (hold wall for balance)",tempo:"Full range – heel below step",note:"Running health"}]:[])]}};
+
+function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+function getBlock(d){for(const b of BLOCKS){if(d>=parseLocal(b.startDate)&&d<=parseLocal(b.endDate))return b}return null}
+function getWeek(d,b){return Math.floor((d-parseLocal(b.startDate))/(864e5*7))+1}
+function phase(id){if(id==="block6")return"hypertrophy";if(id==="block5"||id==="block9")return"maintenance";return"base"}
+
+function getPlan(date){
+const b=getBlock(date);if(!b)return{block:null,message:"No training scheduled – navigate to a date within Apr 2026 – Aug 2027."};
+const w=getWeek(date,b),d=date.getDay(),p=phase(b.id);
+let run=null,str=null,other=null,notes=[],race=false;
+
+if(b.id==="preplan"){
+const P={
+5:{other:"PM: Pilates",notes:["Rest from running today. Pilates + recovery. Plan starts Monday."]},
+6:{str:SC("base"),notes:["Strength C activation session. Get familiar with the exercises — this is your Saturday routine going forward."]},
+0:{run:{type:"Long run",km:"16",pace:"5:50–6:10/km",int:"Zone 2",note:"Keep HR < 155. This is your last long run before the plan starts — enjoy it. Easy pace, no heroics."}}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+}
+else if(b.id==="block1"){
+const longKms=[18,14,10,0];
+const dl=w>=3;
+const sk=longKms[w-1]||10;
+const P={1:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"Keep HR < 155"},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:"Keep HR < 155"},other:"PM: Pilates"},4:{str:SB(p)},5:{run:{type:"Easy run",km:dl?"4–5":"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:dl?"Taper – keep it short":""},other:w<=1?"Or long walk if preferred":""},6:{str:SC(p),notes:["Active recovery / strength day"]},0:sk>0?{run:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:w===1?"Longest pre-race run – dress rehearsal":dl?"Taper week – easy pace, don't push":"Build week"}}:{run:{type:"Easy run",km:"5–6",pace:"6:00–6:15/km",int:"Zone 1–2",note:"Easy legs before race week. No long run this week."}}};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+if(dl)notes.push("Taper week – reduced volume into race week");
+}
+else if(b.id==="raceweek_hm1"){
+const P={1:{run:{type:"Easy run",km:"5",pace:"6:00–6:10/km",int:"Zone 1–2",note:"Gentle."},other:"PM: Pilates"},2:{str:SC("maintenance"),notes:["Light activation only – 30 min max"]},3:{run:{type:"Strides session",km:"4",pace:"Easy + 4×100m strides",int:"Easy with bursts",note:"Shake out legs."}},4:{notes:["FULL REST. Hydrate well. Lay out race gear tonight."]},5:{run:{type:"Openers",km:"3",pace:"Easy jog + 4 strides",int:"Very easy",note:"Lay out race kit tonight."}},6:{notes:["FULL REST. Carb-rich dinner. Sleep early. Trust the work."]},0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target ~5:55/km for ~2:05",int:"Honest effort",note:"km 1–5: 5:55–6:00. km 6–15: 5:50–5:55. km 16–18: honest effort. km 19–21: push if strong but DON'T empty the tank."},race:true,notes:["Gel at km 7 and km 14. Water at every station from km 5."]}};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}
+}
+else if(b.id==="recovery1"){
+if(w===1){const P={1:{notes:["FULL REST. You raced yesterday."]},2:{notes:["Rest or very easy 20-min walk."]},3:{run:{type:"Recovery run",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Only if legs feel okay."}},4:{str:SC("maintenance"),notes:["Light activation only"]},5:{run:{type:"Easy run",km:"5",pace:"6:00–6:15/km",int:"Zone 1–2",note:""}},6:{str:SA("base"),notes:["Ease back into lifting."]},0:{run:{type:"Easy run",km:"6–7",pace:"6:00–6:15/km",int:"Zone 2",note:"First longer run post-race"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+else{const P={1:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Easy run",km:"6",pace:"5:50–6:05/km",int:"Zone 2",note:""}},4:{str:SB(p)},5:{run:{type:"Easy run",km:"5",pace:"5:50–6:10/km",int:"Zone 2",note:""}},6:{str:SC(p),notes:["Ready to start Block 2 next week"]},0:{run:{type:"Long run",km:"8–10",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+}
+else if(b.id==="block2"){
+const tk=w<=2?3:w<=4?4:5,tp=w<=4?"5:25–5:30/km":"5:15–5:25/km",lk=Math.min(14+(w-1),18),sk=w===6?12:lk,ln=w===2?"Last 3 km at tempo effort":w===4?"Middle 4 km at moderate effort":"All easy";
+const P={1:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Tempo run",km:"~"+(tk+4)+" total ("+tk+" km tempo)",pace:"Tempo: "+tp,int:"Zone 3",note:"2 km WU → "+tk+" km tempo → 2 km CD"}},4:{str:SB(p)},5:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},other:"Or Pilates"},6:{str:SC(p),run:w>=3?{type:"Recovery run (optional)",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Only if feeling good"}:null},0:{run:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:ln}}};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+if(w===6)notes.push("Deload week");
+}
+else if(b.id==="block3"){
+const rw=w===6,hr=w<=2?"6×90 sec":w<=4?"8×90 sec":"5×2 min";
+if(rw){const P={1:{run:{type:"Easy run",km:"5",pace:"6:00/km",int:"Zone 1–2",note:""}},2:{str:SC("maintenance"),notes:["Light only"]},3:{run:{type:"Strides",km:"4",pace:"Easy + 4×30-sec strides",int:"Easy",note:""}},4:{notes:["REST"]},5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},6:{notes:["REST. Prep. Hydrate."]},0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~5:10–5:20/km for sub-75",int:"Strong effort",note:"Start 5:10–5:15. Maintain on Heartbreak Hill. Open up downhill."},race:true}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}}
+else{const P={1:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Hill repeats",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD."}},4:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},str:SB("maintenance")},5:{str:SC(p)},6:{run:{type:"Recovery (optional)",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Or complete rest"}},0:{run:{type:"Long run (hilly)",km:"14–16",pace:"5:45–6:00/km",int:"Zone 2",note:"Simulate C2S terrain"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+}
+else if(b.id==="block4"){
+if(w<=2){const P={1:w===1?{notes:["Rest or easy walk. Recovery from C2S."]}:{run:{type:"Easy run",km:"6",pace:"5:50–6:10/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:w===1?{run:{type:"Easy run",km:"5",pace:"6:00–6:15/km",int:"Zone 1–2",note:""}}:{str:SA(p)},3:{run:{type:"Easy run",km:w===1?"5":"6–7",pace:"5:50–6:10/km",int:"Zone 2",note:""}},4:w===1?{str:SC("maintenance")}:{str:SB(p)},5:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""}},6:{str:w===1?SA("base"):SC(p)},0:{run:{type:"Long run",km:w===1?"8":"12",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+else{const lk=Math.min(16+(w-3)*2,20),sk=w===7?14:lk;const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:40–6:00/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Moderate run",km:"8–10",pace:"4–6 km @ 5:25–5:35/km",int:"Zone 2–3",note:"2 km WU → tempo → CD"}},4:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},str:SB(p)},5:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:"5th run day"}},6:{str:SC(p)},0:{run:{type:"Long run",km:""+sk,pace:"5:45–6:10/km",int:"Zone 2",note:w===5?"20 km – your longest run ever!":""}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+}
+else if(b.id==="block5"){
+const rw=w===6;
+if(rw){const P={1:{run:{type:"Easy run",km:"6",pace:"6:00/km",int:"Zone 1–2",note:"Legs up wall 10 min PM"}},2:{run:{type:"Strides",km:"4",pace:"Easy + 4×200m strides",int:"Easy",note:""}},3:{run:{type:"Easy run",km:"4",pace:"6:00/km",int:"Zone 1",note:""},str:SC("maintenance")},4:{notes:["REST. Hydrate. Prep gear."]},5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:"Lay out race kit."}},6:{notes:["REST. Carb-load dinner. Sleep early."]},0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target 5:38–5:42/km for sub-2:00",int:"A-RACE",note:"km 1–5: 5:42–5:45. km 6–15: 5:38–5:42. km 16–18: maintain. km 19–21: everything."},race:true}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}}
+else{const lk=w===1?18:w===2?20:w===3?22:w===4?20:16,ln=w===2?"Middle 6 km @ 5:40–5:45 (HM pace)":w===3?"LONGEST RUN":w===4?"8 km @ 5:38–5:42 (race pace)":"Taper begins";const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:40–6:00/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"Intervals",km:"~9 total",pace:(w<=2?"5":"6")+"×1 km @ 5:00–5:10/km",int:"Zone 4",note:"2 km WU → intervals (90s jog) → 2 km CD"}},3:{run:{type:"Easy run",km:"6–7",pace:"5:50–6:05/km",int:"Zone 2",note:""},str:SA("maintenance")},4:{run:{type:"Tempo",km:"~9 total",pace:(w<=3?"5–6":"7")+" km @ 5:20–5:30/km",int:"Zone 3",note:""}},5:{run:w<=4?{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""}:null,str:SB("maintenance")},6:{str:SC("maintenance")},0:{run:{type:"Long run",km:""+lk,pace:"5:45–6:10/km",int:"Zone 2",note:ln}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+}
+else if(b.id==="block6"){
+const P={1:{run:{type:"Easy run",km:"5–7",pace:"Run by feel",int:"Easy",note:"Run for joy"},other:"PM: Pilates"},2:{str:SA("hypertrophy")},3:{run:{type:"Easy run",km:"5–7",pace:"Easy, social if possible",int:"Easy",note:""},other:"PM: Pilates"},4:{str:SB("hypertrophy")},5:{run:{type:"Easy run (optional)",km:"5–6",pace:"Easy",int:"Zone 2",note:"Or long walk/rest"}},6:{str:SC("hypertrophy")},0:{run:{type:"Long easy run",km:"10–12",pace:"Easy – fun routes",int:"Zone 2",note:"No pressure"}}};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+notes.push("Glute hypertrophy phase – push strength hard");
+}
+else if(b.id==="block7"){
+const sr=w<=2?"8×400m @ 4:40–4:50":w<=4?"10×400m @ 4:35–4:45":w<=6?"6×600m @ 4:35–4:45":"5×800m @ 4:40–4:50";
+const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:35–5:55/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"Speed session",km:"~8 total",pace:sr,int:"Zone 4–5",note:"2 km WU → reps (90s jog) → 2 km CD"}},3:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:00/km",int:"Zone 2",note:""},str:SA(p)},4:{run:{type:"Tempo",km:"~8 total",pace:"4–6 km @ 5:15–5:25/km",int:"Zone 3",note:""}},5:{run:{type:"Easy (optional)",km:"5–6",pace:"Easy",int:"Zone 2",note:""},str:SB(p)},6:{str:SC(p)},0:{run:{type:"Long run",km:"15–18",pace:"5:45–6:05/km",int:"Zone 2",note:""}}};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+if(w===8)notes.push("Deload week");
+}
+else if(b.id==="block8"){
+const hr=w<=3?"8×90 sec":w<=6?"10×90 sec":w<=8?"6×2 min":"4×90 sec (taper)";
+const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:35–5:55/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"Hill intervals",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD"}},3:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:00/km",int:"Zone 2",note:""},str:SA("maintenance")},4:{run:{type:"Tempo/speed",km:"~9 total",pace:"5–7 km @ 5:05–5:20/km",int:"Zone 3–4",note:""}},5:{run:{type:"Easy (optional)",km:"5–6",pace:"Easy",int:"Zone 2",note:""},str:SB("maintenance")},6:{str:SC("maintenance")},0:{run:{type:"Long run (hilly)",km:"14–18",pace:"5:40–6:00/km",int:"Zone 2",note:"Choose hilly routes"}}};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+}
+else if(b.id==="block9"){
+const tp=w>=8,rw=w>=10;
+if(rw){const P={1:{run:{type:"Easy run",km:"5",pace:"6:00/km",int:"Zone 1–2",note:""}},2:{str:SC("maintenance")},3:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},4:{notes:["REST"]},5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},6:{notes:["REST. Trust the work."]},0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~4:52/km for sub-70",int:"A-RACE",note:"km 1–4: 4:45–4:50. Heartbreak: 5:10–5:20. Descent: 4:35–4:45. Final km: everything."},race:true}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}}
+else{const P={1:{run:{type:"Easy run",km:tp?"6":"7–8",pace:"5:30–5:50/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"C2S rehearsal",km:tp?"8":"10–12",pace:"Race effort on hilly course",int:"Zone 3–4",note:""}},3:{run:{type:"Easy run",km:"6–7",pace:"Easy",int:"Zone 2",note:""},str:SA("maintenance")},4:{run:{type:"Speed",km:tp?"~6 total":"~8 total",pace:(tp?"4–5":"6–8")+"×800m @ 4:35–4:50/km",int:"Zone 4",note:""}},5:{run:tp?null:{type:"Easy run",km:"5",pace:"Easy",int:"Zone 2",note:""},str:SB("maintenance")},6:{str:SC("maintenance")},0:{run:{type:"Long run",km:tp?"12":"14–16",pace:"Moderate on hills",int:"Zone 2",note:""}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+}
+return{block:b,week:w,run,str,other,notes,race};
+}
+
+// ─── RENDERING ──────────────────────────────────────────────────────
+let currentDate=new Date();
+const $=id=>document.getElementById(id);
+const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function fmt(d){return days[d.getDay()]+" "+d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear()}
+
+// ─── FORM CUES + VIDEO LINKS ───────────────────────────────────────
+const FORM={
+"Banded glute bridge (warm-up)":{form:"Feet flat, hip-width. Drive through heels, not toes. Squeeze glutes at top — imagine cracking a walnut between your cheeks. Don't arch lower back.",link:"https://www.youtube.com/watch?v=GmRSV_n2E_0"},
+"Hip thrust (booty builder)":{form:"Set up with shoulder blades on the pad edge. Chin tucked, look forward not up. Drive through heels. At lockout, ribs down, pelvis tucked — posterior pelvic tilt. No lower back extension. Pause 2 sec and squeeze hard at top.",link:"https://www.youtube.com/watch?v=xDmFkJxPzeM"},
+"Cable pull-through":{form:"Face away from cable, straddle the rope. Soft knee bend — this is a hip hinge, not a squat. Push hips back until you feel hamstring stretch, then snap hips forward and squeeze glutes hard. Arms are just hooks.",link:"https://www.youtube.com/watch?v=AhmEpyDMEEE"},
+"Bulgarian split squat (light)":{form:"Rear foot laces-down on bench. Front foot far enough forward that your knee stays behind toes. Lean torso forward 30° for glute emphasis. Drive through front heel. Keep hips square — don't rotate.",link:"https://www.youtube.com/watch?v=2C-uNgKwPLE"},
+"DB bench press":{form:"Retract shoulder blades — squeeze them together and down. Slight arch in upper back, feet flat on floor. Lower DBs to chest level with elbows at ~45° (not flared 90°). Press up and slightly inward.",link:"https://www.youtube.com/watch?v=VmB1G1K7v94"},
+"Bench press (barbell)":{form:"Retract shoulder blades, slight upper back arch. Grip just outside shoulders. Bar path: lower to mid-chest, press back up toward face in a slight arc. Elbows ~45° — not flared wide.",link:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+"DB shoulder press":{form:"Seated or standing. Start with DBs at ear height, palms forward. Press straight up — don't let the weights drift forward. Brace core, don't arch back. Lower controlled to ear level.",link:"https://www.youtube.com/watch?v=qEwKCR5JCog"},
+"Tricep pushdowns":{form:"Stand close to cable, slight forward lean. Pin elbows to your sides — they don't move. Extend forearms down, squeeze triceps at bottom. Slow return. If elbows swing, the weight is too heavy.",link:"https://www.youtube.com/watch?v=2-LAMcpzODU"},
+"Pallof press":{form:"Stand side-on to cable at chest height. Hold handle at chest. Press straight out — resist the rotation. Arms fully extended, hold 1 sec, return. Your core is fighting the cable's pull. No twisting.",link:"https://www.youtube.com/watch?v=AH_QZLm_0-s"},
+"Banded clamshells (warm-up)":{form:"Side-lying, band above knees, heels together. Open top knee like a clamshell — rotate from the hip, not the lower back. Keep hips stacked vertically. Slow and controlled, feel it in the side of your glute.",link:"https://www.youtube.com/watch?v=cEaCnbGKmMQ"},
+"Single-leg glute bridge":{form:"Back flat on floor, one foot planted, other leg extended or knee held to chest. Drive through the planted heel. Hips level — don't let the free side drop. Squeeze glute at top for 2 sec.",link:"https://www.youtube.com/watch?v=AVAXhy6pl7o"},
+"Romanian deadlift":{form:"Feet hip-width, soft knees (slight bend, locked in position). Push hips BACK — the bar slides down your thighs. Feel the hamstring stretch. Back stays flat — the moment it rounds, that's your range of motion. Drive hips forward to return.",link:"https://www.youtube.com/watch?v=JCXUYuzwNrM"},
+"Good mornings (light)":{form:"Bar on upper back (like a squat), feet hip-width. Soft knees, hinge at hips — push them back. Lower until torso is close to parallel. Flat back throughout. This is controlled and light — it's for injury prevention, not ego.",link:"https://www.youtube.com/watch?v=YA-h3n9L4YU"},
+"Cable kickback":{form:"Face the cable, ankle strap on. Slight forward lean, brace core. Extend leg straight back — squeeze glute at the top. Don't arch your lower back to get more range. Controlled, no swinging.",link:"https://www.youtube.com/watch?v=dXMvr3uMmDc"},
+"Nordic curl eccentric":{form:"Kneel on a pad, anchor your ankles (under a bar or have someone hold them). Hands ready to catch yourself. Slowly lower your body forward — fight gravity with your hamstrings for a full 5-sec count. Push back up with your hands. You're training the lowering phase only.",link:"https://www.youtube.com/watch?v=BpKadYwbGPo"},
+"Lat pulldown":{form:"Grip just wider than shoulders. Lean back slightly (~15°). Pull the bar to your upper chest — lead with your elbows, drive them down and back. Squeeze your shoulder blades together at the bottom. Control the return.",link:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
+"Seated cable row":{form:"Sit tall, slight knee bend. Pull handle to lower ribcage — drive elbows straight back. Squeeze shoulder blades together for 1 sec. Don't lean back to cheat — your torso stays still. Control the release.",link:"https://www.youtube.com/watch?v=GZbfZ033f74"},
+"Bicep curls":{form:"Stand with elbows pinned to your sides. Curl up, rotating palms toward shoulders. Don't swing — if your torso rocks, the weight is too heavy. Slow lowering (2–3 sec eccentric).",link:"https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+"Dead bug":{form:"Lie on back, arms straight up, knees at 90°. Press lower back into the floor — it must NOT leave the ground. Extend opposite arm and leg simultaneously. Breathe out as you extend. If your back lifts, you've gone too far.",link:"https://www.youtube.com/watch?v=I5xbsA71v1A"},
+"Banded lateral walks":{form:"Band just above knees (or ankles for harder). Quarter-squat position — stay low throughout. Step sideways, leading with the heel. Keep toes forward, don't let knees cave in. Feel the burn in the side of your glutes (gluteus medius).",link:"https://www.youtube.com/watch?v=zTOPFZrekbE"},
+"Single-leg hip thrust":{form:"Shoulder blades on bench, one foot planted, other leg extended. Drive through the planted heel. At the top: ribs down, squeeze glute, hold 1–2 sec. Keep hips level. If you feel it in your lower back, reset your pelvis position.",link:"https://www.youtube.com/watch?v=BXKB1YE5ufY"},
+"Single-leg hip thrust (weighted)":{form:"Same as bodyweight version but with a plate on your hip. Shoulder blades on bench, one foot planted. Drive through heel, squeeze at top with posterior pelvic tilt. Hold 1–2 sec. Keep hips level.",link:"https://www.youtube.com/watch?v=BXKB1YE5ufY"},
+"Step-ups (low box)":{form:"Forward lean of ~20° — this shifts the load onto your glute instead of your quad. Step up driving through the heel of the working leg. Do NOT push off the back foot — that's cheating. Stand fully, squeeze glute, then lower controlled.",link:"https://www.youtube.com/watch?v=dQqApCGd5Ss"},
+"Side-lying hip abduction":{form:"Lie on your side, bottom leg bent for stability. Top leg straight, toes pointing slightly down (internal rotation). Lift from the glute — imagine pushing your heel toward the ceiling. Don't roll your hips back. Slow and controlled.",link:"https://www.youtube.com/watch?v=oyGEVPuumtk"},
+"Frog pump":{form:"Lie on back, soles of feet together, knees out wide (like a frog). Drive hips up squeezing glutes hard at top. Short range of motion — this is about the squeeze, not the height. High reps, constant tension.",link:"https://www.youtube.com/watch?v=3idsBMaqsR4"},
+"Plank hold":{form:"Forearms and toes. Body in a straight line — no sagging hips, no piking up. Tuck your pelvis slightly (posterior tilt). Squeeze glutes, brace core like you're about to be punched. Breathe normally. If your form breaks, the set is over.",link:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+"Plank variations":{form:"Start with standard forearm plank. Progress to shoulder taps, plank walks, or plank with leg lift. Key cue for all: pelvis tucked, glutes engaged, no hip rocking side to side during variations.",link:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+"Copenhagen plank":{form:"Side plank position with top leg on a bench, bottom leg free. Lift your body using the top leg's adductor (inner thigh) and your obliques. Keep hips stacked, body in a straight line. This is hard — start with short holds.",link:"https://www.youtube.com/watch?v=2LKkCR5LMbo"},
+"Bird dog":{form:"On all fours, wrists under shoulders, knees under hips. Extend opposite arm and leg simultaneously — reach long. Keep hips level (put a water bottle on your lower back — it shouldn't fall). Pause 2 sec extended, return controlled.",link:"https://www.youtube.com/watch?v=wiFNA3sqjCA"},
+"Single-leg calf raises":{form:"Stand on the edge of a step on one foot. Lower heel below the step for full stretch. Rise up onto your toes, pause 1 sec at the top. Slow lowering. Hold a wall for balance if needed. Full range of motion matters here.",link:"https://www.youtube.com/watch?v=OsTQ4GKMMVU"},
+"Face pulls":{form:"Cable at face height, rope attachment. Pull toward your face, splitting the rope — hands finish beside your ears. Elbows high, squeeze shoulder blades together. This is a rear delt/rotator cuff exercise — keep it light.",link:"https://www.youtube.com/watch?v=V8dZ3pyiCBo"},
+};
+
+// Normalize exercise name for lookup (strip weighted/barbell variants)
+function getForm(name){
+if(FORM[name])return FORM[name];
+// Try partial matches
+for(const k in FORM){if(name.includes(k)||k.includes(name))return FORM[k]}
+return null;
+}
+
+function renderExercise(ex,i){
+const f=getForm(ex.name);
+let tags="";
+if(ex.load)tags+=`<span class="tag tag-load">⚖️ ${ex.load}</span>`;
+if(ex.tempo)tags+=`<span class="tag tag-tempo">⏱️ ${ex.tempo}</span>`;
+if(ex.note)tags+=`<span class="tag-note">${ex.note}</span>`;
+
+let formHtml="";
+if(f){
+formHtml=`<div class="ex-form"><div class="ex-form-text">📐 ${f.form}</div>${f.link?`<a href="${f.link}" target="_blank" rel="noopener" class="ex-video-link">▶ Watch form video</a>`:""}</div>`;
+}
+
+return`<div class="exercise" style="${i%2===0?"background:rgba(255,255,255,0.04)":""}"><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets} × ${ex.reps}</div>${tags?`<div class="ex-tags">${tags}</div>`:""}${formHtml}</div>`;
+}
+
+function getFuel(r){
+if(!r||r.type.includes("RACE"))return null;
+const km=parseFloat(r.km)||0;
+const isQuality=r.int&&(r.int.includes("3")||r.int.includes("4")||r.int.includes("5"));
+const isTempo=r.type.toLowerCase().includes("tempo")||r.type.toLowerCase().includes("interval")||r.type.toLowerCase().includes("hill")||r.type.toLowerCase().includes("speed");
+const isLong=r.type.toLowerCase().includes("long");
+const isRecovery=r.type.toLowerCase().includes("recovery")||r.type.toLowerCase().includes("opener");
+
+let pre="",during="",after="";
+
+if(km<=5&&!isTempo){
+// Short easy run
+pre="☕ Optional: coffee + small banana or nothing if running within 60 min of waking. Stay hydrated.";
+during="💧 No fuel needed. Sip water if hot.";
+after="🥛 Glass of water + small snack if hungry. No rush on recovery meal.";
+}else if(km<=7&&!isTempo){
+// Medium easy run
+pre="🍌 Small banana or toast with honey 30–60 min before. Coffee fine.";
+during="💧 No fuel needed. Carry water if hot/humid.";
+after="🥛 20–30g protein within 45 min (yoghurt + fruit, protein shake, eggs on toast).";
+}else if(isTempo||isQuality){
+// Quality session (tempo, intervals, hills, speed)
+pre="🍞 Carb-rich snack 60–90 min before: toast + banana, oats, or rice cakes with honey. You need fuel for intensity.";
+during=km>8?"💧 Carry water. If session is 60+ min, consider a gel or 2–3 chews at the halfway mark.":"💧 Carry water. No gel needed for sessions under 60 min.";
+after="🥛 Recovery meal within 30 min: 20–30g protein + carbs. E.g. protein shake + banana, eggs on toast, yoghurt + granola.";
+}else if(isLong&&km>=14){
+// Long run 14km+
+pre="🍚 Proper meal 2–3 hrs before: oats with banana + honey, toast with PB, or rice + eggs. This is your fuel tank.";
+during=km>=16?"⚡ Gel or chews at km 7 and km 14. Water every 3–4 km. PRACTISE this now — don't try new fuel on race day.":"💧 Water every 3–4 km. Optional: 1 gel at km 8–10 if going beyond 75 min.";
+after="🥛 Recovery meal within 30 min: protein + carbs + electrolytes. E.g. protein shake + banana + pinch of salt, or a proper meal.";
+}else if(isLong||km>=10){
+// Moderate long run 10-13km
+pre="🍌 Toast + banana or oats 60–90 min before. Don't skip this.";
+during="💧 Carry water. If running 75+ min, take 1 gel or a few chews at ~45 min.";
+after="🥛 20–30g protein + carbs within 45 min. Chocolate milk works in a pinch.";
+}else if(isRecovery){
+pre="☕ Light or nothing. This is a jog, not a session.";
+during="💧 Sip water if needed.";
+after="🥛 Normal meal timing, no rush.";
+}else{
+// Default medium run
+pre="🍌 Small snack 30–60 min before if needed. Coffee fine.";
+during="💧 Carry water if warm. No fuel needed under 60 min.";
+after="🥛 20–30g protein within 45 min.";
+}
+
+return{pre,during,after};
+}
+
+function renderRun(r){
+if(!r)return"";
+const isRace=r.type.includes("RACE");
+let fuelHtml="";
+const fuel=getFuel(r);
+if(fuel){
+fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
+}
+return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}</div>`;
+}
+
+function renderStrength(s){
+if(!s)return"";
+return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}</div></div>`;
+}
+
+function render(){
+$("dateDisplay").textContent=fmt(currentDate);
+const plan=getPlan(currentDate);
+const bi=$("blockInfo");
+let html="";
+
+if(plan.block){
+bi.style.display="block";
+bi.style.background=plan.block.color+"22";
+bi.style.border="1px solid "+plan.block.color+"44";
+bi.innerHTML=`<div class="block-name" style="color:${plan.block.color}">${plan.block.name}</div><div class="block-detail">Week ${plan.week} of ${plan.block.weeks} • ${plan.block.weeklyKm} km/week • ${plan.block.focus}</div>`;
+}else{
+bi.style.display="none";
+}
+
+if(plan.race){
+html+=`<div class="race-banner"><div class="icon">🏁</div><div class="title">RACE DAY</div><div class="sub">Trust the work. Execute the plan.</div></div>`;
+}
+
+html+=renderRun(plan.run);
+html+=renderStrength(plan.str);
+
+if(plan.other){
+const isPilates=plan.other.toLowerCase().includes("pilates");
+const emoji=isPilates?"🧘‍♀️ ":"";
+const label=isPilates?"Pilates":"Also today";
+html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div></div>`;
+}
+
+if(plan.notes&&plan.notes.length){
+html+=`<div class="notes-card"><div class="notes-title">📝 Notes</div>${plan.notes.map(n=>`<div class="notes-text">${n}</div>`).join("")}</div>`;
+}
+
+if(!plan.run&&!plan.str&&!plan.other&&(!plan.notes||!plan.notes.length)){
+if(plan.block){
+html+=`<div class="rest-card"><div class="rest-icon">😴</div><div class="rest-title">Rest Day</div><div class="rest-sub">Recovery is training. Foam roll, stretch, eat well.</div></div>`;
+}else{
+html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No training scheduled."}</div><div class="rest-sub">Navigate to Apr 2026 – Aug 2027</div></div>`;
+}
+}
+
+$("content").innerHTML=html;
+}
+
+function nav(days){currentDate=new Date(currentDate);currentDate.setDate(currentDate.getDate()+days);render()}
+$("prev").onclick=()=>nav(-1);
+$("next").onclick=()=>nav(1);
+$("goToday").onclick=()=>{currentDate=new Date();render()};
+$("goStart").onclick=()=>{currentDate=new Date(2026,2,30);render()};
+$("goRace").onclick=()=>{currentDate=new Date(2026,4,3);render()};
+
+render();
+</script>
+</body>
+</html>
