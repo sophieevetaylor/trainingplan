@@ -86,6 +86,10 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .run-check-box.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
 .run-check-label{font-size:13px;color:#9ca3af}
 .run-check-label.done{color:#10b981;font-weight:600}
+.treadmill-card{background:linear-gradient(135deg,rgba(234,179,8,0.1),rgba(202,138,4,0.08));border-radius:12px;padding:16px;border:1px solid rgba(234,179,8,0.2)}
+.treadmill-header{font-size:16px;font-weight:700;color:#fbbf24;margin-bottom:8px}
+.treadmill-detail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.treadmill-note{font-size:12px;color:#d1d5db;line-height:1.5}
 </style>
 </head>
 <body>
@@ -319,7 +323,11 @@ return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><
 
 function renderStrength(s){
 if(!s)return"";
-return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div></div>`;
+return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div></div>`+renderTreadmill();
+}
+
+function renderTreadmill(){
+return`<div class="treadmill-card"><div class="treadmill-header">🚶‍♀️ Incline Treadmill Walk</div><div class="treadmill-detail"><span class="tag tag-tempo">⏱️ 30 minutes</span> <span class="tag tag-load">📐 10–12% incline, 5.5–6.5 km/h</span></div><div class="treadmill-note">Finish every gym session with this. Steady pace, strong glute drive on the incline. Don't hold the handrails — swing your arms. Great for burning fat, building glutes, and flushing the legs.</div><div class="run-check-row" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label">Mark treadmill complete</div></div></div>`;
 }
 
 function render(){
@@ -364,6 +372,7 @@ html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No traini
 }
 
 $("content").innerHTML=html;
+restoreChecks();
 }
 
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);render()}
@@ -373,12 +382,43 @@ $("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(
 $("goStart").onclick=()=>{currentDate=new Date(2026,2,30,12,0,0);render()};
 $("goRace").onclick=()=>{currentDate=new Date(2026,4,3,12,0,0);render()};
 
+// Checkbox state storage (persists while app is open)
+const checkState={};
+function dateKey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function getState(){const k=dateKey(currentDate);if(!checkState[k])checkState[k]={ex:{},run:false,str:false,pil:false,tm:false};return checkState[k]}
+function saveEx(i,done){getState().ex[i]=done}
+function saveRun(done){getState().run=done}
+function saveStr(done){getState().str=done}
+function savePil(done){getState().pil=done}
+
+function restoreChecks(){
+const s=getState();
+// Restore exercise checks
+Object.keys(s.ex).forEach(i=>{
+const el=$("ex-"+i);
+if(el&&s.ex[i]){el.querySelector(".ex-check").classList.add("done");el.classList.add("checked")}
+});
+// Restore run check
+const rc=$("run-check"),rl=$("run-label");
+if(rc&&s.run){rc.classList.add("done");rl.classList.add("done");rl.textContent="Run complete ✓"}
+// Restore strength check
+const sc=$("str-check"),sl=$("str-label");
+if(sc&&s.str){sc.classList.add("done");sl.classList.add("done");sl.textContent="Session complete ✓"}
+// Restore pilates check
+const pc=$("pil-check"),pl=$("pil-label");
+if(pc&&s.pil){pc.classList.add("done");pl.classList.add("done");pl.textContent="Pilates complete ✓"}
+// Restore treadmill check
+const tc=$("tm-check"),tl=$("tm-label");
+if(tc&&s.tm){tc.classList.add("done");tl.classList.add("done");tl.textContent="Treadmill complete ✓"}
+}
+
 // Checkbox toggles
 function toggleEx(i){
 const el=$("ex-"+i);
 const ch=el.querySelector(".ex-check");
 const done=ch.classList.toggle("done");
 el.classList.toggle("checked",done);
+saveEx(i,done);
 }
 function toggleRun(){
 const ch=$("run-check");
@@ -386,6 +426,7 @@ const lb=$("run-label");
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Run complete ✓":"Mark run complete";
+saveRun(done);
 }
 function toggleStrength(){
 const ch=$("str-check");
@@ -393,6 +434,7 @@ const lb=$("str-label");
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Session complete ✓":"Mark session complete";
+saveStr(done);
 }
 function togglePilates(){
 const ch=$("pil-check");
@@ -401,6 +443,16 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Pilates complete ✓":"Mark Pilates complete";
+savePil(done);
+}
+function toggleTreadmill(){
+const ch=$("tm-check");
+const lb=$("tm-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Treadmill complete ✓":"Mark treadmill complete";
+getState().tm=done;
 }
 
 render();
