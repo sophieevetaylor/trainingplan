@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -45,11 +46,11 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .strength-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .strength-name{font-size:16px;font-weight:700;color:#a78bfa}
 .strength-dur{font-size:12px;color:#9ca3af;background:rgba(255,255,255,0.08);padding:3px 8px;border-radius:12px}
-.exercise{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:10px 14px;border-radius:8px;border-left:3px solid rgba(255,255,255,0.1)}
+.exercise{display:grid;grid-template-columns:22px 1fr auto;gap:4px 10px;padding:10px 14px;border-radius:8px;border-left:3px solid rgba(255,255,255,0.1);align-items:start}
 .exercise:nth-child(odd){background:rgba(255,255,255,0.04)}
 .ex-name{font-weight:600;color:#f0f0f0;font-size:14px}
 .ex-sets{color:#93c5fd;font-weight:600;font-size:14px;text-align:right;white-space:nowrap}
-.ex-tags{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.ex-tags{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 .tag{font-size:12px;padding:2px 8px;border-radius:4px}
 .tag-load{background:rgba(147,197,253,0.15);color:#93c5fd}
 .tag-tempo{background:rgba(251,191,36,0.15);color:#fbbf24}
@@ -67,7 +68,7 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .rest-icon{font-size:32px;margin-bottom:8px}
 .rest-title{font-size:16px;font-weight:600;color:#64748b}
 .rest-sub{font-size:13px;color:#475569;margin-top:4px}
-.ex-form{grid-column:1/-1;margin-top:6px;padding:8px 10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:6px}
+.ex-form{grid-column:2/-1;margin-top:6px;padding:8px 10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:6px}
 .ex-form-text{font-size:12px;color:#a7f3d0;line-height:1.5}
 .ex-video-link{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#34d399;text-decoration:none;padding:3px 10px;background:rgba(16,185,129,0.15);border-radius:4px;border:1px solid rgba(16,185,129,0.25)}
 .ex-video-link:active{background:rgba(16,185,129,0.25)}
@@ -75,6 +76,16 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .fuel-title{font-size:13px;font-weight:700;color:#fb923c;margin-bottom:6px}
 .fuel-row{font-size:12px;color:#d1d5db;line-height:1.6;margin-bottom:4px}
 .fuel-label{font-weight:600;color:#fdba74}
+.ex-check{display:flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);cursor:pointer;transition:all 0.2s;grid-row:1}
+.ex-check.done{background:#10b981;border-color:#10b981}
+.ex-check.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
+.exercise.checked .ex-name,.exercise.checked .ex-sets{opacity:0.4;text-decoration:line-through}
+.run-check-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);cursor:pointer}
+.run-check-box{width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.run-check-box.done{background:#10b981;border-color:#10b981}
+.run-check-box.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
+.run-check-label{font-size:13px;color:#9ca3af}
+.run-check-label.done{color:#10b981;font-weight:600}
 </style>
 </head>
 <body>
@@ -100,7 +111,7 @@ const BLOCKS=[{id:"preplan",name:"Pre-Plan: Getting Ready",startDate:"2026-03-27
 
 function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength A – Glute + Upper Push",duration:h?"70 min":m?"45–55 min":"60–70 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – glute squeeze at top, don't hyperextend"},{name:"Cable pull-through",sets:3,reps:"12–15",load:h?"20–25 kg cable":m?"15–20 kg cable":"15–20 kg cable",tempo:"Slow eccentric, squeeze 1 sec at top",note:"Focus on squeeze not load"},...(m?[]:[{name:"Bulgarian split squat (light)",sets:3,reps:"12 each leg",load:h?"8 kg DBs":"Bodyweight → 5 kg DBs",tempo:"Forward lean for glute emphasis",note:"NOT for quads – lean forward, drive through heel"}]),{name:h?"Bench press (barbell)":"DB bench press",sets:h?4:m?3:4,reps:h?"6–8":"8–10",load:h?"Start 25 kg → build":"10 kg DBs → build to 12.5 kg",tempo:"Controlled",note:""},...(m?[]:[{name:"DB shoulder press",sets:3,reps:"10–12",load:"7.5 kg DBs → build to 10 kg",tempo:"Controlled",note:""},{name:"Tricep pushdowns",sets:3,reps:"12–15",load:h?"18–22 kg cable":"12–15 kg cable → build to 18 kg",tempo:"Squeeze at bottom, 2-sec hold",note:"If elbows swing, drop weight"}]),{name:"Pallof press",sets:3,reps:"10 each side",load:"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
 function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength B – Posterior Chain + Upper Pull",duration:h?"70 min":m?"45–55 min":"60–70 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation"},{name:"Single-leg glute bridge",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight → add 5 kg plate",tempo:"2-sec hold at top",note:""},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"35–40 kg → build to 45 kg":"32–35 kg → build to 40 kg",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},...(m?[]:[{name:"Good mornings (light)",sets:3,reps:"12–15",load:"15–20 kg barbell (bar + 5–7.5 kg plates)",tempo:"3-sec eccentric",note:"Injury prevention – controlled, never heavy"},{name:"Cable kickback",sets:3,reps:"15 each leg",load:"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top",note:"Glute isolation"}]),{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health. Use pad under knees."},{name:"Lat pulldown",sets:4,reps:"8–10",load:h?"32–37 kg → build to 40 kg":"30 kg → build to 35 kg",tempo:"Squeeze at bottom",note:""},...(m?[]:[{name:"Seated cable row",sets:3,reps:"10–12",load:h?"28–32 kg":"22–27 kg → build to 30 kg",tempo:"Squeeze shoulder blades 1 sec",note:""},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → build to 8 kg",tempo:"2-sec lower",note:""}]),{name:"Dead bug",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, maintain low back contact",note:"Core"}]}}
-function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Glute Activation + Core",duration:m?"25–30 min":h?"50 min":"40–50 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:""},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Step-ups (low box)",sets:3,reps:"12 each leg",load:h?"8–10 kg DBs":m?"Bodyweight":"Bodyweight → 5 kg DBs",tempo:"Lean forward, drive through heel",note:"Glute focus – don't push off back foot"},{name:"Side-lying hip abduction",sets:3,reps:"15 each leg",load:h?"2–3 kg ankle weight":"1–2 kg ankle weight",tempo:"Controlled",note:""},...(h?[{name:"Frog pump",sets:3,reps:"20",load:"Bodyweight",tempo:"Squeeze at top",note:"High-rep burnout"}]:[]),{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"},...(m?[]:[{name:"Copenhagen plank",sets:3,reps:"20–30 sec each side",load:"Bodyweight",tempo:"Hips stacked",note:"Adductor + core"},{name:"Bird dog",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, controlled",note:""}]),...(h?[{name:"Single-leg calf raises",sets:3,reps:"15 each",load:"Bodyweight (hold wall for balance)",tempo:"Full range – heel below step",note:"Running health"}]:[])]}};
+function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Glute Activation + Core",duration:m?"25–30 min":h?"50 min":"40–50 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:""},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Step-ups (low box)",sets:3,reps:"12 each leg",load:h?"8–10 kg DBs":m?"Bodyweight":"Bodyweight → 5 kg DBs",tempo:"Lean forward, drive through heel",note:"Glute focus – don't push off back foot"},{name:"Abductor machine",sets:3,reps:h?"12–15":"15",load:h?"35–40 kg → build to 45 kg":"25–30 kg → build to 35 kg",tempo:"Squeeze at full open for 1 sec",note:"Glute medius – sit tall, don't lean back"},...(h?[{name:"Frog pump",sets:3,reps:"20",load:"Bodyweight",tempo:"Squeeze at top",note:"High-rep burnout"}]:[]),{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"},...(m?[]:[{name:"Adductor machine",sets:3,reps:"15",load:h?"35–40 kg":"25–30 kg → build to 35 kg",tempo:"Squeeze at full close for 1 sec",note:"Inner thigh + pelvic stability"},{name:"Bird dog",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Slow, controlled",note:""}]),...(h?[{name:"Single-leg calf raises",sets:3,reps:"15 each",load:"Bodyweight (hold wall for balance)",tempo:"Full range – heel below step",note:"Running health"}]:[])]}};
 
 function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
 function getBlock(d){for(const b of BLOCKS){if(d>=parseLocal(b.startDate)&&d<=parseLocal(b.endDate))return b}return null}
@@ -213,11 +224,11 @@ const FORM={
 "Single-leg hip thrust":{form:"Shoulder blades on bench, one foot planted, other leg extended. Drive through the planted heel. At the top: ribs down, squeeze glute, hold 1–2 sec. Keep hips level. If you feel it in your lower back, reset your pelvis position.",link:"https://www.youtube.com/watch?v=BXKB1YE5ufY"},
 "Single-leg hip thrust (weighted)":{form:"Same as bodyweight version but with a plate on your hip. Shoulder blades on bench, one foot planted. Drive through heel, squeeze at top with posterior pelvic tilt. Hold 1–2 sec. Keep hips level.",link:"https://www.youtube.com/watch?v=BXKB1YE5ufY"},
 "Step-ups (low box)":{form:"Forward lean of ~20° — this shifts the load onto your glute instead of your quad. Step up driving through the heel of the working leg. Do NOT push off the back foot — that's cheating. Stand fully, squeeze glute, then lower controlled.",link:"https://www.youtube.com/watch?v=dQqApCGd5Ss"},
-"Side-lying hip abduction":{form:"Lie on your side, bottom leg bent for stability. Top leg straight, toes pointing slightly down (internal rotation). Lift from the glute — imagine pushing your heel toward the ceiling. Don't roll your hips back. Slow and controlled.",link:"https://www.youtube.com/watch?v=oyGEVPuumtk"},
+"Abductor machine":{form:"Sit tall with back against the pad — don't lean back or forward. Push knees apart against the pads, driving from the glutes. Squeeze hard at full open and hold 1 sec. Control the return — don't let the weight slam. You should feel this in the side of your glutes, not your hip flexors.",link:"https://www.youtube.com/watch?v=GNwKUo2FYGE"},
+"Adductor machine":{form:"Sit tall, back against pad. Squeeze knees together against the pads, driving from your inner thighs. Hold at full close for 1 sec. Slow release — don't let the weight pull your legs apart. Keep your core braced throughout.",link:"https://www.youtube.com/watch?v=1e0dqMnkXYI"},
 "Frog pump":{form:"Lie on back, soles of feet together, knees out wide (like a frog). Drive hips up squeezing glutes hard at top. Short range of motion — this is about the squeeze, not the height. High reps, constant tension.",link:"https://www.youtube.com/watch?v=3idsBMaqsR4"},
 "Plank hold":{form:"Forearms and toes. Body in a straight line — no sagging hips, no piking up. Tuck your pelvis slightly (posterior tilt). Squeeze glutes, brace core like you're about to be punched. Breathe normally. If your form breaks, the set is over.",link:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
 "Plank variations":{form:"Start with standard forearm plank. Progress to shoulder taps, plank walks, or plank with leg lift. Key cue for all: pelvis tucked, glutes engaged, no hip rocking side to side during variations.",link:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
-"Copenhagen plank":{form:"Side plank position with top leg on a bench, bottom leg free. Lift your body using the top leg's adductor (inner thigh) and your obliques. Keep hips stacked, body in a straight line. This is hard — start with short holds.",link:"https://www.youtube.com/watch?v=2LKkCR5LMbo"},
 "Bird dog":{form:"On all fours, wrists under shoulders, knees under hips. Extend opposite arm and leg simultaneously — reach long. Keep hips level (put a water bottle on your lower back — it shouldn't fall). Pause 2 sec extended, return controlled.",link:"https://www.youtube.com/watch?v=wiFNA3sqjCA"},
 "Single-leg calf raises":{form:"Stand on the edge of a step on one foot. Lower heel below the step for full stretch. Rise up onto your toes, pause 1 sec at the top. Slow lowering. Hold a wall for balance if needed. Full range of motion matters here.",link:"https://www.youtube.com/watch?v=OsTQ4GKMMVU"},
 "Face pulls":{form:"Cable at face height, rope attachment. Pull toward your face, splitting the rope — hands finish beside your ears. Elbows high, squeeze shoulder blades together. This is a rear delt/rotator cuff exercise — keep it light.",link:"https://www.youtube.com/watch?v=V8dZ3pyiCBo"},
@@ -243,7 +254,7 @@ if(f){
 formHtml=`<div class="ex-form"><div class="ex-form-text">📐 ${f.form}</div>${f.link?`<a href="${f.link}" target="_blank" rel="noopener" class="ex-video-link">▶ Watch form video</a>`:""}</div>`;
 }
 
-return`<div class="exercise" style="${i%2===0?"background:rgba(255,255,255,0.04)":""}"><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets} × ${ex.reps}</div>${tags?`<div class="ex-tags">${tags}</div>`:""}${formHtml}</div>`;
+return`<div class="exercise" id="ex-${i}" style="${i%2===0?"background:rgba(255,255,255,0.04)":""}"><div class="ex-check" onclick="toggleEx(${i})"></div><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets} × ${ex.reps}</div>${tags?`<div class="ex-tags">${tags}</div>`:""}${formHtml}</div>`;
 }
 
 function getFuel(r){
@@ -303,12 +314,12 @@ const fuel=getFuel(r);
 if(fuel){
 fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
 }
-return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}</div>`;
+return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div></div>`;
 }
 
 function renderStrength(s){
 if(!s)return"";
-return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}</div></div>`;
+return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div></div>`;
 }
 
 function render(){
@@ -337,7 +348,7 @@ if(plan.other){
 const isPilates=plan.other.toLowerCase().includes("pilates");
 const emoji=isPilates?"🧘‍♀️ ":"";
 const label=isPilates?"Pilates":"Also today";
-html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div></div>`;
+html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>`:""}</div>`;
 }
 
 if(plan.notes&&plan.notes.length){
@@ -362,7 +373,38 @@ $("goToday").onclick=()=>{currentDate=new Date();render()};
 $("goStart").onclick=()=>{currentDate=new Date(2026,2,30);render()};
 $("goRace").onclick=()=>{currentDate=new Date(2026,4,3);render()};
 
+// Checkbox toggles
+function toggleEx(i){
+const el=$("ex-"+i);
+const ch=el.querySelector(".ex-check");
+const done=ch.classList.toggle("done");
+el.classList.toggle("checked",done);
+}
+function toggleRun(){
+const ch=$("run-check");
+const lb=$("run-label");
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Run complete ✓":"Mark run complete";
+}
+function toggleStrength(){
+const ch=$("str-check");
+const lb=$("str-label");
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Session complete ✓":"Mark session complete";
+}
+function togglePilates(){
+const ch=$("pil-check");
+const lb=$("pil-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Pilates complete ✓":"Mark Pilates complete";
+}
+
 render();
 </script>
+
 </body>
 </html>
