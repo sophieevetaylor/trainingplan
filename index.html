@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -92,6 +93,9 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .steps-card{background:rgba(107,91,160,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(107,91,160,0.15)}
 .steps-header{font-size:16px;font-weight:700;color:#6B5B8A;margin-bottom:4px}
 .steps-target{font-size:14px;color:#8A7A9E;font-weight:500;margin-bottom:4px}
+.spin-card{background:rgba(139,92,246,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(139,92,246,0.2)}
+.spin-header{font-size:16px;font-weight:700;color:#8B5CF6;margin-bottom:4px}
+.spin-detail{font-size:13px;color:#7A6B8A;line-height:1.5;margin-bottom:4px}
 .dash{padding:16px;border-bottom:0.5px solid rgba(180,160,190,0.15)}
 .dash-section{margin-bottom:14px}
 .dash-section:last-child{margin-bottom:0}
@@ -146,76 +150,198 @@ function getWeek(d,b){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),
 function phase(id){if(id==="block6")return"hypertrophy";if(id==="block5"||id==="block9")return"maintenance";return"base"}
 
 function getPlan(date){
-const b=getBlock(date);if(!b)return{block:null,message:"No training scheduled – navigate to a date within Apr 2026 – Aug 2027."};
+const b=getBlock(date);if(!b)return{block:null,message:"No training scheduled – navigate to a date within Mar 2026 – Aug 2027."};
 const w=getWeek(date,b),d=date.getDay(),p=phase(b.id);
-let run=null,str=null,other=null,notes=[],race=false;
+let run=null,str=null,other=null,notes=[],race=false,spin=false;
+
+// Mon=1:GymA+Pilates, Tue=2:QualityRun+Pilates, Wed=3:GymB+EasyRun, Thu=4:Rest, Fri=5:GymC+EasyRun, Sat=6:Spin, Sun=0:LongRun
+function week(o){
+const q=o.q||{type:"Easy run",km:"6",pace:"5:50–6:10/km",int:"Zone 2",note:""};
+const ek=o.ek||"5–6",ep=o.ep||"5:50–6:10/km";
+const lr=o.lr||{type:"Long run",km:"14",pace:"5:50–6:15/km",int:"Zone 2",note:""};
+const mr=o.mr;// optional Monday morning run for blocks 4+
+const W={
+1:{str:SA(p),other:"PM: Pilates",run:mr||null},
+2:{run:q,other:"PM: Pilates"},
+3:{str:SB(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."}},
+4:{notes:["REST DAY. Recover, stretch, foam roll. Eat well."]},
+5:{str:SC(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."}},
+6:{spin:true,notes:["45 min spin class – Zone 2 cardio. Steady effort, don't smash it."]},
+0:lr.type?{run:lr}:{notes:lr.notes||["Easy day"]}
+};
+return W[d]||{notes:["Rest"]};
+}
 
 if(b.id==="preplan"){
 const P={
 5:{other:"PM: Pilates",notes:["Rest from running today. Pilates + recovery. Plan starts Monday."]},
-6:{str:SC("base"),notes:["Strength C activation session. Get familiar with the exercises — this is your Saturday routine going forward."]},
-0:{run:{type:"Long run",km:"16",pace:"5:50–6:10/km",int:"Zone 2",note:"Keep HR < 155. This is your last long run before the plan starts — enjoy it. Easy pace, no heroics."}}
+6:{spin:true,notes:["45 min spin – Zone 2. Easy effort."]},
+0:{run:{type:"Long run",km:"16",pace:"5:50–6:10/km",int:"Zone 2",note:"Keep HR < 155. Easy pace, no heroics."}}
 };
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes}
 }
+
 else if(b.id==="block1"){
 const longKms=[18,14,10,0];
-const dl=w>=3;
-const sk=longKms[w-1]||10;
-const P={1:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"Keep HR < 155"},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:"Keep HR < 155"},other:"PM: Pilates"},4:{str:SB(p)},5:{run:{type:"Easy run",km:dl?"4–5":"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:dl?"Taper – keep it short":""},other:w<=1?"Or long walk if preferred":""},6:{str:SC(p),notes:["Active recovery / strength day"]},0:sk>0?{run:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:w===1?"Longest pre-race run – dress rehearsal":dl?"Taper week – easy pace, don't push":"Build week"}}:{run:{type:"Easy run",km:"5–6",pace:"6:00–6:15/km",int:"Zone 1–2",note:"Easy legs before race week. No long run this week."}}};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
-if(dl)notes.push("Taper week – reduced volume into race week");
+const dl=w>=3;const sk=longKms[w-1]||10;
+const t=week({
+q:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:"Keep HR < 155. Building base — no quality sessions yet."},
+ek:dl?"4–5":"5–6",
+lr:sk>0?{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:w===1?"Longest pre-race run – dress rehearsal":dl?"Taper week":"Build week"}:{type:null,notes:["Easy 5–6 km only. No long run — race week next."]}
+});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
+if(dl)notes.push("Taper week – reduced volume");
 }
+
 else if(b.id==="raceweek_hm1"){
-const P={1:{run:{type:"Easy run",km:"5",pace:"6:00–6:10/km",int:"Zone 1–2",note:"Gentle."},other:"PM: Pilates"},2:{str:SC("maintenance"),notes:["Light activation only – 30 min max"]},3:{run:{type:"Strides session",km:"4",pace:"Easy + 4×100m strides",int:"Easy with bursts",note:"Shake out legs."}},4:{notes:["FULL REST. Hydrate well. Lay out race gear tonight."]},5:{run:{type:"Openers",km:"3",pace:"Easy jog + 4 strides",int:"Very easy",note:"Lay out race kit tonight."}},6:{notes:["FULL REST. Carb-rich dinner. Sleep early. Trust the work."]},0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target ~5:55/km for ~2:05",int:"Honest effort",note:"km 1–5: 5:55–6:00. km 6–15: 5:50–5:55. km 16–18: honest effort. km 19–21: push if strong but DON'T empty the tank."},race:true,notes:["Gel at km 7 and km 14. Water at every station from km 5."]}};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}
+const P={
+1:{str:SA(p),other:"PM: Pilates",notes:["Light gym — drop 1 set each. Last strength before race."]},
+2:{run:{type:"Strides",km:"4",pace:"Easy + 4×100m strides",int:"Easy",note:"Shake out legs."},other:"PM: Pilates"},
+3:{run:{type:"Easy run",km:"3–4",pace:"6:00–6:10/km",int:"Zone 1",note:"Just a jog."}},
+4:{notes:["FULL REST. Hydrate. Lay out race gear."]},
+5:{run:{type:"Openers",km:"3",pace:"Easy jog + 4 strides",int:"Very easy",note:"Lay out race kit."}},
+6:{notes:["FULL REST. Carb-rich dinner. Sleep early. Trust the work."]},
+0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target ~5:55/km for ~2:05",int:"Honest effort",note:"km 1–5: 5:55–6:00. km 6–15: 5:50–5:55. km 16–18: honest effort. km 19–21: push if strong but DON'T empty the tank."},race:true,notes:["Gel at km 7 and km 14. Water at every station from km 5."]}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
 }
+
 else if(b.id==="recovery1"){
-if(w===1){const P={1:{notes:["FULL REST. You raced yesterday."]},2:{notes:["Rest or very easy 20-min walk."]},3:{run:{type:"Recovery run",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Only if legs feel okay."}},4:{str:SC("maintenance"),notes:["Light activation only"]},5:{run:{type:"Easy run",km:"5",pace:"6:00–6:15/km",int:"Zone 1–2",note:""}},6:{str:SA("base"),notes:["Ease back into lifting."]},0:{run:{type:"Easy run",km:"6–7",pace:"6:00–6:15/km",int:"Zone 2",note:"First longer run post-race"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
-else{const P={1:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Easy run",km:"6",pace:"5:50–6:05/km",int:"Zone 2",note:""}},4:{str:SB(p)},5:{run:{type:"Easy run",km:"5",pace:"5:50–6:10/km",int:"Zone 2",note:""}},6:{str:SC(p),notes:["Ready to start Block 2 next week"]},0:{run:{type:"Long run",km:"8–10",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+if(w===1){
+const P={
+1:{notes:["FULL REST. You raced yesterday."]},
+2:{run:{type:"Recovery run",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Only if legs feel okay."},other:"PM: Pilates (gentle)"},
+3:{run:{type:"Easy run",km:"4",pace:"6:00–6:15/km",int:"Zone 1–2",note:""}},
+4:{notes:["Rest"]},
+5:{str:SC("maintenance"),notes:["Light activation only."]},
+6:{spin:true,notes:["Easy spin – 30 min only this week."]},
+0:{run:{type:"Easy run",km:"6–7",pace:"6:00–6:15/km",int:"Zone 2",note:"First longer run post-race"}}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes}
+}else{
+const t=week({q:{type:"Easy run",km:"6",pace:"5:50–6:05/km",int:"Zone 2",note:"Still recovering."},ek:"5",lr:{type:"Long run",km:"8–10",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
+}
+
 else if(b.id==="block2"){
-const tk=w<=2?3:w<=4?4:5,tp=w<=4?"5:25–5:30/km":"5:15–5:25/km",lk=Math.min(14+(w-1),18),sk=w===6?12:lk,ln=w===2?"Last 3 km at tempo effort":w===4?"Middle 4 km at moderate effort":"All easy";
-const P={1:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Tempo run",km:"~"+(tk+4)+" total ("+tk+" km tempo)",pace:"Tempo: "+tp,int:"Zone 3",note:"2 km WU → "+tk+" km tempo → 2 km CD"}},4:{str:SB(p)},5:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},other:"Or Pilates"},6:{str:SC(p),run:w>=3?{type:"Recovery run (optional)",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Only if feeling good"}:null},0:{run:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:ln}}};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+const tk=w<=2?3:w<=4?4:5,tp=w<=4?"5:25–5:30/km":"5:15–5:25/km";
+const lk=Math.min(14+(w-1),18),sk=w===6?12:lk;
+const ln=w===2?"Last 3 km at tempo effort":w===4?"Middle 4 km at moderate effort":"All easy";
+const t=week({q:{type:"Tempo run",km:"~"+(tk+4)+" ("+tk+" km tempo)",pace:"Tempo: "+tp,int:"Zone 3",note:"2 km WU → "+tk+" km tempo → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:ln}});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 if(w===6)notes.push("Deload week");
 }
+
 else if(b.id==="block3"){
-const rw=w===6,hr=w<=2?"6×90 sec":w<=4?"8×90 sec":"5×2 min";
-if(rw){const P={1:{run:{type:"Easy run",km:"5",pace:"6:00/km",int:"Zone 1–2",note:""}},2:{str:SC("maintenance"),notes:["Light only"]},3:{run:{type:"Strides",km:"4",pace:"Easy + 4×30-sec strides",int:"Easy",note:""}},4:{notes:["REST"]},5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},6:{notes:["REST. Prep. Hydrate."]},0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~5:10–5:20/km for sub-75",int:"Strong effort",note:"Start 5:10–5:15. Maintain on Heartbreak Hill. Open up downhill."},race:true}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}}
-else{const P={1:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Hill repeats",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD."}},4:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},str:SB("maintenance")},5:{str:SC(p)},6:{run:{type:"Recovery (optional)",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Or complete rest"}},0:{run:{type:"Long run (hilly)",km:"14–16",pace:"5:45–6:00/km",int:"Zone 2",note:"Simulate C2S terrain"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+const rw=w===6;const hr=w<=2?"6×90 sec":w<=4?"8×90 sec":"5×2 min";
+if(rw){
+const P={
+1:{str:SA(p),notes:["Light gym. Last strength before C2S."]},
+2:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},
+3:{run:{type:"Easy run",km:"3",pace:"6:00/km",int:"Zone 1",note:""}},
+4:{notes:["REST"]},
+5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},
+6:{notes:["REST. Prep. Hydrate."]},
+0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~5:10–5:20/km for sub-75",int:"Strong effort",note:"Start 5:10–5:15. Maintain on Heartbreak Hill. Open up downhill."},race:true}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
+}else{
+const t=week({q:{type:"Hill repeats",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD."},ek:"5–6",lr:{type:"Long run (hilly)",km:"14–16",pace:"5:45–6:00/km",int:"Zone 2",note:"Simulate C2S terrain"}});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
+}
+
 else if(b.id==="block4"){
-if(w<=2){const P={1:w===1?{notes:["Rest or easy walk. Recovery from C2S."]}:{run:{type:"Easy run",km:"6",pace:"5:50–6:10/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:w===1?{run:{type:"Easy run",km:"5",pace:"6:00–6:15/km",int:"Zone 1–2",note:""}}:{str:SA(p)},3:{run:{type:"Easy run",km:w===1?"5":"6–7",pace:"5:50–6:10/km",int:"Zone 2",note:""}},4:w===1?{str:SC("maintenance")}:{str:SB(p)},5:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""}},6:{str:w===1?SA("base"):SC(p)},0:{run:{type:"Long run",km:w===1?"8":"12",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
-else{const lk=Math.min(16+(w-3)*2,20),sk=w===7?14:lk;const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:40–6:00/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{str:SA(p)},3:{run:{type:"Moderate run",km:"8–10",pace:"4–6 km @ 5:25–5:35/km",int:"Zone 2–3",note:"2 km WU → tempo → CD"}},4:{run:{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""},str:SB(p)},5:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:"5th run day"}},6:{str:SC(p)},0:{run:{type:"Long run",km:""+sk,pace:"5:45–6:10/km",int:"Zone 2",note:w===5?"20 km – your longest run ever!":""}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"5th run — before gym. Short and easy."};
+if(w<=2){
+if(w===1){
+const P={
+1:{notes:["Rest. Recovery from C2S."]},
+2:{run:{type:"Easy run",km:"5",pace:"6:00–6:15/km",int:"Zone 1–2",note:""},other:"PM: Pilates"},
+3:{run:{type:"Easy run",km:"5",pace:"6:00–6:10/km",int:"Zone 2",note:""}},
+4:{notes:["Rest"]},
+5:{str:SC("maintenance"),notes:["Light activation only"]},
+6:{spin:true,notes:["Easy spin – 30 min only."]},
+0:{run:{type:"Long run",km:"8",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes}
+}else{
+const t=week({q:{type:"Easy run",km:"6",pace:"5:50–6:05/km",int:"Zone 2",note:"Still rebuilding."},ek:"5–6",lr:{type:"Long run",km:"12",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
+}else{
+const lk=Math.min(16+(w-3)*2,20),sk=w===7?14:lk;
+const t=week({q:{type:"Moderate run",km:"8–10",pace:"4–6 km @ 5:25–5:35/km",int:"Zone 2–3",note:"2 km WU → tempo → CD"},ek:"5–6",lr:{type:"Long run",km:""+sk,pace:"5:45–6:10/km",int:"Zone 2",note:w===5?"20 km – your longest run ever!":""},mr:monRun});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
+notes.push("5th run added — Monday AM before gym");
+}
+}
+
 else if(b.id==="block5"){
+const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"5th run — before gym."};
 const rw=w===6;
-if(rw){const P={1:{run:{type:"Easy run",km:"6",pace:"6:00/km",int:"Zone 1–2",note:"Legs up wall 10 min PM"}},2:{run:{type:"Strides",km:"4",pace:"Easy + 4×200m strides",int:"Easy",note:""}},3:{run:{type:"Easy run",km:"4",pace:"6:00/km",int:"Zone 1",note:""},str:SC("maintenance")},4:{notes:["REST. Hydrate. Prep gear."]},5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:"Lay out race kit."}},6:{notes:["REST. Carb-load dinner. Sleep early."]},0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target 5:38–5:42/km for sub-2:00",int:"A-RACE",note:"km 1–5: 5:42–5:45. km 6–15: 5:38–5:42. km 16–18: maintain. km 19–21: everything."},race:true}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}}
-else{const lk=w===1?18:w===2?20:w===3?22:w===4?20:16,ln=w===2?"Middle 6 km @ 5:40–5:45 (HM pace)":w===3?"LONGEST RUN":w===4?"8 km @ 5:38–5:42 (race pace)":"Taper begins";const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:40–6:00/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"Intervals",km:"~9 total",pace:(w<=2?"5":"6")+"×1 km @ 5:00–5:10/km",int:"Zone 4",note:"2 km WU → intervals (90s jog) → 2 km CD"}},3:{run:{type:"Easy run",km:"6–7",pace:"5:50–6:05/km",int:"Zone 2",note:""},str:SA("maintenance")},4:{run:{type:"Tempo",km:"~9 total",pace:(w<=3?"5–6":"7")+" km @ 5:20–5:30/km",int:"Zone 3",note:""}},5:{run:w<=4?{type:"Easy run",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:""}:null,str:SB("maintenance")},6:{str:SC("maintenance")},0:{run:{type:"Long run",km:""+lk,pace:"5:45–6:10/km",int:"Zone 2",note:ln}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+if(rw){
+const P={
+1:{str:SA("maintenance"),notes:["Light gym. Last strength before A-race."]},
+2:{run:{type:"Strides",km:"4",pace:"Easy + 4×200m strides",int:"Easy",note:""},other:"Pilates PM"},
+3:{run:{type:"Easy run",km:"4",pace:"6:00/km",int:"Zone 1",note:""}},
+4:{notes:["REST. Hydrate. Prep gear."]},
+5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:"Lay out race kit."}},
+6:{notes:["REST. Carb-load dinner. Sleep early."]},
+0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target 5:38–5:42/km for sub-2:00",int:"A-RACE",note:"km 1–5: 5:42–5:45. km 6–15: 5:38–5:42. km 16–18: maintain. km 19–21: everything."},race:true}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
+}else{
+const lk=w===1?18:w===2?20:w===3?22:w===4?20:16;
+const ln=w===2?"Middle 6 km @ 5:40–5:45 (HM pace)":w===3?"LONGEST RUN":w===4?"8 km @ 5:38–5:42 (race pace)":"Taper";
+const t=week({q:{type:"Intervals",km:"~9 total",pace:(w<=2?"5":"6")+"×1 km @ 5:00–5:10/km",int:"Zone 4",note:"2 km WU → intervals (90s jog) → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:""+lk,pace:"5:45–6:10/km",int:"Zone 2",note:ln},mr:monRun});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
+}
+
 else if(b.id==="block6"){
-const P={1:{run:{type:"Easy run",km:"5–7",pace:"Run by feel",int:"Easy",note:"Run for joy"},other:"PM: Pilates"},2:{str:SA("hypertrophy")},3:{run:{type:"Easy run",km:"5–7",pace:"Easy, social if possible",int:"Easy",note:""},other:"PM: Pilates"},4:{str:SB("hypertrophy")},5:{run:{type:"Easy run (optional)",km:"5–6",pace:"Easy",int:"Zone 2",note:"Or long walk/rest"}},6:{str:SC("hypertrophy")},0:{run:{type:"Long easy run",km:"10–12",pace:"Easy – fun routes",int:"Zone 2",note:"No pressure"}}};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+const t=week({q:{type:"Easy run",km:"5–7",pace:"Run by feel",int:"Easy",note:"Run for joy. No intensity."},ek:"5–6",ep:"Easy",lr:{type:"Long easy run",km:"10–12",pace:"Easy – fun routes",int:"Zone 2",note:"No pressure"}});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 notes.push("Glute hypertrophy phase – push strength hard");
 }
+
 else if(b.id==="block7"){
 const sr=w<=2?"8×400m @ 4:40–4:50":w<=4?"10×400m @ 4:35–4:45":w<=6?"6×600m @ 4:35–4:45":"5×800m @ 4:40–4:50";
-const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:35–5:55/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"Speed session",km:"~8 total",pace:sr,int:"Zone 4–5",note:"2 km WU → reps (90s jog) → 2 km CD"}},3:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:00/km",int:"Zone 2",note:""},str:SA(p)},4:{run:{type:"Tempo",km:"~8 total",pace:"4–6 km @ 5:15–5:25/km",int:"Zone 3",note:""}},5:{run:{type:"Easy (optional)",km:"5–6",pace:"Easy",int:"Zone 2",note:""},str:SB(p)},6:{str:SC(p)},0:{run:{type:"Long run",km:"15–18",pace:"5:45–6:05/km",int:"Zone 2",note:""}}};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:35–5:55/km",int:"Zone 2",note:"5th run — before gym."};
+const t=week({q:{type:"Speed session",km:"~8 total",pace:sr,int:"Zone 4–5",note:"2 km WU → reps (90s jog) → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:"15–18",pace:"5:45–6:05/km",int:"Zone 2",note:""},mr:monRun});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 if(w===8)notes.push("Deload week");
 }
+
 else if(b.id==="block8"){
 const hr=w<=3?"8×90 sec":w<=6?"10×90 sec":w<=8?"6×2 min":"4×90 sec (taper)";
-const P={1:{run:{type:"Easy run",km:"7–8",pace:"5:35–5:55/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"Hill intervals",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD"}},3:{run:{type:"Easy run",km:"6–7",pace:"5:45–6:00/km",int:"Zone 2",note:""},str:SA("maintenance")},4:{run:{type:"Tempo/speed",km:"~9 total",pace:"5–7 km @ 5:05–5:20/km",int:"Zone 3–4",note:""}},5:{run:{type:"Easy (optional)",km:"5–6",pace:"Easy",int:"Zone 2",note:""},str:SB("maintenance")},6:{str:SC("maintenance")},0:{run:{type:"Long run (hilly)",km:"14–18",pace:"5:40–6:00/km",int:"Zone 2",note:"Choose hilly routes"}}};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}
+const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:35–5:55/km",int:"Zone 2",note:"5th run — before gym."};
+const t=week({q:{type:"Hill intervals",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD"},ek:"5–6",lr:{type:"Long run (hilly)",km:"14–18",pace:"5:40–6:00/km",int:"Zone 2",note:"Choose hilly routes"},mr:monRun});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
+
 else if(b.id==="block9"){
 const tp=w>=8,rw=w>=10;
-if(rw){const P={1:{run:{type:"Easy run",km:"5",pace:"6:00/km",int:"Zone 1–2",note:""}},2:{str:SC("maintenance")},3:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},4:{notes:["REST"]},5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},6:{notes:["REST. Trust the work."]},0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~4:52/km for sub-70",int:"A-RACE",note:"km 1–4: 4:45–4:50. Heartbreak: 5:10–5:20. Descent: 4:35–4:45. Final km: everything."},race:true}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes;race=t.race||false}}
-else{const P={1:{run:{type:"Easy run",km:tp?"6":"7–8",pace:"5:30–5:50/km",int:"Zone 2",note:""},other:"PM: Pilates"},2:{run:{type:"C2S rehearsal",km:tp?"8":"10–12",pace:"Race effort on hilly course",int:"Zone 3–4",note:""}},3:{run:{type:"Easy run",km:"6–7",pace:"Easy",int:"Zone 2",note:""},str:SA("maintenance")},4:{run:{type:"Speed",km:tp?"~6 total":"~8 total",pace:(tp?"4–5":"6–8")+"×800m @ 4:35–4:50/km",int:"Zone 4",note:""}},5:{run:tp?null:{type:"Easy run",km:"5",pace:"Easy",int:"Zone 2",note:""},str:SB("maintenance")},6:{str:SC("maintenance")},0:{run:{type:"Long run",km:tp?"12":"14–16",pace:"Moderate on hills",int:"Zone 2",note:""}}};const t=P[d];if(t){run=t.run;str=t.str;other=t.other;if(t.notes)notes=t.notes}}
+const monRun={type:"Easy run (AM)",km:tp?"5":"5–6",pace:"5:30–5:50/km",int:"Zone 2",note:"5th run — before gym."};
+if(rw){
+const P={
+1:{str:SA("maintenance"),notes:["Light gym. Last strength before A-race."]},
+2:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},
+3:{run:{type:"Easy run",km:"3",pace:"6:00/km",int:"Zone 1",note:""}},
+4:{notes:["REST"]},
+5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},
+6:{notes:["REST. Trust the work."]},
+0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~4:52/km for sub-70",int:"A-RACE",note:"km 1–4: 4:45–4:50. Heartbreak: 5:10–5:20. Descent: 4:35–4:45. Final km: everything."},race:true}
+};
+const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
+}else{
+const t=week({q:{type:"C2S rehearsal",km:tp?"8":"10–12",pace:"Race effort on hilly course",int:"Zone 3–4",note:""},ek:tp?"5":"5–6",lr:{type:"Long run",km:tp?"12":"14–16",pace:"Moderate on hills",int:"Zone 2",note:""},mr:monRun});
+run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
-return{block:b,week:w,run,str,other,notes,race};
+}
+
+return{block:b,week:w,run,str,other,notes,race,spin};
 }
 
 // ─── RENDERING ──────────────────────────────────────────────────────
@@ -467,6 +593,10 @@ html+=`<div class="race-banner"><div class="icon">🏁</div><div class="title">R
 html+=renderRun(plan.run);
 html+=renderStrength(plan.str);
 
+if(plan.spin){
+html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
+}
+
 if(plan.other){
 const isPilates=plan.other.toLowerCase().includes("pilates");
 const emoji=isPilates?"🧘‍♀️ ":"";
@@ -478,7 +608,7 @@ if(plan.notes&&plan.notes.length){
 html+=`<div class="notes-card"><div class="notes-title">📝 Notes</div>${plan.notes.map(n=>`<div class="notes-text">${n}</div>`).join("")}</div>`;
 }
 
-if(!plan.run&&!plan.str&&!plan.other&&(!plan.notes||!plan.notes.length)){
+if(!plan.run&&!plan.str&&!plan.other&&!plan.spin&&(!plan.notes||!plan.notes.length)){
 if(plan.block){
 html+=`<div class="rest-card"><div class="rest-icon">😴</div><div class="rest-title">Rest Day</div><div class="rest-sub">Recovery is training. Foam roll, stretch, eat well.</div></div>`;
 }else{
@@ -507,7 +637,7 @@ function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDa
 function getState(){
 const k=dateKey(currentDate);
 try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}
-return{ex:{},run:false,str:false,pil:false,tm:false,steps:false};
+return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false};
 }
 function setState(s){
 const k=dateKey(currentDate);
@@ -540,6 +670,9 @@ if(tc&&s.tm){tc.classList.add("done");tl.classList.add("done");tl.textContent="T
 // Restore steps check
 const stc=$("steps-check"),stl=$("steps-label");
 if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent="14k steps complete ✓"}
+// Restore spin check
+const spc=$("spin-check"),spl=$("spin-label");
+if(spc&&s.spin){spc.classList.add("done");spl.classList.add("done");spl.textContent="Spin complete ✓"}
 }
 
 // Checkbox toggles
@@ -593,8 +726,18 @@ lb.classList.toggle("done",done);
 lb.textContent=done?"14k steps complete ✓":"Mark 14k steps complete";
 const s=getState();s.steps=done;setState(s);
 }
+function toggleSpin(){
+const ch=$("spin-check");
+const lb=$("spin-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Spin complete ✓":"Mark spin complete";
+const s=getState();s.spin=done;setState(s);
+}
 
 render();
 </script>
+
 </body>
 </html>
