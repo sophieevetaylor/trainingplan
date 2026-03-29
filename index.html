@@ -96,6 +96,12 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .spin-card{background:rgba(139,92,246,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(139,92,246,0.2)}
 .spin-header{font-size:16px;font-weight:700;color:#8B5CF6;margin-bottom:4px}
 .spin-detail{font-size:13px;color:#7A6B8A;line-height:1.5;margin-bottom:4px}
+.protein-card{background:rgba(239,68,68,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(239,68,68,0.15)}
+.protein-header{font-size:16px;font-weight:700;color:#DC2626;margin-bottom:4px}
+.protein-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
+.water-card{background:rgba(59,130,246,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(59,130,246,0.15)}
+.water-header{font-size:16px;font-weight:700;color:#3B82F6;margin-bottom:4px}
+.water-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
 .dash{padding:16px;border-bottom:0.5px solid rgba(180,160,190,0.15)}
 .dash-section{margin-bottom:14px}
 .dash-section:last-child{margin-bottom:0}
@@ -127,8 +133,8 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
     <button id="next">→</button>
   </div>
   <div class="quick-nav">
-    <button id="goToday">📍 Today</button>
     <button id="goHome">🏠 Home</button>
+    <button id="goToday">📍 Today</button>
     <button id="goRace" class="race-btn">🏁 May 3 HM</button>
   </div>
   <div id="blockInfo" class="block-info" style="display:none"></div>
@@ -530,6 +536,16 @@ stripHtml+=`<div class="week-day ${isToday?"today":""} ${status}" onclick="navTo
 }
 dhtml+=`<div class="dash-section"><div class="dash-title">This Week</div><div class="week-strip">${stripHtml}</div></div>`;
 
+// ── Weekly KM Total ──
+let weeklyKm=0;
+for(let i=0;i<7;i++){
+const wd=new Date(monday);
+wd.setDate(wd.getDate()+i);
+const wp=getPlan(wd);
+if(wp.run){const km=parseFloat(wp.run.km)||0;weeklyKm+=km}
+}
+dhtml+=`<div class="dash-section"><div class="dash-title">Weekly volume</div><div class="streak-row"><div class="streak-number">${Math.round(weeklyKm)}</div><div class="streak-label">km planned<br>this week</div><div style="font-size:28px">📏</div></div></div>`;
+
 // ── Streak ──
 let streak=0;
 const checkDate=new Date(todayNorm);
@@ -618,9 +634,13 @@ html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No traini
 
 $("content").innerHTML=html;
 
-// Always add steps card (every day, even rest days)
-const stepsHtml=`<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>`;
-$("content").innerHTML+=stepsHtml;
+// Daily tracker cards (every day)
+const dailyCards=`
+<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
+<div class="protein-card"><div class="protein-header">🥩 Protein</div><div class="protein-target">Target: 100–126g today (1.6–2.0g/kg)</div><div class="run-check-row" onclick="toggleProtein()"><div class="run-check-box" id="protein-check"></div><div class="run-check-label" id="protein-label">Hit protein target</div></div></div>
+<div class="water-card"><div class="water-header">💧 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>
+`;
+$("content").innerHTML+=dailyCards;
 
 restoreChecks();
 }
@@ -630,14 +650,18 @@ $("prev").onclick=()=>nav(-1);
 $("next").onclick=()=>nav(1);
 $("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();window.scrollTo({top:0,behavior:"smooth"})};
 $("goHome").onclick=()=>{viewMode="home";render();window.scrollTo({top:0,behavior:"smooth"})};
-$("goRace").onclick=()=>{currentDate=new Date(2026,4,3,12,0,0);viewMode="day";render();window.scrollTo({top:0,behavior:"smooth"})};
+const RACES=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race HM",date:new Date(2026,9,25,12,0,0)},{name:"C2S 2027",date:new Date(2027,7,8,12,0,0)}];
+function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES.find(r=>r.date>=nn)||RACES[RACES.length-1]}
+function updateRaceBtn(){const r=getNextRace();$("goRace").textContent="🏁 "+r.name}
+$("goRace").onclick=()=>{const r=getNextRace();currentDate=new Date(r.date);viewMode="day";render();window.scrollTo({top:0,behavior:"smooth"})};
+updateRaceBtn();
 
 // Checkbox state storage (persists across sessions via localStorage)
 function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function getState(){
 const k=dateKey(currentDate);
 try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}
-return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false};
+return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,protein:false,water:false};
 }
 function setState(s){
 const k=dateKey(currentDate);
@@ -673,6 +697,12 @@ if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textCon
 // Restore spin check
 const spc=$("spin-check"),spl=$("spin-label");
 if(spc&&s.spin){spc.classList.add("done");spl.classList.add("done");spl.textContent="Spin complete ✓"}
+// Restore protein check
+const prc=$("protein-check"),prl=$("protein-label");
+if(prc&&s.protein){prc.classList.add("done");prl.classList.add("done");prl.textContent="Protein target hit ✓"}
+// Restore water check
+const wc=$("water-check"),wl=$("water-label");
+if(wc&&s.water){wc.classList.add("done");wl.classList.add("done");wl.textContent="2L+ water hit ✓"}
 }
 
 // Checkbox toggles
@@ -734,6 +764,24 @@ const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Spin complete ✓":"Mark spin complete";
 const s=getState();s.spin=done;setState(s);
+}
+function toggleProtein(){
+const ch=$("protein-check");
+const lb=$("protein-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Protein target hit ✓":"Hit protein target";
+const s=getState();s.protein=done;setState(s);
+}
+function toggleWater(){
+const ch=$("water-check");
+const lb=$("water-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"2L+ water hit ✓":"Hit 2L+ water";
+const s=getState();s.water=done;setState(s);
 }
 
 render();
