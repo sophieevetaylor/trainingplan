@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -11,88 +10,108 @@
 <link rel="apple-touch-icon" href="icon.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;-webkit-tap-highlight-color:transparent;min-height:100vh}
-.header{background:linear-gradient(135deg,#0f172a,#1e293b);padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:10}
-.label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:4px}
+body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);color:#3D2E4A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;-webkit-tap-highlight-color:transparent;min-height:100vh}
+.header{background:linear-gradient(135deg,#F8EEF2,#EDE6F2);padding:20px 16px 16px;border-bottom:1px solid rgba(180,160,190,0.2);position:sticky;top:0;z-index:10;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#B8A5C0;margin-bottom:4px}
 .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.nav button{background:rgba(255,255,255,0.08);border:none;border-radius:8px;padding:8px 14px;color:#e0e0e0;cursor:pointer;font-size:16px;-webkit-appearance:none}
-.nav button:active{background:rgba(255,255,255,0.15)}
-.date-display{text-align:center;font-size:18px;font-weight:700;color:#f8fafc}
+.nav button{background:rgba(255,255,255,0.5);border:none;border-radius:8px;padding:8px 14px;color:#6B5B8A;cursor:pointer;font-size:16px;-webkit-appearance:none}
+.nav button:active{background:rgba(255,255,255,0.7)}
+.date-display{text-align:center;font-size:18px;font-weight:700;color:#3D2E4A}
 .quick-nav{display:flex;gap:6px}
-.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#94a3b8;cursor:pointer;-webkit-appearance:none}
-.quick-nav button:active{background:rgba(255,255,255,0.12)}
-.quick-nav .race-btn{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.45);border:1px solid rgba(180,160,190,0.2);border-radius:6px;color:#8A7A9E;cursor:pointer;-webkit-appearance:none}
+.quick-nav button:active{background:rgba(255,255,255,0.65)}
+.quick-nav .race-btn{background:rgba(196,96,122,0.12);border-color:rgba(196,96,122,0.25);color:#C4607A}
 .block-info{margin-top:12px;padding:10px 12px;border-radius:8px}
 .block-name{font-size:14px;font-weight:700}
-.block-detail{font-size:12px;color:#9ca3af;margin-top:2px}
+.block-detail{font-size:12px;color:#A898B0;margin-top:2px}
 .content{padding:16px;display:flex;flex-direction:column;gap:14px}
-.race-banner{text-align:center;padding:16px;background:linear-gradient(135deg,#7f1d1d,#991b1b,#7f1d1d);border-radius:12px;border:2px solid #f87171}
+.race-banner{text-align:center;padding:16px;background:linear-gradient(135deg,#D4607A,#C4507A,#D4607A);border-radius:12px;border:2px solid #E8889E}
 .race-banner .icon{font-size:28px;margin-bottom:4px}
-.race-banner .title{font-size:18px;font-weight:800;color:#fca5a5;letter-spacing:1px}
-.race-banner .sub{font-size:13px;color:#fecaca;margin-top:4px}
-.run-card{border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.08)}
-.run-card.normal{background:linear-gradient(135deg,#1e3a5f,#1e4976)}
-.run-card.race{background:linear-gradient(135deg,#7f1d1d,#991b1b);border-color:#f87171}
+.race-banner .title{font-size:18px;font-weight:800;color:#FFF0F3;letter-spacing:1px}
+.race-banner .sub{font-size:13px;color:#FDDDE5;margin-top:4px}
+.run-card{border-radius:14px;padding:16px;border:0.5px solid rgba(180,160,190,0.2)}
+.run-card.normal{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.run-card.race{background:linear-gradient(135deg,rgba(196,96,122,0.15),rgba(196,80,122,0.1));border-color:rgba(196,96,122,0.3)}
 .run-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .run-type{font-size:16px;font-weight:700}
-.run-type.normal{color:#93c5fd}
-.run-type.race{color:#fca5a5}
-.run-km{font-size:13px;font-weight:600;background:rgba(255,255,255,0.12);padding:3px 10px;border-radius:20px;color:#e0e0e0}
+.run-type.normal{color:#5B8A5E}
+.run-type.race{color:#C4607A}
+.run-km{font-size:13px;font-weight:600;background:rgba(91,138,94,0.1);padding:3px 10px;border-radius:20px;color:#5B8A5E}
 .run-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.run-label{font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px}
-.run-value{font-size:14px;color:#f0f0f0;font-weight:600}
-.run-note{margin-top:10px;font-size:13px;color:#d1d5db;line-height:1.5;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px}
-.strength-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.08)}
+.run-label{font-size:11px;color:#A898B0;text-transform:uppercase;letter-spacing:0.5px}
+.run-value{font-size:14px;color:#3D2E4A;font-weight:600}
+.run-note{margin-top:10px;font-size:13px;color:#7A6B8A;line-height:1.5;border-top:0.5px solid rgba(180,160,190,0.2);padding-top:8px}
+.strength-card{background:rgba(255,255,255,0.6);border-radius:14px;padding:16px;border:0.5px solid rgba(180,160,190,0.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .strength-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.strength-name{font-size:16px;font-weight:700;color:#a78bfa}
-.strength-dur{font-size:12px;color:#9ca3af;background:rgba(255,255,255,0.08);padding:3px 8px;border-radius:12px}
-.exercise{display:grid;grid-template-columns:22px 1fr auto;gap:4px 10px;padding:10px 14px;border-radius:8px;border-left:3px solid rgba(255,255,255,0.1);align-items:start}
-.exercise:nth-child(odd){background:rgba(255,255,255,0.04)}
-.ex-name{font-weight:600;color:#f0f0f0;font-size:14px}
-.ex-sets{color:#93c5fd;font-weight:600;font-size:14px;text-align:right;white-space:nowrap}
+.strength-name{font-size:16px;font-weight:700;color:#6B5B8A}
+.strength-dur{font-size:12px;color:#A898B0;background:rgba(107,91,138,0.08);padding:3px 8px;border-radius:12px}
+.exercise{display:grid;grid-template-columns:22px 1fr auto;gap:4px 10px;padding:10px 14px;border-radius:8px;border-left:3px solid rgba(107,91,138,0.15);align-items:start}
+.exercise:nth-child(odd){background:rgba(107,91,138,0.04)}
+.ex-name{font-weight:600;color:#3D2E4A;font-size:14px}
+.ex-sets{color:#6B5B8A;font-weight:600;font-size:14px;text-align:right;white-space:nowrap}
 .ex-tags{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
 .tag{font-size:12px;padding:2px 8px;border-radius:4px}
-.tag-load{background:rgba(147,197,253,0.15);color:#93c5fd}
-.tag-tempo{background:rgba(251,191,36,0.15);color:#fbbf24}
-.tag-note{font-size:12px;color:#9ca3af;font-style:italic}
-.other-card{background:rgba(255,255,255,0.04);border-radius:12px;padding:12px 16px;border:1px solid rgba(255,255,255,0.06)}
-.other-card.pilates{background:linear-gradient(135deg,rgba(236,72,153,0.12),rgba(219,39,119,0.08));border:1px solid rgba(236,72,153,0.25)}
-.other-label{font-size:13px;color:#9ca3af}
-.other-label.pilates{color:#f9a8d4;font-weight:600}
-.other-text{font-size:14px;color:#e0e0e0;font-weight:500;margin-top:2px}
-.other-text.pilates{color:#fce7f3}
-.notes-card{background:rgba(251,191,36,0.08);border-radius:12px;padding:12px 16px;border:1px solid rgba(251,191,36,0.2)}
-.notes-title{font-size:13px;color:#fbbf24;font-weight:600;margin-bottom:4px}
-.notes-text{font-size:13px;color:#d1d5db;line-height:1.5}
-.rest-card{text-align:center;padding:40px 20px;background:rgba(255,255,255,0.03);border-radius:12px}
+.tag-load{background:rgba(107,91,138,0.1);color:#6B5B8A}
+.tag-tempo{background:rgba(200,160,80,0.12);color:#B8883E}
+.tag-note{font-size:12px;color:#A898B0;font-style:italic}
+.other-card{background:rgba(255,255,255,0.45);border-radius:14px;padding:12px 16px;border:0.5px solid rgba(180,160,190,0.15)}
+.other-card.pilates{background:rgba(220,140,170,0.1);border:0.5px solid rgba(220,140,170,0.25)}
+.other-label{font-size:13px;color:#A898B0}
+.other-label.pilates{color:#C4607A;font-weight:600}
+.other-text{font-size:14px;color:#3D2E4A;font-weight:500;margin-top:2px}
+.other-text.pilates{color:#9E4060}
+.notes-card{background:rgba(200,160,80,0.08);border-radius:14px;padding:12px 16px;border:0.5px solid rgba(200,160,80,0.2)}
+.notes-title{font-size:13px;color:#B8883E;font-weight:600;margin-bottom:4px}
+.notes-text{font-size:13px;color:#7A6B8A;line-height:1.5}
+.rest-card{text-align:center;padding:40px 20px;background:rgba(255,255,255,0.35);border-radius:14px}
 .rest-icon{font-size:32px;margin-bottom:8px}
-.rest-title{font-size:16px;font-weight:600;color:#64748b}
-.rest-sub{font-size:13px;color:#475569;margin-top:4px}
-.ex-form{grid-column:2/-1;margin-top:6px;padding:8px 10px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:6px}
-.ex-form-text{font-size:12px;color:#a7f3d0;line-height:1.5}
-.ex-video-link{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#34d399;text-decoration:none;padding:3px 10px;background:rgba(16,185,129,0.15);border-radius:4px;border:1px solid rgba(16,185,129,0.25)}
-.ex-video-link:active{background:rgba(16,185,129,0.25)}
-.fuel-card{margin-top:10px;padding:10px 12px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.2);border-radius:8px}
-.fuel-title{font-size:13px;font-weight:700;color:#fb923c;margin-bottom:6px}
-.fuel-row{font-size:12px;color:#d1d5db;line-height:1.6;margin-bottom:4px}
-.fuel-label{font-weight:600;color:#fdba74}
-.ex-check{display:flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);cursor:pointer;transition:all 0.2s;grid-row:1}
-.ex-check.done{background:#10b981;border-color:#10b981}
+.rest-title{font-size:16px;font-weight:600;color:#8A7A9E}
+.rest-sub{font-size:13px;color:#B8A5C0;margin-top:4px}
+.ex-form{grid-column:2/-1;margin-top:6px;padding:8px 10px;background:rgba(91,138,94,0.08);border:0.5px solid rgba(91,138,94,0.15);border-radius:6px}
+.ex-form-text{font-size:12px;color:#4A7A4E;line-height:1.5}
+.ex-video-link{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#5B8A5E;text-decoration:none;padding:3px 10px;background:rgba(91,138,94,0.1);border-radius:4px;border:0.5px solid rgba(91,138,94,0.2)}
+.ex-video-link:active{background:rgba(91,138,94,0.2)}
+.fuel-card{margin-top:10px;padding:10px 12px;background:rgba(200,160,80,0.08);border:0.5px solid rgba(200,160,80,0.15);border-radius:8px}
+.fuel-title{font-size:13px;font-weight:700;color:#B8883E;margin-bottom:6px}
+.fuel-row{font-size:12px;color:#7A6B8A;line-height:1.6;margin-bottom:4px}
+.fuel-label{font-weight:600;color:#C49A4A}
+.ex-check{display:flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(180,160,190,0.3);cursor:pointer;transition:all 0.2s;grid-row:1}
+.ex-check.done{background:#5B8A5E;border-color:#5B8A5E}
 .ex-check.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
 .exercise.checked .ex-name,.exercise.checked .ex-sets{opacity:0.4;text-decoration:line-through}
-.run-check-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);cursor:pointer}
-.run-check-box{width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.run-check-box.done{background:#10b981;border-color:#10b981}
+.run-check-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(180,160,190,0.15);cursor:pointer}
+.run-check-box{width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(180,160,190,0.3);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.run-check-box.done{background:#5B8A5E;border-color:#5B8A5E}
 .run-check-box.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
-.run-check-label{font-size:13px;color:#9ca3af}
-.run-check-label.done{color:#10b981;font-weight:600}
-.treadmill-card{background:linear-gradient(135deg,rgba(234,179,8,0.1),rgba(202,138,4,0.08));border-radius:12px;padding:16px;border:1px solid rgba(234,179,8,0.2)}
-.treadmill-header{font-size:16px;font-weight:700;color:#fbbf24;margin-bottom:8px}
+.run-check-label{font-size:13px;color:#A898B0}
+.run-check-label.done{color:#5B8A5E;font-weight:600}
+.treadmill-card{background:rgba(200,160,80,0.08);border-radius:14px;padding:16px;border:0.5px solid rgba(200,160,80,0.2)}
+.treadmill-header{font-size:16px;font-weight:700;color:#B8883E;margin-bottom:8px}
 .treadmill-detail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.treadmill-note{font-size:12px;color:#d1d5db;line-height:1.5}
-.steps-card{background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(79,70,229,0.08));border-radius:12px;padding:14px 16px;border:1px solid rgba(99,102,241,0.25)}
-.steps-header{font-size:16px;font-weight:700;color:#a5b4fc;margin-bottom:4px}
-.steps-target{font-size:14px;color:#c7d2fe;font-weight:500;margin-bottom:4px}
+.treadmill-note{font-size:12px;color:#7A6B8A;line-height:1.5}
+.steps-card{background:rgba(107,91,160,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(107,91,160,0.15)}
+.steps-header{font-size:16px;font-weight:700;color:#6B5B8A;margin-bottom:4px}
+.steps-target{font-size:14px;color:#8A7A9E;font-weight:500;margin-bottom:4px}
+.dash{padding:16px;border-bottom:0.5px solid rgba(180,160,190,0.15)}
+.dash-section{margin-bottom:14px}
+.dash-section:last-child{margin-bottom:0}
+.dash-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin-bottom:8px}
+.progress-wrap{background:rgba(107,91,138,0.08);border-radius:8px;height:8px;overflow:hidden;margin-top:6px}
+.progress-bar{height:100%;border-radius:8px;transition:width 0.3s}
+.progress-text{font-size:12px;color:#A898B0;margin-top:4px}
+.week-strip{display:flex;gap:4px}
+.week-day{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.4);color:#A898B0;cursor:pointer;transition:all 0.2s}
+.week-day.today{border:2px solid #6B5B8A;color:#6B5B8A}
+.week-day.completed{background:rgba(91,138,94,0.15);color:#5B8A5E}
+.week-day.completed.today{border-color:#5B8A5E}
+.week-day.partial{background:rgba(200,160,80,0.12);color:#B8883E}
+.streak-row{display:flex;align-items:center;gap:12px}
+.streak-number{font-size:32px;font-weight:800;color:#3D2E4A}
+.streak-label{font-size:13px;color:#A898B0;line-height:1.4}
+.streak-fire{font-size:28px}
+.race-countdown{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(196,96,122,0.08);border:0.5px solid rgba(196,96,122,0.2);border-radius:8px}
+.race-countdown-days{font-size:24px;font-weight:800;color:#C4607A}
+.race-countdown-label{font-size:13px;color:#C4607A}
 </style>
 </head>
 <body>
@@ -105,11 +124,12 @@ body{background:#0a0a0f;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <div class="quick-nav">
     <button id="goToday">Today</button>
-    <button id="goStart">Plan Start</button>
+    <button id="goHome">Home ↑</button>
     <button id="goRace" class="race-btn">May 3 HM</button>
   </div>
   <div id="blockInfo" class="block-info" style="display:none"></div>
 </div>
+<div id="dashboard" class="dash"></div>
 <div class="content" id="content"></div>
 
 <script>
@@ -334,7 +354,87 @@ function renderTreadmill(){
 return`<div class="treadmill-card"><div class="treadmill-header">🚶‍♀️ Incline Treadmill Walk — 30 min</div><div class="treadmill-detail"><span class="tag tag-load">📐 10–12% incline, 5.5–6.5 km/h</span></div><div class="treadmill-note">Finish every gym session with this. Don't hold the handrails — swing your arms. Strong glute drive on the incline.</div><div class="run-check-row" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label">Mark treadmill complete</div></div></div>`;
 }
 
+function renderDashboard(){
+const today=new Date();
+const todayNorm=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
+const block=getBlock(todayNorm);
+let dhtml="";
+
+// ── Block Progress ──
+if(block){
+const weekInBlock=getWeek(todayNorm,block);
+const pct=Math.min(Math.round((weekInBlock/block.weeks)*100),100);
+dhtml+=`<div class="dash-section"><div class="dash-title">Current Block</div><div class="block-name" style="color:${block.color};font-size:15px">${block.name}</div><div class="progress-text">Week ${weekInBlock} of ${block.weeks} • ${block.weeklyKm} km/week</div><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${block.color}"></div></div></div>`;
+}
+
+// ── Race Countdown ──
+const races=[{name:"Half Marathon",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race Half Marathon",date:new Date(2026,9,25,12,0,0)},{name:"City2Surf 2027",date:new Date(2027,7,8,12,0,0)}];
+const nextRace=races.find(r=>r.date>todayNorm);
+if(nextRace){
+const daysUntil=Math.ceil((nextRace.date-todayNorm)/(864e5));
+dhtml+=`<div class="dash-section"><div class="race-countdown"><div class="race-countdown-days">${daysUntil}</div><div class="race-countdown-label">days until<br><strong>${nextRace.name}</strong></div></div></div>`;
+}
+
+// ── This Week Strip ──
+const monday=new Date(todayNorm);
+const dow=monday.getDay();
+const diff=dow===0?6:dow-1;
+monday.setDate(monday.getDate()-diff);
+
+const dayLabels=["M","T","W","T","F","S","S"];
+let stripHtml="";
+for(let i=0;i<7;i++){
+const d=new Date(monday);
+d.setDate(d.getDate()+i);
+const dk="tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+const isToday=d.getDate()===todayNorm.getDate()&&d.getMonth()===todayNorm.getMonth();
+let status="";
+try{
+const s=localStorage.getItem(dk);
+if(s){
+const st=JSON.parse(s);
+const hasChecks=st.run||st.str||st.pil||st.tm||st.steps||Object.values(st.ex||{}).some(v=>v);
+const allDone=st.steps&&(st.run||!getBlock(d)||(getBlock(d)&&st.str));
+if(allDone)status="completed";
+else if(hasChecks)status="partial";
+}
+}catch(e){}
+const dateNum=d.getDate();
+stripHtml+=`<div class="week-day ${isToday?"today":""} ${status}" onclick="navToDate(${d.getFullYear()},${d.getMonth()},${d.getDate()})">${dayLabels[i]}<br><span style="font-size:13px">${dateNum}</span></div>`;
+}
+dhtml+=`<div class="dash-section"><div class="dash-title">This Week</div><div class="week-strip">${stripHtml}</div></div>`;
+
+// ── Streak ──
+let streak=0;
+const checkDate=new Date(todayNorm);
+// Don't count today unless it has checks
+checkDate.setDate(checkDate.getDate()-1);
+for(let i=0;i<365;i++){
+const dk="tp-"+checkDate.getFullYear()+"-"+(checkDate.getMonth()+1)+"-"+checkDate.getDate();
+try{
+const s=localStorage.getItem(dk);
+if(s){
+const st=JSON.parse(s);
+const hasChecks=st.run||st.str||st.pil||st.tm||st.steps||Object.values(st.ex||{}).some(v=>v);
+if(hasChecks){streak++;checkDate.setDate(checkDate.getDate()-1)}
+else break;
+}else break;
+}catch(e){break}
+}
+// Check if today has any checks too
+const todayKey="tp-"+todayNorm.getFullYear()+"-"+(todayNorm.getMonth()+1)+"-"+todayNorm.getDate();
+try{const ts=localStorage.getItem(todayKey);if(ts){const tst=JSON.parse(ts);if(tst.run||tst.str||tst.pil||tst.tm||tst.steps||Object.values(tst.ex||{}).some(v=>v))streak++}}catch(e){}
+
+const fire=streak>=7?"🔥🔥🔥":streak>=3?"🔥🔥":streak>=1?"🔥":"";
+dhtml+=`<div class="dash-section"><div class="dash-title">Consistency Streak</div><div class="streak-row"><div class="streak-number">${streak}</div><div class="streak-label">day${streak!==1?"s":""} in a row<br>with training logged</div><div class="streak-fire">${fire}</div></div></div>`;
+
+$("dashboard").innerHTML=dhtml;
+}
+
+function navToDate(y,m,d){currentDate=new Date(y,m,d,12,0,0);render();$("content").scrollIntoView({behavior:"smooth"})}
+
 function render(){
+renderDashboard();
 $("dateDisplay").textContent=fmt(currentDate);
 const plan=getPlan(currentDate);
 const bi=$("blockInfo");
@@ -387,18 +487,25 @@ restoreChecks();
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);render()}
 $("prev").onclick=()=>nav(-1);
 $("next").onclick=()=>nav(1);
-$("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);render()};
-$("goStart").onclick=()=>{currentDate=new Date(2026,2,30,12,0,0);render()};
-$("goRace").onclick=()=>{currentDate=new Date(2026,4,3,12,0,0);render()};
+$("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);render();$("content").scrollIntoView({behavior:"smooth"})};
+$("goHome").onclick=()=>{$("dashboard").scrollIntoView({behavior:"smooth"})};
+$("goRace").onclick=()=>{currentDate=new Date(2026,4,3,12,0,0);render();$("content").scrollIntoView({behavior:"smooth"})};
 
-// Checkbox state storage (persists while app is open)
-const checkState={};
-function dateKey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
-function getState(){const k=dateKey(currentDate);if(!checkState[k])checkState[k]={ex:{},run:false,str:false,pil:false,tm:false,steps:false};return checkState[k]}
-function saveEx(i,done){getState().ex[i]=done}
-function saveRun(done){getState().run=done}
-function saveStr(done){getState().str=done}
-function savePil(done){getState().pil=done}
+// Checkbox state storage (persists across sessions via localStorage)
+function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function getState(){
+const k=dateKey(currentDate);
+try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}
+return{ex:{},run:false,str:false,pil:false,tm:false,steps:false};
+}
+function setState(s){
+const k=dateKey(currentDate);
+try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}
+}
+function saveEx(i,done){const s=getState();s.ex[i]=done;setState(s)}
+function saveRun(done){const s=getState();s.run=done;setState(s)}
+function saveStr(done){const s=getState();s.str=done;setState(s)}
+function savePil(done){const s=getState();s.pil=done;setState(s)}
 
 function restoreChecks(){
 const s=getState();
@@ -464,7 +571,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Treadmill complete ✓":"Mark treadmill complete";
-getState().tm=done;
+const s=getState();s.tm=done;setState(s);
 }
 function toggleSteps(){
 const ch=$("steps-check");
@@ -473,11 +580,10 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"14k steps complete ✓":"Mark 14k steps complete";
-getState().steps=done;
+const s=getState();s.steps=done;setState(s);
 }
 
 render();
 </script>
-
 </body>
 </html>
