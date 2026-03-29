@@ -96,8 +96,18 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .spin-card{background:rgba(139,92,246,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(139,92,246,0.2)}
 .spin-header{font-size:16px;font-weight:700;color:#8B5CF6;margin-bottom:4px}
 .spin-detail{font-size:13px;color:#7A6B8A;line-height:1.5;margin-bottom:4px}
-.protein-card{background:rgba(239,68,68,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(239,68,68,0.15)}
-.protein-header{font-size:16px;font-weight:700;color:#DC2626;margin-bottom:4px}
+.protein-card{background:rgba(239,68,68,0.04);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(239,68,68,0.12)}
+.protein-header{font-size:16px;font-weight:700;color:#DC2626;margin-bottom:10px}
+.protein-ring-wrap{position:relative;width:100px;height:100px;margin:0 auto 8px}
+.protein-ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.protein-log-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,0.5);border-radius:8px;margin-bottom:3px;font-size:12px}
+.protein-log-name{color:#3D2E4A;font-weight:500}
+.protein-log-g{color:#6B5B8A;font-weight:600}
+.protein-log-x{color:#C4607A;cursor:pointer;margin-left:8px;font-size:14px}
+.protein-foods{display:flex;flex-wrap:wrap;gap:5px}
+.protein-pill{padding:5px 10px;background:rgba(255,255,255,0.5);border-radius:16px;font-size:11px;color:#3D2E4A;border:0.5px solid rgba(180,160,190,0.2);cursor:pointer}
+.protein-pill:active{background:rgba(107,91,138,0.1);transform:scale(0.96)}
+.protein-pill .pg{color:#A898B0;margin-left:2px}
 .protein-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
 .water-card{background:rgba(59,130,246,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(59,130,246,0.15)}
 .water-header{font-size:16px;font-weight:700;color:#3B82F6;margin-bottom:4px}
@@ -146,7 +156,7 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 // ─── DATA ───────────────────────────────────────────────────────────
 const BLOCKS=[{id:"preplan",name:"Pre-Plan: Getting Ready",startDate:"2026-03-27",endDate:"2026-03-29",weeks:1,weeklyKm:"~16",focus:"Final prep before plan starts Monday. 16 km long run Sunday.",color:"#10b981"},{id:"block1",name:"Block 1: Return to Base",startDate:"2026-03-30",endDate:"2026-04-26",weeks:4,weeklyKm:"28–38",focus:"Rebuild frequency to 4 runs, establish strength patterns, prep for May 3 HM",color:"#2563eb"},{id:"raceweek_hm1",name:"May 3 HM – Race Week",startDate:"2026-04-27",endDate:"2026-05-03",weeks:1,weeklyKm:"~20",focus:"Taper & race – target ~2:05",color:"#dc2626"},{id:"recovery1",name:"Post-Race Recovery",startDate:"2026-05-04",endDate:"2026-05-17",weeks:2,weeklyKm:"15–25",focus:"Absorb race, reset for aerobic build",color:"#6b7280"},{id:"block2",name:"Block 2: Aerobic Development",startDate:"2026-05-18",endDate:"2026-06-28",weeks:6,weeklyKm:"30–48",focus:"Build to 40–45 km/wk, introduce tempo, long runs to 18 km",color:"#0891b2"},{id:"block3",name:"Block 3: City2Surf Prep",startDate:"2026-06-29",endDate:"2026-08-09",weeks:6,weeklyKm:"40–48",focus:"Hill work, target sub-75 C2S",color:"#7c3aed"},{id:"block4",name:"Block 4: Volume Build",startDate:"2026-08-10",endDate:"2026-09-27",weeks:7,weeklyKm:"25→55",focus:"Post-C2S recovery → build to 55 km/wk",color:"#059669"},{id:"block5",name:"Block 5: HM Specific Build",startDate:"2026-09-28",endDate:"2026-11-08",weeks:6,weeklyKm:"50–55",focus:"Race-pace work → PEAK: Sub-2:00 Half Marathon",color:"#dc2626"},{id:"block6",name:"Block 6: Recovery & Strength",startDate:"2026-11-09",endDate:"2026-12-31",weeks:8,weeklyKm:"25–35",focus:"Glute hypertrophy focus, enjoy running",color:"#d97706"},{id:"block7",name:"Block 7: Aerobic Rebuild + Speed",startDate:"2027-01-01",endDate:"2027-02-28",weeks:8,weeklyKm:"40–50",focus:"400m/800m reps, speed development",color:"#2563eb"},{id:"block8",name:"Block 8: C2S Specific Peak",startDate:"2027-03-01",endDate:"2027-05-31",weeks:13,weeklyKm:"45–50",focus:"Hill power, sustained tempo",color:"#7c3aed"},{id:"block9",name:"Block 9: C2S Final Sharpening",startDate:"2027-06-01",endDate:"2027-08-15",weeks:11,weeklyKm:"45–50",focus:"PEAK: Sub-70 City2Surf",color:"#dc2626"}];
 
-function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength A – Glute + Push",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – when you hit all reps, add 2.5 kg next session"},{name:"Cable pull-through",sets:3,reps:"12–15",load:h?"20–25 kg cable":m?"15–20 kg cable":"15–20 kg cable",tempo:"Slow eccentric, squeeze 1 sec at top",note:"Focus on squeeze not load"},{name:"DB bench press",sets:h?4:m?3:3,reps:h?"6–8":"8–10",load:h?"12.5 kg DBs → build to 15 kg":m?"10–12.5 kg (maintain)":"10 kg DBs → add 1.25 kg when you hit 10 reps on all sets",tempo:"Controlled",note:""},{name:"DB shoulder press",sets:3,reps:"10–12",load:h?"10 kg DBs → build to 12.5 kg":m?"7.5–10 kg (maintain)":"7.5 kg DBs → add 1.25 kg when you hit 12 on all sets",tempo:"Controlled",note:""},{name:"Pallof press",sets:3,reps:"10 each side",load:h?"12–15 kg cable":"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
+function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength A – Glute + Push",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – when you hit all reps, add 2.5 kg next session"},{name:"DB sumo squat",sets:3,reps:"12–15",load:h?"16–20 kg DB":m?"12–14 kg DB":"10–14 kg DB → add 2 kg when you hit 15 on all sets",tempo:"Slow lower (3 sec), squeeze glutes at top",note:"Wide stance, toes out 45°. Hold 1 DB vertically at chest. Glute focus."},{name:"DB bench press",sets:h?4:m?3:3,reps:h?"6–8":"8–10",load:h?"12.5 kg DBs → build to 15 kg":m?"10–12.5 kg (maintain)":"10 kg DBs → add 1.25 kg when you hit 10 reps on all sets",tempo:"Controlled",note:""},{name:"DB shoulder press",sets:3,reps:"10–12",load:h?"10 kg DBs → build to 12.5 kg":m?"7.5–10 kg (maintain)":"7.5 kg DBs → add 1.25 kg when you hit 12 on all sets",tempo:"Controlled",note:""},{name:"Pallof press",sets:3,reps:"10 each side",load:h?"12–15 kg cable":"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
 function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength B – Posterior + Pull",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation"},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"38–42 kg → build to 48 kg":"32–35 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},{name:"Cable kickback",sets:3,reps:"15 each leg",load:h?"10–12 kg cable":"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top 1 sec",note:"Glute isolation – no swinging"},{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health"},{name:"Lat pulldown",sets:h?4:3,reps:"8–10",load:h?"35–38 kg → build to 42 kg":"30 kg → add 2.5 kg when you hit 10 on all sets",tempo:"Squeeze shoulder blades at bottom",note:""},{name:"Seated cable row",sets:3,reps:"10–12",load:h?"30–34 kg":"22–27 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Squeeze shoulder blades 1 sec",note:""}]}}
 function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Activation + Arms",duration:m?"30 min":h?"45 min":"40 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:"Warm-up – feel it in side of glutes"},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Abductor machine",sets:3,reps:h?"12–15":"15",load:h?"38–42 kg → build to 48 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full open 1 sec",note:"Glute medius – sit tall, don't lean back"},{name:"Adductor machine",sets:3,reps:"15",load:h?"38–42 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full close 1 sec",note:"Inner thigh + pelvic stability"},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → add 1 kg when you hit 15 on all sets",tempo:"2-sec lower",note:""},{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"}]}};
 
@@ -362,7 +372,7 @@ function fmt(d){return days[d.getDay()]+" "+d.getDate()+" "+months[d.getMonth()]
 const FORM={
 "Banded glute bridge (warm-up)":{form:"Feet flat, hip-width. Drive through heels, not toes. Squeeze glutes at top — imagine cracking a walnut between your cheeks. Don't arch lower back.",link:"https://www.youtube.com/watch?v=GmRSV_n2E_0"},
 "Hip thrust (booty builder)":{form:"Set up with shoulder blades on the pad edge. Chin tucked, look forward not up. Drive through heels. At lockout, ribs down, pelvis tucked — posterior pelvic tilt. No lower back extension. Pause 2 sec and squeeze hard at top.",link:"https://www.youtube.com/watch?v=xDmFkJxPzeM"},
-"Cable pull-through":{form:"Face away from cable, straddle the rope. Soft knee bend — this is a hip hinge, not a squat. Push hips back until you feel hamstring stretch, then snap hips forward and squeeze glutes hard. Arms are just hooks.",link:"https://www.youtube.com/watch?v=AhmEpyDMEEE"},
+"DB sumo squat":{form:"Wide stance — feet well outside shoulders, toes pointed out 45°. Hold one heavy DB vertically at chest height (goblet grip). Lower slowly by pushing hips back and bending knees — go deep, aim to get thighs parallel or below. Drive up through heels, squeeze glutes hard at the top. Keep chest up, don't round your back. The wide stance makes this glute-dominant, not quad-dominant.",link:"https://www.youtube.com/watch?v=9ZuXKqRbT9k"},
 "Bulgarian split squat (light)":{form:"Rear foot laces-down on bench. Front foot far enough forward that your knee stays behind toes. Lean torso forward 30° for glute emphasis. Drive through front heel. Keep hips square — don't rotate.",link:"https://www.youtube.com/watch?v=2C-uNgKwPLE"},
 "DB bench press":{form:"Retract shoulder blades — squeeze them together and down. Slight arch in upper back, feet flat on floor. Lower DBs to chest level with elbows at ~45° (not flared 90°). Press up and slightly inward.",link:"https://www.youtube.com/watch?v=VmB1G1K7v94"},
 "Bench press (barbell)":{form:"Retract shoulder blades, slight upper back arch. Grip just outside shoulders. Bar path: lower to mid-chest, press back up toward face in a slight arc. Elbows ~45° — not flared wide.",link:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
@@ -637,11 +647,23 @@ $("content").innerHTML=html;
 // Daily tracker cards (every day)
 const dailyCards=`
 <div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
-<div class="protein-card"><div class="protein-header">🥩 Protein</div><div class="protein-target">Target: 100–126g today (1.6–2.0g/kg)</div><div class="run-check-row" onclick="toggleProtein()"><div class="run-check-box" id="protein-check"></div><div class="run-check-label" id="protein-label">Hit protein target</div></div></div>
+<div class="protein-card">
+<div class="protein-header">🥩 Protein tracker</div>
+<div class="protein-ring-wrap">
+<svg width="100" height="100"><circle cx="50" cy="50" r="42" stroke="rgba(107,91,138,0.1)" stroke-width="7" fill="none"/><circle id="protein-ring" cx="50" cy="50" r="42" stroke="#6B5B8A" stroke-width="7" fill="none" stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/></svg>
+<div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0">of 110g</span></div>
+</div>
+<div id="protein-status" style="text-align:center;font-size:12px;color:#A898B0;margin-bottom:8px">Tap foods below to log</div>
+<div id="protein-log" style="margin-bottom:8px"></div>
+<div style="font-size:11px;font-weight:600;color:#6B5B8A;margin-bottom:6px">Tap to add</div>
+<div class="protein-foods" id="protein-foods"></div>
+<div id="protein-tip" style="margin-top:8px;padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);font-size:11px;color:#5B8A5E"></div>
+</div>
 <div class="water-card"><div class="water-header">💧 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>
 `;
 $("content").innerHTML+=dailyCards;
 
+renderProtein();
 restoreChecks();
 }
 
@@ -782,6 +804,75 @@ const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"2L+ water hit ✓":"Hit 2L+ water";
 const s=getState();s.water=done;setState(s);
+}
+
+// ── Protein Tracker ──
+const PFOODS=[
+{emoji:"🥩",name:"200g lean mince beef",g:42},
+{emoji:"🥩",name:"Steak (150g)",g:42},
+{emoji:"🥤",name:"Cali Press Arnold",g:36},
+{emoji:"🍗",name:"200g minced chicken",g:34},
+{emoji:"🐟",name:"Salmon portion",g:34},
+{emoji:"🐟",name:"Can of tuna",g:25},
+{emoji:"🍦",name:"Chobani Fit passionfruit",g:15},
+{emoji:"🧀",name:"Cottage cheese (200g)",g:14},
+{emoji:"☕",name:"Oat flat white",g:2},
+];
+
+function proteinKey(){return"tp-prot-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
+function getProteinLog(){try{const s=localStorage.getItem(proteinKey());return s?JSON.parse(s):[]}catch(e){return[]}}
+function saveProteinLog(log){try{localStorage.setItem(proteinKey(),JSON.stringify(log))}catch(e){}}
+
+function addProtein(i){
+const log=getProteinLog();
+log.push({...PFOODS[i]});
+saveProteinLog(log);
+renderProtein();
+}
+function removeProtein(i){
+const log=getProteinLog();
+log.splice(i,1);
+saveProteinLog(log);
+renderProtein();
+}
+
+function renderProtein(){
+const foodsEl=$("protein-foods");
+const logEl=$("protein-log");
+const totalEl=$("protein-total");
+const ringEl=$("protein-ring");
+const statusEl=$("protein-status");
+const tipEl=$("protein-tip");
+if(!foodsEl)return;
+
+const log=getProteinLog();
+const total=log.reduce((s,f)=>s+f.g,0);
+const pct=Math.min(Math.round((total/110)*100),100);
+const remaining=110-total;
+
+foodsEl.innerHTML=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i})">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
+
+if(log.length===0){
+logEl.innerHTML=`<div style="text-align:center;padding:8px;color:#B8A5C0;font-size:11px">Nothing logged yet</div>`;
+}else{
+logEl.innerHTML=log.map((f,i)=>`<div class="protein-log-item"><span class="protein-log-name">${f.emoji} ${f.name}</span><span><span class="protein-log-g">${f.g}g</span><span class="protein-log-x" onclick="removeProtein(${i})"> ×</span></span></div>`).join("");
+}
+
+totalEl.textContent=total+"g";
+const circ=263.9;
+const offset=circ-(pct/100)*circ;
+ringEl.style.strokeDashoffset=offset;
+ringEl.style.stroke=total>=110?"#5B8A5E":"#6B5B8A";
+
+if(total>=110){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.color="#5B8A5E"}
+else if(total>0){statusEl.textContent=remaining+"g to go";statusEl.style.color="#6B5B8A"}
+else{statusEl.textContent="Tap foods below to log";statusEl.style.color="#A898B0"}
+
+if(total>=110){tipEl.innerHTML="✅ Protein target hit. Consistency = stronger glutes, better recovery."}
+else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) or a can of tuna (25g) closes the gap."}
+else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
+else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
+else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Tap your meals above."}
 }
 
 render();
