@@ -758,20 +758,63 @@ html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">
 const longRuns=runs.filter(r=>r.distance_km>=10).sort((a,b)=>new Date(a.date)-new Date(b.date));
 if(longRuns.length>=2){
 const maxKm=Math.max(...longRuns.map(r=>r.distance_km));
-html+=`<div class="coach-card"><div class="coach-card-title">Long run progression</div>`;
-html+=`<div class="coach-long-run">`;
+const latest=longRuns[longRuns.length-1];
+const totalLongKm=Math.round(longRuns.reduce((s,r)=>s+r.distance_km,0)*10)/10;
+
+html+=`<div class="coach-card" style="background:linear-gradient(135deg,rgba(91,138,94,0.08),rgba(16,185,129,0.04));border-color:rgba(91,138,94,0.2)">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<div class="coach-card-title" style="margin-bottom:0;color:#3D8A50">Long run progression</div>
+<div style="font-size:11px;color:#5B8A5E;background:rgba(91,138,94,0.12);padding:3px 10px;border-radius:12px;font-weight:600">${longRuns.length} long runs logged</div>
+</div>`;
+
+// Big stat: latest long run
+html+=`<div style="display:flex;gap:16px;margin-bottom:14px">
+<div style="text-align:center;flex:1;padding:10px;background:rgba(255,255,255,0.5);border-radius:10px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;margin-bottom:2px">Latest</div>
+<div style="font-size:24px;font-weight:800;color:#3D8A50">${latest.distance_km}<span style="font-size:13px;font-weight:600"> km</span></div>
+<div style="font-size:11px;color:#7A8A7A">${latest.pace_per_km}/km</div>
+</div>
+<div style="text-align:center;flex:1;padding:10px;background:rgba(255,255,255,0.5);border-radius:10px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;margin-bottom:2px">Longest ever</div>
+<div style="font-size:24px;font-weight:800;color:#3D8A50">${maxKm}<span style="font-size:13px;font-weight:600"> km</span></div>
+<div style="font-size:11px;color:#7A8A7A">↑ building</div>
+</div>
+<div style="text-align:center;flex:1;padding:10px;background:rgba(255,255,255,0.5);border-radius:10px">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;margin-bottom:2px">Total</div>
+<div style="font-size:24px;font-weight:800;color:#3D8A50">${totalLongKm}<span style="font-size:13px;font-weight:600"> km</span></div>
+<div style="font-size:11px;color:#7A8A7A">long run km</div>
+</div>
+</div>`;
+
+// Visual bar chart
+html+=`<div style="display:flex;align-items:flex-end;gap:4px;height:80px;padding:0 4px">`;
 longRuns.forEach((r,i)=>{
-const pct=Math.max(Math.round((r.distance_km/maxKm)*100),15);
+const pct=Math.max(Math.round((r.distance_km/maxKm)*100),12);
 const isLatest=i===longRuns.length-1;
 const d=new Date(r.date);
 const dd=d.getDate();
-const mm=["Jan","Feb","Mar","Apr","May","Jun"][d.getMonth()]||"";
-html+=`<div style="flex:1;text-align:center"><div class="coach-long-bar ${isLatest?"latest":""}" style="height:${pct}%"></div><div class="coach-long-label">${dd}${mm?mm:""}</div><div class="coach-long-label" style="font-weight:600">${r.distance_km}</div></div>`;
+const mmNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mm=mmNames[d.getMonth()];
+const barColor=isLatest?"linear-gradient(180deg,#3D8A50,#5BAA6E)":"linear-gradient(180deg,rgba(91,138,94,0.25),rgba(91,138,94,0.4))";
+html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+<div style="font-size:10px;font-weight:700;color:${isLatest?"#3D8A50":"#A898B0"}">${r.distance_km}</div>
+<div style="width:100%;height:${pct}%;background:${barColor};border-radius:6px 6px 0 0;${isLatest?"box-shadow:0 0 8px rgba(91,138,94,0.3)":""}"></div>
+<div style="font-size:9px;color:#A898B0">${dd}</div>
+<div style="font-size:8px;color:#B8A5C0">${mm}</div>
+</div>`;
 });
-html+=`</div></div>`;
+html+=`</div>`;
+
+// 21.1 km target line context
+html+=`<div style="margin-top:10px;padding:8px 12px;background:rgba(196,96,122,0.06);border-radius:8px;border:0.5px solid rgba(196,96,122,0.12);display:flex;align-items:center;gap:8px">
+<div style="font-size:20px">🏁</div>
+<div><div style="font-size:11px;font-weight:600;color:#C4607A">Race distance: 21.1 km</div>
+<div style="font-size:10px;color:#A898B0">Your longest run is ${Math.round((maxKm/21.1)*100)}% of race distance</div></div>
+</div>`;
+
+html+=`</div>`;
 
 // Long run feedback
-const latest=longRuns[longRuns.length-1];
 const prev=longRuns[longRuns.length-2];
 const jump=latest.distance_km-prev.distance_km;
 if(jump>3){
