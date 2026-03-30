@@ -112,6 +112,11 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .water-card{background:rgba(59,130,246,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(59,130,246,0.15)}
 .water-header{font-size:16px;font-weight:700;color:#3B82F6;margin-bottom:4px}
 .water-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
+.perfect-day{text-align:center;padding:14px;background:linear-gradient(135deg,rgba(91,138,94,0.12),rgba(16,185,129,0.08));border-radius:14px;border:1.5px solid rgba(91,138,94,0.3);margin-bottom:2px;animation:perfectPop 0.4s ease-out}
+.perfect-day-icon{font-size:32px;margin-bottom:4px}
+.perfect-day-title{font-size:16px;font-weight:800;color:#3D8A50;letter-spacing:0.5px}
+.perfect-day-sub{font-size:12px;color:#5B8A5E;margin-top:2px}
+@keyframes perfectPop{0%{transform:scale(0.9);opacity:0}100%{transform:scale(1);opacity:1}}
 .dash{padding:16px;border-bottom:0.5px solid rgba(180,160,190,0.15)}
 .dash-section{margin-bottom:14px}
 .dash-section:last-child{margin-bottom:0}
@@ -725,6 +730,43 @@ if(prc&&s.protein){prc.classList.add("done");prl.classList.add("done");prl.textC
 // Restore water check
 const wc=$("water-check"),wl=$("water-label");
 if(wc&&s.water){wc.classList.add("done");wl.classList.add("done");wl.textContent="2L+ water hit ✓"}
+// Check perfect day
+checkPerfectDay();
+}
+
+function checkPerfectDay(){
+const s=getState();
+const log=getProteinLog();
+const proteinHit=log.reduce((sum,f)=>sum+f.g,0)>=110;
+// Check what's on today
+const hasRun=!!$("run-check");
+const hasStr=!!$("str-check");
+const hasPil=!!$("pil-check");
+const hasTm=!!$("tm-check");
+const hasSpin=!!$("spin-check");
+const hasSteps=!!$("steps-check");
+const hasWater=!!$("water-check");
+
+let allDone=true;
+if(hasRun&&!s.run)allDone=false;
+if(hasStr&&!s.str)allDone=false;
+if(hasPil&&!s.pil)allDone=false;
+if(hasTm&&!s.tm)allDone=false;
+if(hasSpin&&!s.spin)allDone=false;
+if(hasSteps&&!s.steps)allDone=false;
+if(hasWater&&!s.water)allDone=false;
+if(!proteinHit)allDone=false;
+
+const existing=$("perfect-day-banner");
+if(allDone&&!existing){
+const banner=document.createElement("div");
+banner.id="perfect-day-banner";
+banner.className="perfect-day";
+banner.innerHTML=`<div class="perfect-day-icon">⭐</div><div class="perfect-day-title">PERFECT DAY</div><div class="perfect-day-sub">Every box ticked. That's how champions are built.</div>`;
+$("content").insertBefore(banner,$("content").firstChild);
+}else if(!allDone&&existing){
+existing.remove();
+}
 }
 
 // Checkbox toggles
@@ -733,7 +775,7 @@ const el=$("ex-"+i);
 const ch=el.querySelector(".ex-check");
 const done=ch.classList.toggle("done");
 el.classList.toggle("checked",done);
-saveEx(i,done);
+saveEx(i,done);checkPerfectDay();
 }
 function toggleRun(){
 const ch=$("run-check");
@@ -741,7 +783,7 @@ const lb=$("run-label");
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Run complete ✓":"Mark run complete";
-saveRun(done);
+saveRun(done);checkPerfectDay();
 }
 function toggleStrength(){
 const ch=$("str-check");
@@ -749,7 +791,7 @@ const lb=$("str-label");
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Session complete ✓":"Mark session complete";
-saveStr(done);
+saveStr(done);checkPerfectDay();
 }
 function togglePilates(){
 const ch=$("pil-check");
@@ -758,7 +800,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Pilates complete ✓":"Mark Pilates complete";
-savePil(done);
+savePil(done);checkPerfectDay();
 }
 function toggleTreadmill(){
 const ch=$("tm-check");
@@ -767,7 +809,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Treadmill complete ✓":"Mark treadmill complete";
-const s=getState();s.tm=done;setState(s);
+const s=getState();s.tm=done;setState(s);checkPerfectDay();
 }
 function toggleSteps(){
 const ch=$("steps-check");
@@ -776,7 +818,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"14k steps complete ✓":"Mark 14k steps complete";
-const s=getState();s.steps=done;setState(s);
+const s=getState();s.steps=done;setState(s);checkPerfectDay();
 }
 function toggleSpin(){
 const ch=$("spin-check");
@@ -785,7 +827,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Spin complete ✓":"Mark spin complete";
-const s=getState();s.spin=done;setState(s);
+const s=getState();s.spin=done;setState(s);checkPerfectDay();
 }
 function toggleProtein(){
 const ch=$("protein-check");
@@ -794,7 +836,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"Protein target hit ✓":"Hit protein target";
-const s=getState();s.protein=done;setState(s);
+const s=getState();s.protein=done;setState(s);checkPerfectDay();
 }
 function toggleWater(){
 const ch=$("water-check");
@@ -803,7 +845,7 @@ if(!ch)return;
 const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"2L+ water hit ✓":"Hit 2L+ water";
-const s=getState();s.water=done;setState(s);
+const s=getState();s.water=done;setState(s);checkPerfectDay();
 }
 
 // ── Protein Tracker ──
@@ -868,7 +910,22 @@ if(total>=110){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.
 else if(total>0){statusEl.textContent=remaining+"g to go";statusEl.style.color="#6B5B8A"}
 else{statusEl.textContent="Tap foods below to log";statusEl.style.color="#A898B0"}
 
-if(total>=110){tipEl.innerHTML="✅ Protein target hit. Consistency = stronger glutes, better recovery."}
+if(total>=110){
+const msgs=[
+"That's "+Math.round(total/0.63)/100+"g/kg — right in the optimal range for muscle protein synthesis.",
+"110g+ locks in recovery. Your muscles repair strongest in the 24 hrs after training.",
+"Consistent protein > perfect protein. You're building the habit that builds the physique.",
+"At 1.6–2.0g/kg, you're maximising lean muscle retention while cutting fat. Science says so.",
+"Protein target hit. This is what separates people who train from people who transform.",
+"Your body can only use ~30–40g per meal for muscle building. Spreading it across the day = smarter gains.",
+"Fun fact: 110g protein requires ~440 calories. That's high satiety for relatively low energy — your appetite thanks you.",
+"Recovery nutrition locked in. Tomorrow's session will feel better because of what you ate today.",
+"Protein is the only macro that builds and repairs muscle tissue. You gave your body exactly what it needs.",
+"Every day you hit this target, you're compounding. 30 days of this = visible change."
+];
+const dayIdx=currentDate.getDate()%msgs.length;
+tipEl.innerHTML="✅ "+msgs[dayIdx];
+}
 else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) or a can of tuna (25g) closes the gap."}
 else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
 else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
