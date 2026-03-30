@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -137,6 +136,36 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .race-countdown{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(196,96,122,0.08);border:0.5px solid rgba(196,96,122,0.2);border-radius:8px}
 .race-countdown-days{font-size:24px;font-weight:800;color:#C4607A}
 .race-countdown-label{font-size:13px;color:#C4607A}
+.strava-run-item{padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)}
+.strava-run-item:last-child{border-bottom:none}
+.strava-run-date{font-size:10px;color:#A898B0;text-transform:uppercase;letter-spacing:0.5px}
+.strava-run-name{font-size:13px;font-weight:600;color:#3D2E4A;margin-top:1px}
+.strava-run-stats{font-size:12px;color:#6B5B8A;margin-top:2px}
+.strava-actual{padding:10px 14px;background:rgba(255,90,0,0.06);border-radius:10px;border:0.5px solid rgba(255,90,0,0.15)}
+.strava-actual-header{font-size:13px;font-weight:700;color:#FC4C02;margin-bottom:4px}
+.strava-actual-stats{font-size:12px;color:#7A6B8A}
+.coach-card{background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(180,160,190,0.2);margin-bottom:10px}
+.coach-card-title{font-size:13px;font-weight:700;color:#6B5B8A;margin-bottom:8px}
+.coach-stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)}
+.coach-stat-row:last-child{border-bottom:none}
+.coach-stat-label{font-size:12px;color:#A898B0}
+.coach-stat-value{font-size:14px;font-weight:700;color:#3D2E4A}
+.coach-stat-sub{font-size:11px;color:#A898B0}
+.coach-feedback{padding:12px 14px;background:rgba(91,138,94,0.06);border-radius:12px;border:0.5px solid rgba(91,138,94,0.15);margin-bottom:10px}
+.coach-feedback-title{font-size:13px;font-weight:700;color:#5B8A5E;margin-bottom:6px}
+.coach-feedback-text{font-size:12px;color:#3D2E4A;line-height:1.6}
+.coach-warn{background:rgba(200,160,80,0.08);border-color:rgba(200,160,80,0.2)}
+.coach-warn .coach-feedback-title{color:#B8883E}
+.coach-good{background:rgba(91,138,94,0.08);border-color:rgba(91,138,94,0.2)}
+.coach-good .coach-feedback-title{color:#5B8A5E}
+.coach-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:4px}
+.coach-bar-bg{flex:1;height:6px;background:rgba(107,91,138,0.08);border-radius:3px;overflow:hidden}
+.coach-bar-fill{height:100%;border-radius:3px}
+.coach-bar-label{font-size:11px;color:#A898B0;min-width:35px;text-align:right}
+.coach-long-run{display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:6px}
+.coach-long-bar{flex:1;background:rgba(91,138,94,0.3);border-radius:3px 3px 0 0;min-width:0}
+.coach-long-bar.latest{background:#5B8A5E}
+.coach-long-label{font-size:9px;color:#A898B0;text-align:center;margin-top:2px}
 </style>
 </head>
 <body>
@@ -150,11 +179,13 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
   <div class="quick-nav">
     <button id="goToday">📍 Today</button>
     <button id="goHome">🏠 Home</button>
+    <button id="goCoach">📊 Coach</button>
     <button id="goRace" class="race-btn">🏁 May 3 HM</button>
   </div>
   <div id="blockInfo" class="block-info" style="display:none"></div>
 </div>
 <div id="dashboard" class="dash"></div>
+<div id="coachView" class="dash" style="display:none"></div>
 <div class="content" id="content"></div>
 
 <script>
@@ -585,7 +616,202 @@ try{const ts=localStorage.getItem(todayKey);if(ts){const tst=JSON.parse(ts);if(t
 const fire=streak>=7?"🔥🔥🔥":streak>=3?"🔥🔥":streak>=1?"🔥":"";
 dhtml+=`<div class="dash-section"><div class="dash-title">Consistency Streak</div><div class="streak-row"><div class="streak-number">${streak}</div><div class="streak-label">day${streak!==1?"s":""} in a row<br>with training logged</div><div class="streak-fire">${fire}</div></div></div>`;
 
+dhtml+=`<div class="dash-section" id="strava-recent"></div>`;
+
 $("dashboard").innerHTML=dhtml;
+
+// Load Strava data async
+loadStrava();
+}
+
+let stravaData=null;
+let stravaLoaded=false;
+
+async function loadStrava(){
+if(stravaLoaded)return renderStravaWidgets();
+try{
+const res=await fetch("/.netlify/functions/strava");
+const data=await res.json();
+if(data.activities){stravaData=data.activities;stravaLoaded=true;renderStravaWidgets()}
+}catch(e){console.log("Strava fetch failed:",e)}
+}
+
+function renderStravaWidgets(){
+if(!stravaData)return;
+
+// Dashboard: recent runs
+const dashEl=$("strava-recent");
+if(dashEl){
+const runs=stravaData.filter(a=>a.type==="Run").slice(0,5);
+if(runs.length){
+let html=runs.map(r=>{
+const d=new Date(r.date);
+const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
+const dd=d.getDate();
+const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
+return`<div class="strava-run-item"><div class="strava-run-date">${day} ${dd} ${mm}</div><div class="strava-run-name">${r.name}</div><div class="strava-run-stats">${r.distance_km} km · ${r.pace_per_km}/km${r.avg_hr?" · "+Math.round(r.avg_hr)+" bpm":""}</div></div>`;
+}).join("");
+dashEl.innerHTML=`<div class="dash-title">Recent runs (Strava)</div>${html}`;
+}
+}
+
+// Daily view: match Strava activity to today's date
+const dailyEl=$("strava-daily");
+if(dailyEl){
+const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
+const matches=stravaData.filter(a=>a.type==="Run"&&a.date.startsWith(dateStr));
+if(matches.length){
+const m=matches[0];
+dailyEl.innerHTML=`<div class="strava-actual"><div class="strava-actual-header">📡 Strava: ${m.name}</div><div class="strava-actual-stats"><span>${m.distance_km} km</span> · <span>${m.pace_per_km}/km</span> · <span>${m.moving_time_min} min</span>${m.avg_hr?" · <span>"+Math.round(m.avg_hr)+" bpm</span>":""}</div></div>`;
+}else{
+dailyEl.innerHTML="";
+}
+}
+}
+
+function renderCoachView(){
+const cv=$("coachView");
+if(!stravaLoaded){
+cv.innerHTML=`<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">📊</div><div style="color:#A898B0;font-size:14px">Loading Strava data...</div></div>`;
+loadStrava().then(()=>{if(viewMode==="coach")renderCoachView()});
+return;
+}
+if(!stravaData||!stravaData.length){
+cv.innerHTML=`<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="color:#A898B0;font-size:14px">No Strava data available</div></div>`;
+return;
+}
+
+const runs=stravaData.filter(a=>a.type==="Run");
+const today=new Date();
+const todayNorm=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
+let html=`<div class="dash-section"><div class="dash-title" style="font-size:13px">📊 Coaching analysis</div></div>`;
+
+// ── 1. Weekly Volume vs Plan ──
+// Get this week's runs
+const monday=new Date(todayNorm);
+const dow=monday.getDay();
+const diff=dow===0?6:dow-1;
+monday.setDate(monday.getDate()-diff);
+let actualKm=0;
+runs.forEach(r=>{
+const rd=new Date(r.date);
+if(rd>=monday&&rd<=todayNorm)actualKm+=r.distance_km;
+});
+const block=getBlock(todayNorm);
+const plannedRange=block?block.weeklyKm:"--";
+const plannedMid=block?parseInt(block.weeklyKm.replace(/[^0-9]/g,"").substring(0,2)):30;
+const volPct=Math.min(Math.round((actualKm/plannedMid)*100),150);
+const volColor=volPct>=80?"#5B8A5E":volPct>=50?"#B8883E":"#C4607A";
+
+html+=`<div class="coach-card"><div class="coach-card-title">Weekly volume</div>
+<div class="coach-stat-row"><div class="coach-stat-label">Actual this week</div><div class="coach-stat-value">${Math.round(actualKm*10)/10} km</div></div>
+<div class="coach-stat-row"><div class="coach-stat-label">Plan target</div><div class="coach-stat-value">${plannedRange} km</div></div>
+<div class="coach-bar-wrap"><div class="coach-bar-bg"><div class="coach-bar-fill" style="width:${Math.min(volPct,100)}%;background:${volColor}"></div></div><div class="coach-bar-label">${volPct}%</div></div></div>`;
+
+// Volume feedback
+if(volPct>=90){
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Volume on track</div><div class="coach-feedback-text">You're hitting your planned distance for the week. This is exactly where you need to be heading into the May 3 half marathon.</div></div>`;
+}else if(volPct>=60){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Volume slightly low</div><div class="coach-feedback-text">You're a bit under the planned volume. If you still have runs left this week, no stress — just make sure you get the long run in. The long run is the most important session.</div></div>`;
+}else{
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Volume well under plan</div><div class="coach-feedback-text">You're significantly under the planned km this week. If you missed runs due to illness or fatigue, that's fine — don't try to cram them in. Just resume the plan next week. If it's motivation, remember: consistency beats perfection.</div></div>`;
+}
+
+// ── 2. Easy Pace Trend ──
+const easyRuns=runs.filter(r=>{
+const km=r.distance_km;
+const name=(r.name||"").toLowerCase();
+return km>=4&&km<=8&&!name.includes("tempo")&&!name.includes("interval")&&!name.includes("hill")&&!name.includes("speed")&&!name.includes("race");
+});
+
+if(easyRuns.length>=2){
+const recent3=easyRuns.slice(0,3);
+const older3=easyRuns.slice(3,6);
+const avgRecent=recent3.reduce((s,r)=>{const p=r.pace_per_km.split(":");return s+parseInt(p[0])*60+parseInt(p[1])},0)/recent3.length;
+const avgRecentStr=Math.floor(avgRecent/60)+":"+String(Math.round(avgRecent%60)).padStart(2,"0");
+
+html+=`<div class="coach-card"><div class="coach-card-title">Easy pace trend</div>
+<div class="coach-stat-row"><div class="coach-stat-label">Last ${recent3.length} easy runs avg</div><div class="coach-stat-value">${avgRecentStr}/km</div></div>`;
+
+if(older3.length>=2){
+const avgOlder=older3.reduce((s,r)=>{const p=r.pace_per_km.split(":");return s+parseInt(p[0])*60+parseInt(p[1])},0)/older3.length;
+const avgOlderStr=Math.floor(avgOlder/60)+":"+String(Math.round(avgOlder%60)).padStart(2,"0");
+const diff=avgRecent-avgOlder;
+const diffSec=Math.abs(Math.round(diff));
+html+=`<div class="coach-stat-row"><div class="coach-stat-label">Previous ${older3.length} easy runs avg</div><div class="coach-stat-value">${avgOlderStr}/km</div></div>`;
+html+=`<div class="coach-stat-row"><div class="coach-stat-label">Trend</div><div class="coach-stat-value" style="color:${diff<-3?"#5B8A5E":diff>3?"#C4607A":"#6B5B8A"}">${diff<-3?"Getting faster ↑":diff>3?"Slowing down ↓":"Stable →"} (${diffSec}s)</div></div>`;
+}
+html+=`</div>`;
+
+// Easy pace feedback
+const targetEasyPaceSec=5*60+50; // 5:50 target easy
+if(avgRecent<targetEasyPaceSec-15){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Easy runs might be too fast</div><div class="coach-feedback-text">Your easy pace is averaging ${avgRecentStr}/km. For your current fitness, easy should feel like 5:50–6:10/km. Running easy days too fast means you can't go hard enough on quality days, and you accumulate more fatigue. Slow down — it's the hardest discipline in running but it makes you faster.</div></div>`;
+}else if(avgRecent>6*60+15){
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Easy pace is genuinely easy</div><div class="coach-feedback-text">This is exactly right. You're running easy days easy, which means you'll have more in the tank for Tuesday quality sessions and Sunday long runs. Most runners go too hard on easy days — you're not making that mistake.</div></div>`;
+}else{
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Easy pace in the right zone</div><div class="coach-feedback-text">Your easy runs are in the 5:50–6:10/km window. This is sustainable, aerobic, and building your base without excess fatigue. Keep it here.</div></div>`;
+}
+}
+
+// ── 3. Long Run Progression ──
+const longRuns=runs.filter(r=>r.distance_km>=10).sort((a,b)=>new Date(a.date)-new Date(b.date));
+if(longRuns.length>=2){
+const maxKm=Math.max(...longRuns.map(r=>r.distance_km));
+html+=`<div class="coach-card"><div class="coach-card-title">Long run progression</div>`;
+html+=`<div class="coach-long-run">`;
+longRuns.forEach((r,i)=>{
+const pct=Math.max(Math.round((r.distance_km/maxKm)*100),15);
+const isLatest=i===longRuns.length-1;
+const d=new Date(r.date);
+const dd=d.getDate();
+const mm=["Jan","Feb","Mar","Apr","May","Jun"][d.getMonth()]||"";
+html+=`<div style="flex:1;text-align:center"><div class="coach-long-bar ${isLatest?"latest":""}" style="height:${pct}%"></div><div class="coach-long-label">${dd}${mm?mm:""}</div><div class="coach-long-label" style="font-weight:600">${r.distance_km}</div></div>`;
+});
+html+=`</div></div>`;
+
+// Long run feedback
+const latest=longRuns[longRuns.length-1];
+const prev=longRuns[longRuns.length-2];
+const jump=latest.distance_km-prev.distance_km;
+if(jump>3){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Big jump in long run distance</div><div class="coach-feedback-text">You went from ${prev.distance_km} km to ${latest.distance_km} km — a ${Math.round(jump*10)/10} km increase. Generally you want to increase long runs by no more than 2 km per week to avoid injury. If you felt fine, you're probably okay, but don't jump again next week.</div></div>`;
+}else if(latest.distance_km>=15){
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Long run endurance building nicely</div><div class="coach-feedback-text">Your latest long run was ${latest.distance_km} km at ${latest.pace_per_km}/km. This is strong prep for the half marathon. You're proving your body can handle the distance — now it's about sharpening the pace.</div></div>`;
+}else{
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Long run progressing</div><div class="coach-feedback-text">Your last long run was ${latest.distance_km} km. Keep building gradually — you'll peak at 18 km before the May 3 race.</div></div>`;
+}
+}
+
+// ── 4. Pace vs Plan ──
+html+=`<div class="coach-card"><div class="coach-card-title">Recent runs vs plan</div>`;
+runs.slice(0,5).forEach(r=>{
+const d=new Date(r.date);
+const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
+const dd=d.getDate();
+const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
+const planned=getPlan(new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0));
+const planPace=planned.run?planned.run.pace:"—";
+const planKm=planned.run?planned.run.km:"—";
+html+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
+<div style="display:flex;justify-content:space-between"><div style="font-size:12px;font-weight:600;color:#3D2E4A">${day} ${dd} ${mm} — ${r.name}</div></div>
+<div style="display:flex;gap:16px;margin-top:3px">
+<div><div style="font-size:10px;color:#FC4C02">ACTUAL</div><div style="font-size:12px;color:#3D2E4A;font-weight:500">${r.distance_km} km · ${r.pace_per_km}/km</div></div>
+<div><div style="font-size:10px;color:#6B5B8A">PLAN</div><div style="font-size:12px;color:#6B5B8A">${planKm} km · ${planPace}</div></div>
+</div></div>`;
+});
+html+=`</div>`;
+
+// Overall coaching note
+const totalRuns=runs.length;
+const totalKm=Math.round(runs.reduce((s,r)=>s+r.distance_km,0)*10)/10;
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">📝 Coach's note</div><div class="coach-feedback-text">You've logged ${totalRuns} runs totalling ${totalKm} km in the last 30 days. `;
+if(totalRuns>=12){html+=`That's excellent consistency — you're building the aerobic base that sub-2:00 demands. `}
+else if(totalRuns>=8){html+=`Good consistency. Keep showing up and the fitness will compound. `}
+else{html+=`Frequency could be higher — aim for 4 runs per week to build the aerobic base you need. `}
+html+=`Biggest priority right now: nail the long runs on Sunday and keep easy days easy. The May 3 race will tell us a lot about where you're at.</div></div>`;
+
+cv.innerHTML=html;
 }
 
 function navToDate(y,m,d){currentDate=new Date(y,m,d,12,0,0);viewMode="day";render()}
@@ -594,14 +820,25 @@ let viewMode="home";
 
 function render(){
 const dash=$("dashboard");
+const coach=$("coachView");
+const content=$("content");
 if(viewMode==="home"){
 renderDashboard();
 dash.style.display="block";
-// On home view, show today's plan
+coach.style.display="none";
+content.style.display="flex";
 const n=new Date();
 currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);
+}else if(viewMode==="coach"){
+dash.style.display="none";
+coach.style.display="block";
+content.style.display="none";
+renderCoachView();
+return;
 }else{
 dash.style.display="none";
+coach.style.display="none";
+content.style.display="flex";
 }
 $("dateDisplay").textContent=fmt(currentDate);
 const plan=getPlan(currentDate);
@@ -622,6 +859,7 @@ html+=`<div class="race-banner"><div class="icon">🏁</div><div class="title">R
 }
 
 html+=renderRun(plan.run);
+html+=`<div id="strava-daily"></div>`;
 html+=renderStrength(plan.str);
 
 if(plan.spin){
@@ -677,6 +915,7 @@ $("prev").onclick=()=>nav(-1);
 $("next").onclick=()=>nav(1);
 $("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();window.scrollTo({top:0,behavior:"smooth"})};
 $("goHome").onclick=()=>{viewMode="home";render();window.scrollTo({top:0,behavior:"smooth"})};
+$("goCoach").onclick=()=>{viewMode="coach";render();window.scrollTo({top:0,behavior:"smooth"})};
 const RACES=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race HM",date:new Date(2026,9,25,12,0,0)},{name:"C2S 2027",date:new Date(2027,7,8,12,0,0)}];
 function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES.find(r=>r.date>=nn)||RACES[RACES.length-1]}
 function updateRaceBtn(){const r=getNextRace();$("goRace").textContent="🏁 "+r.name}
@@ -934,6 +1173,5 @@ else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Ta
 
 render();
 </script>
-
 </body>
 </html>
