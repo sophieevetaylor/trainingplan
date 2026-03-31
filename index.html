@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -646,16 +645,66 @@ if(!stravaData)return;
 const dashEl=$("strava-recent");
 if(dashEl){
 const runs=stravaData.filter(a=>a.type==="Run").slice(0,5);
+
+// Weekly summary: runs this week
+const today=new Date();
+const todayN=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
+const monday=new Date(todayN);
+const dow=monday.getDay();
+const diff2=dow===0?6:dow-1;
+monday.setDate(monday.getDate()-diff2);
+const mondayStr=monday.getFullYear()+"-"+String(monday.getMonth()+1).padStart(2,"0")+"-"+String(monday.getDate()).padStart(2,"0");
+
+const weekRuns=stravaData.filter(a=>a.type==="Run"&&a.date>=mondayStr);
+const weekKm=Math.round(weekRuns.reduce((s,r)=>s+r.distance_km,0)*10)/10;
+const weekCount=weekRuns.length;
+const avgPaceSec=weekRuns.length?weekRuns.reduce((s,r)=>{const p=r.pace_per_km.split(":");return s+parseInt(p[0])*60+parseInt(p[1])},0)/weekRuns.length:0;
+const avgPaceStr=avgPaceSec?Math.floor(avgPaceSec/60)+":"+String(Math.round(avgPaceSec%60)).padStart(2,"0"):"--";
+const bestRun=weekRuns.length?weekRuns.reduce((b,r)=>r.distance_km>b.distance_km?r:b,weekRuns[0]):null;
+
+let weekHtml=`<div class="dash-title">This week (Strava)</div>`;
+
+if(weekRuns.length){
+weekHtml+=`<div style="display:flex;gap:8px;margin-bottom:10px">
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Runs</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${weekCount}</div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Volume</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${weekKm}<span style="font-size:12px"> km</span></div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Avg pace</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${avgPaceStr}</div>
+</div>
+</div>`;
+
+if(bestRun){
+const bd=new Date(bestRun.date);
+const bday=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][bd.getDay()];
+weekHtml+=`<div style="padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);margin-bottom:10px;font-size:12px">
+<span style="color:#3D8A50;font-weight:700">⭐ Longest run:</span>
+<span style="color:#3D2E4A"> ${bestRun.distance_km} km on ${bday} at ${bestRun.pace_per_km}/km</span></div>`;
+}
+}else{
+weekHtml+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">No runs logged yet this week</div>`;
+}
+
+// Recent runs list
 if(runs.length){
-let html=runs.map(r=>{
+weekHtml+=`<div style="margin-top:6px">`;
+runs.map(r=>{
 const d=new Date(r.date);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
-return`<div class="strava-run-item"><div class="strava-run-date">${day} ${dd} ${mm}</div><div class="strava-run-name">${r.name}</div><div class="strava-run-stats">${r.distance_km} km · ${r.pace_per_km}/km${r.avg_hr?" · "+Math.round(r.avg_hr)+" bpm":""}</div></div>`;
-}).join("");
-dashEl.innerHTML=`<div class="dash-title">Recent runs (Strava)</div>${html}`;
+weekHtml+=`<div class="strava-run-item"><div class="strava-run-date">${day} ${dd} ${mm}</div><div class="strava-run-name">${r.name}</div><div class="strava-run-stats">${r.distance_km} km · ${r.pace_per_km}/km${r.avg_hr?" · "+Math.round(r.avg_hr)+" bpm":""}</div></div>`;
+});
+weekHtml+=`</div>`;
 }
+
+dashEl.innerHTML=weekHtml;
 }
 
 // Daily view: match Strava activity to today's date
@@ -665,7 +714,77 @@ const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).pad
 const matches=stravaData.filter(a=>a.type==="Run"&&a.date.startsWith(dateStr));
 if(matches.length){
 const m=matches[0];
-dailyEl.innerHTML=`<div class="strava-actual"><div class="strava-actual-header">📡 Strava: ${m.name}</div><div class="strava-actual-stats"><span>${m.distance_km} km</span> · <span>${m.pace_per_km}/km</span> · <span>${m.moving_time_min} min</span>${m.avg_hr?" · <span>"+Math.round(m.avg_hr)+" bpm</span>":""}</div></div>`;
+const plan=getPlan(currentDate);
+
+// Auto-tick run checkbox if Strava has a run for this day
+const runCheck=$("run-check");
+const runLabel=$("run-label");
+if(runCheck&&!runCheck.classList.contains("done")){
+runCheck.classList.add("done");
+if(runLabel){runLabel.classList.add("done");runLabel.textContent="Run complete ✓ (auto-synced)"}
+saveRun(true);
+}
+
+// Build pace comparison feedback
+let feedback="";
+if(plan.run&&plan.run.pace){
+const paceStr=plan.run.pace;
+// Extract target pace range from plan (e.g. "5:50–6:10/km")
+const paceMatch=paceStr.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
+if(paceMatch){
+const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
+const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
+const actualParts=m.pace_per_km.split(":");
+const actual=parseInt(actualParts[0])*60+parseInt(actualParts[1]);
+
+if(actual<targetMin-10){
+const diff=targetMin-actual;
+feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px">
+<span style="color:#DC2626;font-weight:700">⚡ ${diff}s faster than planned.</span>
+<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy — save the speed for quality sessions.":"Watch the effort — don't blow up early."}</span></div>`;
+}else if(actual>targetMax+15){
+const diff=actual-targetMax;
+feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px">
+<span style="color:#B8883E;font-weight:700">🐢 ${diff}s slower than planned.</span>
+<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"That's fine for easy days — no stress.":"Consider if fatigue, heat, or hills were a factor."}</span></div>`;
+}else{
+feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px">
+<span style="color:#3D8A50;font-weight:700">✅ Right on target.</span>
+<span style="color:#7A6B8A"> Plan said ${paceStr}. Nailed it.</span></div>`;
+}
+}
+}
+
+// Distance comparison
+let distFeedback="";
+if(plan.run&&plan.run.km){
+const plannedKm=parseFloat(plan.run.km)||0;
+if(plannedKm>0){
+const diff=m.distance_km-plannedKm;
+if(Math.abs(diff)<=0.5){
+distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
+}else if(diff>0.5){
+distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
+}else{
+distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
+}
+}
+}
+
+dailyEl.innerHTML=`<div class="strava-actual">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="strava-actual-header">📡 Strava: ${m.name}</div>
+${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
+</div>
+<div class="strava-actual-stats">
+<span style="font-weight:600">${m.distance_km} km</span> · 
+<span style="font-weight:600">${m.pace_per_km}/km</span> · 
+<span>${m.moving_time_min} min</span>
+${m.avg_hr?" · <span>❤️ "+Math.round(m.avg_hr)+" bpm</span>":""}
+${m.elevation_gain>20?" · <span>⛰️ "+Math.round(m.elevation_gain)+"m</span>":""}
+</div>
+${feedback}
+</div>`;
 }else{
 dailyEl.innerHTML="";
 }
@@ -1288,6 +1407,5 @@ else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Ta
 
 render();
 </script>
-
 </body>
 </html>
