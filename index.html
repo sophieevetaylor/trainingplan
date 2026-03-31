@@ -725,32 +725,91 @@ return km>=4&&km<=8&&!name.includes("tempo")&&!name.includes("interval")&&!name.
 });
 
 if(easyRuns.length>=2){
-const recent3=easyRuns.slice(0,3);
-const older3=easyRuns.slice(3,6);
-const avgRecent=recent3.reduce((s,r)=>{const p=r.pace_per_km.split(":");return s+parseInt(p[0])*60+parseInt(p[1])},0)/recent3.length;
-const avgRecentStr=Math.floor(avgRecent/60)+":"+String(Math.round(avgRecent%60)).padStart(2,"0");
+// Parse pace to seconds
+function paceToSec(p){const pts=p.split(":");return parseInt(pts[0])*60+parseInt(pts[1])}
+function secToStr(s){return Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0")}
 
-html+=`<div class="coach-card"><div class="coach-card-title">Easy pace trend</div>
-<div class="coach-stat-row"><div class="coach-stat-label">Last ${recent3.length} easy runs avg</div><div class="coach-stat-value">${avgRecentStr}/km</div></div>`;
+const recent5=easyRuns.slice(0,5);
+const avgRecent=recent5.reduce((s,r)=>s+paceToSec(r.pace_per_km),0)/recent5.length;
+const avgRecentStr=secToStr(avgRecent);
+const fastest=Math.min(...recent5.map(r=>paceToSec(r.pace_per_km)));
+const slowest=Math.max(...recent5.map(r=>paceToSec(r.pace_per_km)));
+const fastestStr=secToStr(fastest);
+const slowestStr=secToStr(slowest);
+const range=slowest-fastest;
 
-if(older3.length>=2){
-const avgOlder=older3.reduce((s,r)=>{const p=r.pace_per_km.split(":");return s+parseInt(p[0])*60+parseInt(p[1])},0)/older3.length;
-const avgOlderStr=Math.floor(avgOlder/60)+":"+String(Math.round(avgOlder%60)).padStart(2,"0");
-const diff=avgRecent-avgOlder;
-const diffSec=Math.abs(Math.round(diff));
-html+=`<div class="coach-stat-row"><div class="coach-stat-label">Previous ${older3.length} easy runs avg</div><div class="coach-stat-value">${avgOlderStr}/km</div></div>`;
-html+=`<div class="coach-stat-row"><div class="coach-stat-label">Trend</div><div class="coach-stat-value" style="color:${diff<-3?"#5B8A5E":diff>3?"#C4607A":"#6B5B8A"}">${diff<-3?"Getting faster ↑":diff>3?"Slowing down ↓":"Stable →"} (${diffSec}s)</div></div>`;
-}
+// Target zone
+const zoneMin=5*60+50;// 5:50
+const zoneMax=6*60+10;// 6:10
+
+html+=`<div class="coach-card"><div class="coach-card-title">Easy run analysis</div>`;
+
+// Individual runs list
+html+=`<div style="margin-bottom:10px">`;
+recent5.forEach(r=>{
+const d=new Date(r.date);
+const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
+const dd=d.getDate();
+const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
+const paceSec=paceToSec(r.pace_per_km);
+const inZone=paceSec>=zoneMin&&paceSec<=zoneMax;
+const tooFast=paceSec<zoneMin;
+const icon=tooFast?"🔴":inZone?"🟢":"🟡";
+html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
+<div style="font-size:12px;color:#A898B0">${day} ${dd} ${mm}</div>
+<div style="font-size:12px;color:#3D2E4A">${r.distance_km} km</div>
+<div style="font-size:13px;font-weight:700;color:${tooFast?"#DC2626":inZone?"#3D8A50":"#B8883E"}">${r.pace_per_km}/km ${icon}</div>
+</div>`;
+});
 html+=`</div>`;
 
-// Easy pace feedback
-const targetEasyPaceSec=5*60+50; // 5:50 target easy
-if(avgRecent<targetEasyPaceSec-15){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Easy runs might be too fast</div><div class="coach-feedback-text">Your easy pace is averaging ${avgRecentStr}/km. For your current fitness, easy should feel like 5:50–6:10/km. Running easy days too fast means you can't go hard enough on quality days, and you accumulate more fatigue. Slow down — it's the hardest discipline in running but it makes you faster.</div></div>`;
-}else if(avgRecent>6*60+15){
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Easy pace is genuinely easy</div><div class="coach-feedback-text">This is exactly right. You're running easy days easy, which means you'll have more in the tank for Tuesday quality sessions and Sunday long runs. Most runners go too hard on easy days — you're not making that mistake.</div></div>`;
+// Summary stats
+html+=`<div style="display:flex;gap:8px;margin-bottom:10px">
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Average</div>
+<div style="font-size:18px;font-weight:800;color:#3D2E4A">${avgRecentStr}</div>
+<div style="font-size:10px;color:#A898B0">/km</div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Fastest</div>
+<div style="font-size:18px;font-weight:800;color:#DC2626">${fastestStr}</div>
+<div style="font-size:10px;color:#A898B0">/km</div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Slowest</div>
+<div style="font-size:18px;font-weight:800;color:#3D8A50">${slowestStr}</div>
+<div style="font-size:10px;color:#A898B0">/km</div>
+</div>
+</div>`;
+
+// Target zone visual
+const runsInZone=recent5.filter(r=>{const p=paceToSec(r.pace_per_km);return p>=zoneMin&&p<=zoneMax}).length;
+const runsTooFast=recent5.filter(r=>paceToSec(r.pace_per_km)<zoneMin).length;
+const zonePct=Math.round((runsInZone/recent5.length)*100);
+html+=`<div style="padding:8px 12px;background:rgba(255,255,255,0.4);border-radius:8px;margin-bottom:10px">
+<div style="display:flex;justify-content:space-between;margin-bottom:4px">
+<span style="font-size:11px;color:#A898B0">Target zone: 5:50–6:10/km</span>
+<span style="font-size:11px;font-weight:700;color:${zonePct>=60?"#3D8A50":"#B8883E"}">${runsInZone}/${recent5.length} in zone</span>
+</div>
+<div style="display:flex;gap:3px">`;
+recent5.forEach(r=>{
+const p=paceToSec(r.pace_per_km);
+const col=p<zoneMin?"#DC2626":p<=zoneMax?"#3D8A50":"#B8883E";
+html+=`<div style="flex:1;height:6px;border-radius:3px;background:${col}"></div>`;
+});
+html+=`</div></div>`;
+html+=`</div>`;
+
+// Coaching feedback
+const tooFastCount=runsTooFast;
+if(tooFastCount>=3){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Most easy runs are too fast</div><div class="coach-feedback-text">${tooFastCount} of your last ${recent5.length} easy runs were faster than 5:50/km. This is the #1 mistake distance runners make — running easy days too hard. It feels productive but it accumulates fatigue and blunts your quality sessions. Your Tuesday speedwork and Sunday long run suffer when Wednesday and Friday aren't genuinely easy. Aim for 5:50–6:10/km even if it feels embarrassingly slow. You should be able to hold a full conversation.</div></div>`;
+}else if(tooFastCount>=1){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚡ Watch the pace on easy days</div><div class="coach-feedback-text">${tooFastCount} of your last ${recent5.length} easy runs crept below 5:50/km. Not a crisis, but keep an eye on it. Easy means easy — if you wouldn't call it "comfortable" for the entire run, slow down. The aerobic benefit is the same at 5:50 and 6:10, but the recovery cost is very different.</div></div>`;
+}else if(range>25){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">📊 Pace range is quite wide</div><div class="coach-feedback-text">Your easy runs range from ${fastestStr} to ${slowestStr}/km (${Math.round(range)}s difference). Consistency matters more than speed on easy days. Try to keep them all within a tighter 10–15 second band. External factors (heat, hills, fatigue) explain some variation, but aim for more predictable pacing.</div></div>`;
 }else{
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Easy pace in the right zone</div><div class="coach-feedback-text">Your easy runs are in the 5:50–6:10/km window. This is sustainable, aerobic, and building your base without excess fatigue. Keep it here.</div></div>`;
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Easy runs are dialled in</div><div class="coach-feedback-text">${runsInZone} of ${recent5.length} runs are in the 5:50–6:10/km zone. This is textbook. You're building aerobic base without excess fatigue, which means your quality sessions and long runs are getting the best version of you. This discipline is what separates runners who plateau from runners who keep improving.</div></div>`;
 }
 }
 
@@ -768,21 +827,24 @@ html+=`<div class="coach-card" style="background:linear-gradient(135deg,rgba(91,
 </div>`;
 
 // Big stat: latest long run
-html+=`<div style="display:flex;gap:16px;margin-bottom:14px">
-<div style="text-align:center;flex:1;padding:10px;background:rgba(255,255,255,0.5);border-radius:10px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;margin-bottom:2px">Latest</div>
-<div style="font-size:24px;font-weight:800;color:#3D8A50">${latest.distance_km}<span style="font-size:13px;font-weight:600"> km</span></div>
-<div style="font-size:11px;color:#7A8A7A">${latest.pace_per_km}/km</div>
+html+=`<div style="display:flex;gap:8px;margin-bottom:14px">
+<div style="text-align:center;flex:1;padding:12px 6px;background:rgba(255,255,255,0.5);border-radius:10px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;min-height:28px;display:flex;align-items:center;justify-content:center">Latest</div>
+<div style="font-size:26px;font-weight:800;color:#3D8A50;line-height:1">${latest.distance_km}</div>
+<div style="font-size:12px;font-weight:600;color:#5B8A5E">km</div>
+<div style="font-size:11px;color:#7A8A7A;margin-top:2px">${latest.pace_per_km}/km</div>
 </div>
-<div style="text-align:center;flex:1;padding:10px;background:rgba(255,255,255,0.5);border-radius:10px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;margin-bottom:2px">Longest ever</div>
-<div style="font-size:24px;font-weight:800;color:#3D8A50">${maxKm}<span style="font-size:13px;font-weight:600"> km</span></div>
-<div style="font-size:11px;color:#7A8A7A">↑ building</div>
+<div style="text-align:center;flex:1;padding:12px 6px;background:rgba(255,255,255,0.5);border-radius:10px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;min-height:28px;display:flex;align-items:center;justify-content:center">Longest</div>
+<div style="font-size:26px;font-weight:800;color:#3D8A50;line-height:1">${maxKm}</div>
+<div style="font-size:12px;font-weight:600;color:#5B8A5E">km</div>
+<div style="font-size:11px;color:#7A8A7A;margin-top:2px">↑ building</div>
 </div>
-<div style="text-align:center;flex:1;padding:10px;background:rgba(255,255,255,0.5);border-radius:10px">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;margin-bottom:2px">Total</div>
-<div style="font-size:24px;font-weight:800;color:#3D8A50">${totalLongKm}<span style="font-size:13px;font-weight:600"> km</span></div>
-<div style="font-size:11px;color:#7A8A7A">long run km</div>
+<div style="text-align:center;flex:1;padding:12px 6px;background:rgba(255,255,255,0.5);border-radius:10px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;min-height:28px;display:flex;align-items:center;justify-content:center">Total</div>
+<div style="font-size:26px;font-weight:800;color:#3D8A50;line-height:1">${totalLongKm}</div>
+<div style="font-size:12px;font-weight:600;color:#5B8A5E">km</div>
+<div style="font-size:11px;color:#7A8A7A;margin-top:2px">long runs</div>
 </div>
 </div>`;
 
