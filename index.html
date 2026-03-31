@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -18,9 +19,11 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .nav button:active{background:rgba(255,255,255,0.7)}
 .date-display{text-align:center;font-size:18px;font-weight:700;color:#3D2E4A}
 .quick-nav{display:flex;gap:6px}
-.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.45);border:1px solid rgba(180,160,190,0.2);border-radius:6px;color:#8A7A9E;cursor:pointer;-webkit-appearance:none}
+.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.45);border:1px solid rgba(180,160,190,0.2);border-radius:6px;color:#8A7A9E;cursor:pointer;-webkit-appearance:none;transition:all 0.15s}
 .quick-nav button:active{background:rgba(255,255,255,0.65)}
+.quick-nav button.active{background:rgba(107,91,138,0.2);border-color:rgba(107,91,138,0.4);color:#3D2E4A}
 .quick-nav .race-btn{background:rgba(196,96,122,0.12);border-color:rgba(196,96,122,0.25);color:#C4607A}
+.quick-nav .race-btn.active{background:rgba(196,96,122,0.3);border-color:rgba(196,96,122,0.5);color:#9E3050}
 .block-info{margin-top:12px;padding:10px 12px;border-radius:8px}
 .block-name{font-size:14px;font-weight:700}
 .block-detail{font-size:12px;color:#A898B0;margin-top:2px}
@@ -177,8 +180,8 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
     <button id="next">→</button>
   </div>
   <div class="quick-nav">
-    <button id="goToday">📍 Today</button>
     <button id="goHome">🏠 Home</button>
+    <button id="goToday">📍 Today</button>
     <button id="goCoach">📊 Coach</button>
     <button id="goRace" class="race-btn">🏁 May 3 HM</button>
   </div>
@@ -1015,17 +1018,24 @@ renderProtein();
 restoreChecks();
 }
 
-function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render()}
+function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
 $("prev").onclick=()=>nav(-1);
 $("next").onclick=()=>nav(1);
-$("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();window.scrollTo({top:0,behavior:"smooth"})};
-$("goHome").onclick=()=>{viewMode="home";render();window.scrollTo({top:0,behavior:"smooth"})};
-$("goCoach").onclick=()=>{viewMode="coach";render();window.scrollTo({top:0,behavior:"smooth"})};
+
+function setActiveTab(id){
+["goHome","goToday","goCoach","goRace"].forEach(b=>{$(b).classList.remove("active")});
+$(id).classList.add("active");
+}
+
+$("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday");window.scrollTo({top:0,behavior:"smooth"})};
+$("goHome").onclick=()=>{viewMode="home";render();setActiveTab("goHome");window.scrollTo({top:0,behavior:"smooth"})};
+$("goCoach").onclick=()=>{viewMode="coach";render();setActiveTab("goCoach");window.scrollTo({top:0,behavior:"smooth"})};
 const RACES=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race HM",date:new Date(2026,9,25,12,0,0)},{name:"C2S 2027",date:new Date(2027,7,8,12,0,0)}];
 function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES.find(r=>r.date>=nn)||RACES[RACES.length-1]}
 function updateRaceBtn(){const r=getNextRace();$("goRace").textContent="🏁 "+r.name}
-$("goRace").onclick=()=>{const r=getNextRace();currentDate=new Date(r.date);viewMode="day";render();window.scrollTo({top:0,behavior:"smooth"})};
+$("goRace").onclick=()=>{const r=getNextRace();currentDate=new Date(r.date);viewMode="day";render();setActiveTab("goRace");window.scrollTo({top:0,behavior:"smooth"})};
 updateRaceBtn();
+setActiveTab("goHome");
 
 // Checkbox state storage (persists across sessions via localStorage)
 function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
@@ -1278,5 +1288,6 @@ else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Ta
 
 render();
 </script>
+
 </body>
 </html>
