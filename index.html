@@ -113,6 +113,15 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .water-card{background:rgba(59,130,246,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(59,130,246,0.15)}
 .water-header{font-size:16px;font-weight:700;color:#3B82F6;margin-bottom:4px}
 .water-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
+.move-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.move-modal{background:linear-gradient(135deg,#FDF2F5,#EDE6F2);border-radius:16px;padding:20px;width:100%;max-width:320px}
+.move-modal-title{font-size:14px;font-weight:700;color:#3D2E4A;margin-bottom:4px}
+.move-modal-sub{font-size:12px;color:#A898B0;margin-bottom:14px}
+.move-day-option{padding:10px 14px;background:rgba(255,255,255,0.55);border-radius:10px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border:0.5px solid rgba(180,160,190,0.2)}
+.move-day-option:active{background:rgba(107,91,138,0.12)}
+.move-day-name{font-size:13px;font-weight:600;color:#3D2E4A}
+.move-day-date{font-size:11px;color:#A898B0}
+.move-cancel{text-align:center;padding:10px;font-size:13px;color:#C4607A;font-weight:600;cursor:pointer;margin-top:4px}
 .perfect-day{text-align:center;padding:14px;background:linear-gradient(135deg,rgba(91,138,94,0.12),rgba(16,185,129,0.08));border-radius:14px;border:1.5px solid rgba(91,138,94,0.3);margin-bottom:2px;animation:perfectPop 0.4s ease-out}
 .perfect-day-icon{font-size:32px;margin-bottom:4px}
 .perfect-day-title{font-size:16px;font-weight:800;color:#3D8A50;letter-spacing:0.5px}
@@ -128,9 +137,13 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .week-strip{display:flex;gap:4px}
 .week-day{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.4);color:#A898B0;cursor:pointer;transition:all 0.2s}
 .week-day.today{border:2px solid #6B5B8A;color:#6B5B8A}
-.week-day.completed{background:rgba(91,138,94,0.15);color:#5B8A5E}
-.week-day.completed.today{border-color:#5B8A5E}
-.week-day.partial{background:rgba(200,160,80,0.12);color:#B8883E}
+.week-day.perfect{background:rgba(61,138,80,0.2);color:#3D8A50}
+.week-day.perfect.today{border-color:#3D8A50}
+.week-day.partial{background:rgba(200,160,80,0.15);color:#B8883E}
+.week-day.partial.today{border-color:#B8883E}
+.week-day.concern{background:rgba(220,38,38,0.12);color:#DC2626}
+.week-day.concern.today{border-color:#DC2626}
+.week-day.missed{background:rgba(220,38,38,0.08);color:rgba(220,38,38,0.4)}
 .streak-row{display:flex;align-items:center;gap:12px}
 .streak-number{font-size:32px;font-weight:800;color:#3D2E4A}
 .streak-label{font-size:13px;color:#A898B0;line-height:1.4}
@@ -462,7 +475,19 @@ if(f){
 formHtml=`<div class="ex-form"><div class="ex-form-text">📐 ${f.form}</div>${f.link?`<a href="${f.link}" target="_blank" rel="noopener" class="ex-video-link">▶ Watch form video</a>`:""}</div>`;
 }
 
-return`<div class="exercise" id="ex-${i}" style="${i%2===0?"background:rgba(255,255,255,0.04)":""}"><div class="ex-check" onclick="toggleEx(${i})"></div><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets} × ${ex.reps}</div>${tags?`<div class="ex-tags">${tags}</div>`:""}${formHtml}</div>`;
+// Weight/rep tracker
+const isBodyweight=!ex.load||ex.load.toLowerCase().includes("bodyweight")||ex.name.toLowerCase().includes("plank")||ex.name.toLowerCase().includes("bird dog")||ex.name.toLowerCase().includes("dead bug")||ex.name.toLowerCase().includes("banded");
+let trackerHtml="";
+if(!isBodyweight){
+trackerHtml=`<div class="ex-tracker" style="grid-column:2/-1;margin-top:4px;display:flex;gap:6px;align-items:center">
+<span style="font-size:10px;color:#A898B0">Log:</span>
+<input type="number" placeholder="kg" id="exw-${i}" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog(${i})">
+<span style="font-size:10px;color:#A898B0">×</span>
+<input type="number" placeholder="reps" id="exr-${i}" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog(${i})">
+</div>`;
+}
+
+return`<div class="exercise" id="ex-${i}" style="${i%2===0?"background:rgba(255,255,255,0.04)":""}"><div class="ex-check" onclick="toggleEx(${i})"></div><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets} × ${ex.reps}</div>${tags?`<div class="ex-tags">${tags}</div>`:""}${trackerHtml}${formHtml}</div>`;
 }
 
 function getFuel(r){
@@ -568,15 +593,27 @@ const d=new Date(monday);
 d.setDate(d.getDate()+i);
 const dk="tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 const isToday=d.getDate()===todayNorm.getDate()&&d.getMonth()===todayNorm.getMonth();
+const isPast=d<todayNorm;
 let status="";
 try{
 const s=localStorage.getItem(dk);
 if(s){
 const st=JSON.parse(s);
-const hasChecks=st.run||st.str||st.pil||st.tm||st.steps||Object.values(st.ex||{}).some(v=>v);
-const allDone=st.steps&&(st.run||!getBlock(d)||(getBlock(d)&&st.str));
-if(allDone)status="completed";
-else if(hasChecks)status="partial";
+// Count how many main items are done
+const protKey="tp-prot-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+let proteinHit=false;
+try{const pl=localStorage.getItem(protKey);if(pl){proteinHit=JSON.parse(pl).reduce((s,f)=>s+f.g,0)>=110}}catch(e){}
+const mainDone=[st.run,st.str,st.pil,st.tm,st.spin,st.steps,st.water,proteinHit].filter(Boolean).length;
+const mainTotal=[st.run!==undefined,st.str!==undefined,true,true,true,true,true,true].length;
+// Perfect = all ticked + protein
+if(st.steps&&st.water&&proteinHit&&(st.run||st.str||st.spin))status="perfect";
+// Partial = some things done
+else if(mainDone>=3)status="partial";
+// Concern = past day with very little done
+else if(isPast&&mainDone>=1)status="concern";
+else if(mainDone>=1)status="partial";
+}else if(isPast&&!isToday){
+status="missed";
 }
 }catch(e){}
 const dateNum=d.getDate();
@@ -584,41 +621,32 @@ stripHtml+=`<div class="week-day ${isToday?"today":""} ${status}" onclick="navTo
 }
 dhtml+=`<div class="dash-section"><div class="dash-title">This Week</div><div class="week-strip">${stripHtml}</div></div>`;
 
-// ── Weekly KM Total ──
-let weeklyKm=0;
+// ── Weekly Plan Overview ──
+const weekPlanLabels=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const weekPlanEmojis=["💪","🏃‍♀️","💪🏃‍♀️","😴","💪🏃‍♀️","🚴‍♀️","🏃‍♀️"];
+let planOverview="";
 for(let i=0;i<7;i++){
 const wd=new Date(monday);
 wd.setDate(wd.getDate()+i);
 const wp=getPlan(wd);
-if(wp.run){const km=parseFloat(wp.run.km)||0;weeklyKm+=km}
+let items=[];
+if(wp.str)items.push("💪 "+wp.str.name.replace("Strength ","").split("–")[0].trim());
+if(wp.run)items.push("🏃‍♀️ "+wp.run.type+(wp.run.km?" · "+wp.run.km+" km":""));
+if(wp.spin)items.push("🚴‍♀️ Spin Class");
+if(wp.other&&wp.other.toLowerCase().includes("pilates"))items.push("🧘‍♀️ Pilates");
+if(!items.length){
+if(wp.notes&&wp.notes.length)items.push("😴 Rest Day");
+else items.push("😴 Rest");
 }
-dhtml+=`<div class="dash-section"><div class="dash-title">Weekly Volume</div><div class="streak-row"><div class="streak-number">${Math.round(weeklyKm)}</div><div class="streak-label">km planned<br>this week</div><div style="font-size:28px">📏</div></div></div>`;
-
-// ── Streak ──
-let streak=0;
-const checkDate=new Date(todayNorm);
-// Don't count today unless it has checks
-checkDate.setDate(checkDate.getDate()-1);
-for(let i=0;i<365;i++){
-const dk="tp-"+checkDate.getFullYear()+"-"+(checkDate.getMonth()+1)+"-"+checkDate.getDate();
-try{
-const s=localStorage.getItem(dk);
-if(s){
-const st=JSON.parse(s);
-const hasChecks=st.run||st.str||st.pil||st.tm||st.steps||Object.values(st.ex||{}).some(v=>v);
-if(hasChecks){streak++;checkDate.setDate(checkDate.getDate()-1)}
-else break;
-}else break;
-}catch(e){break}
+const isToday2=wd.getDate()===todayNorm.getDate()&&wd.getMonth()===todayNorm.getMonth();
+planOverview+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08);${isToday2?"background:rgba(107,91,138,0.06);border-radius:6px;padding:8px 10px;margin:0 -10px":""}">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:12px;font-weight:700;color:${isToday2?"#6B5B8A":"#3D2E4A"}">${weekPlanLabels[i]}${isToday2?" ← today":""}</div>
+</div>
+<div style="font-size:11px;color:#7A6B8A;margin-top:2px;line-height:1.5">${items.join("<br>")}</div>
+</div>`;
 }
-// Check if today has any checks too
-const todayKey="tp-"+todayNorm.getFullYear()+"-"+(todayNorm.getMonth()+1)+"-"+todayNorm.getDate();
-try{const ts=localStorage.getItem(todayKey);if(ts){const tst=JSON.parse(ts);if(tst.run||tst.str||tst.pil||tst.tm||tst.steps||Object.values(tst.ex||{}).some(v=>v))streak++}}catch(e){}
-
-const fire=streak>=7?"🔥🔥🔥":streak>=3?"🔥🔥":streak>=1?"🔥":"";
-dhtml+=`<div class="dash-section"><div class="dash-title">Consistency Streak</div><div class="streak-row"><div class="streak-number">${streak}</div><div class="streak-label">day${streak!==1?"s":""} in a row<br>with training logged</div><div class="streak-fire">${fire}</div></div></div>`;
-
-dhtml+=`<div class="dash-section" id="strava-recent"></div>`;
+dhtml+=`<div class="dash-section"><div class="dash-title">Week at a Glance</div>${planOverview}</div>`;
 
 $("dashboard").innerHTML=dhtml;
 
@@ -1042,6 +1070,66 @@ else if(totalRuns>=8){html+=`Good consistency. Keep showing up and the fitness w
 else{html+=`Frequency could be higher — aim for 4 runs per week to build the aerobic base you need. `}
 html+=`Biggest priority right now: nail the long runs on Sunday and keep easy days easy. The May 3 race will tell us a lot about where you're at.</div></div>`;
 
+// ── Strength Progression ──
+html+=`<div class="coach-card"><div class="coach-card-title">💪 Strength Progression</div>`;
+const keyLifts=["Hip thrust (booty builder)","Romanian deadlift","Lat pulldown","DB bench press","Abductor machine","Adductor machine","DB shoulder press","Seated cable row","Bicep curls"];
+const liftData={};
+
+// Scan last 8 weeks of exercise logs for key lifts
+const scanStart=new Date(todayNorm);
+scanStart.setDate(scanStart.getDate()-56);
+for(let dd=new Date(scanStart);dd<=todayNorm;dd.setDate(dd.getDate()+1)){
+const logKey="tp-exlog-"+dd.getFullYear()+"-"+(dd.getMonth()+1)+"-"+dd.getDate();
+try{
+const log=JSON.parse(localStorage.getItem(logKey)||"{}");
+// We need to match exercise index to name — check the plan for that day
+const dayPlan=getPlan(new Date(dd.getFullYear(),dd.getMonth(),dd.getDate(),12,0,0));
+if(dayPlan.str){
+const exList=[...dayPlan.str.exercises];
+Object.keys(log).forEach(idx=>{
+const ex=exList[parseInt(idx)];
+if(ex&&log[idx].w&&parseFloat(log[idx].w)>0){
+const name=ex.name;
+if(!liftData[name])liftData[name]=[];
+liftData[name].push({date:new Date(dd),w:parseFloat(log[idx].w),r:parseInt(log[idx].r)||0});
+}
+});
+}
+}catch(e){}
+}
+
+const trackedLifts=keyLifts.filter(n=>liftData[n]&&liftData[n].length>=1);
+if(trackedLifts.length){
+trackedLifts.forEach(name=>{
+const entries=liftData[name].sort((a,b)=>a.date-b.date);
+const first=entries[0];
+const last=entries[entries.length-1];
+const gained=last.w-first.w;
+const trend=gained>0?"↑":gained<0?"↓":"→";
+const trendColor=gained>0?"#3D8A50":gained<0?"#DC2626":"#6B5B8A";
+html+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:12px;font-weight:600;color:#3D2E4A">${name}</div>
+<div style="font-size:12px;font-weight:700;color:${trendColor}">${last.w} kg ${trend} ${entries.length>1?`<span style="font-size:10px;font-weight:400;color:#A898B0">(was ${first.w} kg)</span>`:""}</div>
+</div>`;
+// Mini bar chart if multiple entries
+if(entries.length>=2){
+const maxW=Math.max(...entries.map(e=>e.w));
+html+=`<div style="display:flex;gap:2px;height:24px;align-items:flex-end;margin-top:4px">`;
+entries.slice(-8).forEach((e,i)=>{
+const pct=Math.max(Math.round((e.w/maxW)*100),15);
+const isLast=i===entries.slice(-8).length-1;
+html+=`<div style="flex:1;height:${pct}%;background:${isLast?"#6B5B8A":"rgba(107,91,138,0.2)"};border-radius:2px 2px 0 0" title="${e.w}kg"></div>`;
+});
+html+=`</div>`;
+}
+html+=`</div>`;
+});
+}else{
+html+=`<div style="text-align:center;padding:16px;color:#A898B0;font-size:12px">No weight data logged yet. Use the kg/reps fields in your gym sessions to start tracking.</div>`;
+}
+html+=`</div>`;
+
 cv.innerHTML=html;
 }
 
@@ -1057,9 +1145,12 @@ if(viewMode==="home"){
 renderDashboard();
 dash.style.display="block";
 coach.style.display="none";
-content.style.display="flex";
+content.style.display="none";
 const n=new Date();
 currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);
+$("dateDisplay").textContent=fmt(currentDate);
+$("headerLabel").textContent="🏠 Home";
+return;
 }else if(viewMode==="coach"){
 dash.style.display="none";
 coach.style.display="block";
@@ -1144,6 +1235,15 @@ $("content").innerHTML+=dailyCards;
 
 renderProtein();
 restoreChecks();
+restoreExLogs();
+
+// Add long-press to moveable cards
+const runCard=document.querySelector(".run-card.normal");
+if(runCard)addLongPress(runCard,"run","Easy Run");
+const spinCard=document.querySelector(".spin-card");
+if(spinCard)addLongPress(spinCard,"spin","Spin Class");
+const pilCard=document.querySelector(".other-card.pilates");
+if(pilCard)addLongPress(pilCard,"pilates","Pilates");
 }
 
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
@@ -1412,6 +1512,89 @@ else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) o
 else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
 else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
 else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Tap your meals above."}
+}
+
+// ── Exercise Weight Tracker ──
+function exLogKey(date){return"tp-exlog-"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()}
+function getExLog(){try{const s=localStorage.getItem(exLogKey(currentDate));return s?JSON.parse(s):{}}catch(e){return{}}}
+function saveExLog(i){
+const w=$("exw-"+i);
+const r=$("exr-"+i);
+if(!w||!r)return;
+const log=getExLog();
+log[i]={w:w.value,r:r.value};
+try{localStorage.setItem(exLogKey(currentDate),JSON.stringify(log))}catch(e){}
+}
+function restoreExLogs(){
+const log=getExLog();
+Object.keys(log).forEach(i=>{
+const w=$("exw-"+i);
+const r=$("exr-"+i);
+if(w&&log[i].w)w.value=log[i].w;
+if(r&&log[i].r)r.value=log[i].r;
+});
+}
+
+// ── Move Session Modal ──
+let moveTarget=null;
+function showMoveModal(sessionType,sessionLabel){
+moveTarget={type:sessionType,label:sessionLabel};
+const today=new Date();
+const todayNorm=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
+const mon=new Date(todayNorm);
+const dw=mon.getDay();
+const df=dw===0?6:dw-1;
+mon.setDate(mon.getDate()-df);
+const dayNames=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+let optHtml="";
+for(let i=0;i<7;i++){
+const d=new Date(mon);
+d.setDate(d.getDate()+i);
+const isCurrent=d.getDate()===currentDate.getDate()&&d.getMonth()===currentDate.getMonth();
+if(isCurrent)continue;
+optHtml+=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})">
+<div class="move-day-name">${dayNames[i]}</div>
+<div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div>
+</div>`;
+}
+const overlay=document.createElement("div");
+overlay.className="move-overlay";
+overlay.id="moveOverlay";
+overlay.innerHTML=`<div class="move-modal">
+<div class="move-modal-title">Move: ${sessionLabel}</div>
+<div class="move-modal-sub">Hold detected — pick a day to move this session to</div>
+${optHtml}
+<div class="move-cancel" onclick="closeMoveModal()">Cancel</div>
+</div>`;
+document.body.appendChild(overlay);
+overlay.onclick=function(e){if(e.target===overlay)closeMoveModal()};
+}
+function closeMoveModal(){const o=$("moveOverlay");if(o)o.remove();moveTarget=null}
+function moveSession(y,m,d){
+const fromKey="tp-moved-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate();
+const toKey="tp-moved-"+y+"-"+(m+1)+"-"+d;
+try{
+let fm=JSON.parse(localStorage.getItem(fromKey)||"[]");
+fm.push({type:moveTarget.type,label:moveTarget.label,action:"removed"});
+localStorage.setItem(fromKey,JSON.stringify(fm));
+let tm=JSON.parse(localStorage.getItem(toKey)||"[]");
+tm.push({type:moveTarget.type,label:moveTarget.label,action:"added"});
+localStorage.setItem(toKey,JSON.stringify(tm));
+}catch(e){}
+closeMoveModal();
+render();
+}
+
+// Long press handler
+let longPressTimer=null;
+function addLongPress(el,type,label){
+if(!el)return;
+el.addEventListener("touchstart",function(e){
+longPressTimer=setTimeout(()=>{showMoveModal(type,label)},600);
+},{passive:true});
+el.addEventListener("touchend",function(){clearTimeout(longPressTimer)},{passive:true});
+el.addEventListener("touchmove",function(){clearTimeout(longPressTimer)},{passive:true});
 }
 
 render();
