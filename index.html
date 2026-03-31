@@ -1,1415 +1,214 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Training">
-<title>Daily Training Plan</title>
-<link rel="apple-touch-icon" href="icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);color:#3D2E4A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;-webkit-tap-highlight-color:transparent;min-height:100vh}
-.header{background:linear-gradient(135deg,#F8EEF2,#EDE6F2);padding:20px 16px 16px;border-bottom:1px solid rgba(180,160,190,0.2);position:sticky;top:0;z-index:10;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 50%,#EBE8F5 100%);font-family:-apple-system,sans-serif;max-width:420px;margin:0 auto;min-height:100vh;padding:0}
+.header{background:linear-gradient(135deg,#F8EEF2,#EDE6F2);padding:16px 16px 12px;position:sticky;top:0;z-index:10}
 .label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#B8A5C0;margin-bottom:4px}
-.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.nav button{background:rgba(255,255,255,0.5);border:none;border-radius:8px;padding:8px 14px;color:#6B5B8A;cursor:pointer;font-size:16px;-webkit-appearance:none}
-.nav button:active{background:rgba(255,255,255,0.7)}
-.date-display{text-align:center;font-size:18px;font-weight:700;color:#3D2E4A}
-.quick-nav{display:flex;gap:6px}
-.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.45);border:1px solid rgba(180,160,190,0.2);border-radius:6px;color:#8A7A9E;cursor:pointer;-webkit-appearance:none;transition:all 0.15s}
-.quick-nav button:active{background:rgba(255,255,255,0.65)}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav button{background:rgba(255,255,255,0.5);border:none;border-radius:8px;padding:8px 14px;color:#6B5B8A;font-size:16px}
+.date-display{font-size:18px;font-weight:700;color:#3D2E4A}
+.quick-nav{display:flex;gap:5px}
+.quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.45);border:1px solid rgba(180,160,190,0.2);border-radius:6px;color:#8A7A9E}
 .quick-nav button.active{background:rgba(107,91,138,0.2);border-color:rgba(107,91,138,0.4);color:#3D2E4A}
-.quick-nav .race-btn{background:rgba(196,96,122,0.12);border-color:rgba(196,96,122,0.25);color:#C4607A}
-.quick-nav .race-btn.active{background:rgba(196,96,122,0.3);border-color:rgba(196,96,122,0.5);color:#9E3050}
-.block-info{margin-top:12px;padding:10px 12px;border-radius:8px}
-.block-name{font-size:14px;font-weight:700}
-.block-detail{font-size:12px;color:#A898B0;margin-top:2px}
-.content{padding:16px;display:flex;flex-direction:column;gap:14px}
-.race-banner{text-align:center;padding:16px;background:linear-gradient(135deg,#D4607A,#C4507A,#D4607A);border-radius:12px;border:2px solid #E8889E}
-.race-banner .icon{font-size:28px;margin-bottom:4px}
-.race-banner .title{font-size:18px;font-weight:800;color:#FFF0F3;letter-spacing:1px}
-.race-banner .sub{font-size:13px;color:#FDDDE5;margin-top:4px}
-.run-card{border-radius:14px;padding:16px;border:0.5px solid rgba(180,160,190,0.2)}
-.run-card.normal{background:rgba(255,255,255,0.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.run-card.race{background:linear-gradient(135deg,rgba(196,96,122,0.15),rgba(196,80,122,0.1));border-color:rgba(196,96,122,0.3)}
-.run-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.run-type{font-size:16px;font-weight:700}
-.run-type.normal{color:#5B8A5E}
-.run-type.race{color:#C4607A}
-.run-km{font-size:13px;font-weight:600;background:rgba(91,138,94,0.1);padding:3px 10px;border-radius:20px;color:#5B8A5E}
-.run-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.run-label{font-size:11px;color:#A898B0;text-transform:uppercase;letter-spacing:0.5px}
-.run-value{font-size:14px;color:#3D2E4A;font-weight:600}
-.run-note{margin-top:10px;font-size:13px;color:#7A6B8A;line-height:1.5;border-top:0.5px solid rgba(180,160,190,0.2);padding-top:8px}
-.strength-card{background:rgba(255,255,255,0.6);border-radius:14px;padding:16px;border:0.5px solid rgba(180,160,190,0.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.strength-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.strength-name{font-size:16px;font-weight:700;color:#6B5B8A}
-.strength-dur{font-size:12px;color:#A898B0;background:rgba(107,91,138,0.08);padding:3px 8px;border-radius:12px}
-.exercise{display:grid;grid-template-columns:22px 1fr auto;gap:4px 10px;padding:10px 14px;border-radius:8px;border-left:3px solid rgba(107,91,138,0.15);align-items:start}
-.exercise:nth-child(odd){background:rgba(107,91,138,0.04)}
-.ex-name{font-weight:600;color:#3D2E4A;font-size:14px}
-.ex-sets{color:#6B5B8A;font-weight:600;font-size:14px;text-align:right;white-space:nowrap}
-.ex-tags{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
-.tag{font-size:12px;padding:2px 8px;border-radius:4px}
-.tag-load{background:rgba(107,91,138,0.1);color:#6B5B8A}
-.tag-tempo{background:rgba(200,160,80,0.12);color:#B8883E}
-.tag-note{font-size:12px;color:#A898B0;font-style:italic}
-.other-card{background:rgba(255,255,255,0.45);border-radius:14px;padding:12px 16px;border:0.5px solid rgba(180,160,190,0.15)}
-.other-card.pilates{background:rgba(220,140,170,0.1);border:0.5px solid rgba(220,140,170,0.25)}
-.other-label{font-size:13px;color:#A898B0}
-.other-label.pilates{color:#C4607A;font-weight:600}
-.other-text{font-size:14px;color:#3D2E4A;font-weight:500;margin-top:2px}
-.other-text.pilates{color:#9E4060}
-.notes-card{background:rgba(200,160,80,0.08);border-radius:14px;padding:12px 16px;border:0.5px solid rgba(200,160,80,0.2)}
-.notes-title{font-size:13px;color:#B8883E;font-weight:600;margin-bottom:4px}
-.notes-text{font-size:13px;color:#7A6B8A;line-height:1.5}
-.rest-card{text-align:center;padding:40px 20px;background:rgba(255,255,255,0.35);border-radius:14px}
-.rest-icon{font-size:32px;margin-bottom:8px}
-.rest-title{font-size:16px;font-weight:600;color:#8A7A9E}
-.rest-sub{font-size:13px;color:#B8A5C0;margin-top:4px}
-.ex-form{grid-column:2/-1;margin-top:6px;padding:8px 10px;background:rgba(91,138,94,0.08);border:0.5px solid rgba(91,138,94,0.15);border-radius:6px}
-.ex-form-text{font-size:12px;color:#4A7A4E;line-height:1.5}
-.ex-video-link{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#5B8A5E;text-decoration:none;padding:3px 10px;background:rgba(91,138,94,0.1);border-radius:4px;border:0.5px solid rgba(91,138,94,0.2)}
-.ex-video-link:active{background:rgba(91,138,94,0.2)}
-.fuel-card{margin-top:10px;padding:10px 12px;background:rgba(200,160,80,0.08);border:0.5px solid rgba(200,160,80,0.15);border-radius:8px}
-.fuel-title{font-size:13px;font-weight:700;color:#B8883E;margin-bottom:6px}
-.fuel-row{font-size:12px;color:#7A6B8A;line-height:1.6;margin-bottom:4px}
-.fuel-label{font-weight:600;color:#C49A4A}
-.ex-check{display:flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(180,160,190,0.3);cursor:pointer;transition:all 0.2s;grid-row:1}
-.ex-check.done{background:#5B8A5E;border-color:#5B8A5E}
-.ex-check.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
-.exercise.checked .ex-name,.exercise.checked .ex-sets{opacity:0.4;text-decoration:line-through}
-.run-check-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(180,160,190,0.15);cursor:pointer}
-.run-check-box{width:22px;height:22px;min-width:22px;border-radius:6px;border:2px solid rgba(180,160,190,0.3);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.run-check-box.done{background:#5B8A5E;border-color:#5B8A5E}
-.run-check-box.done::after{content:"✓";color:white;font-size:13px;font-weight:700}
-.run-check-label{font-size:13px;color:#A898B0}
-.run-check-label.done{color:#5B8A5E;font-weight:600}
-.treadmill-card{background:rgba(200,160,80,0.08);border-radius:14px;padding:16px;border:0.5px solid rgba(200,160,80,0.2)}
-.treadmill-header{font-size:16px;font-weight:700;color:#B8883E;margin-bottom:8px}
-.treadmill-detail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.treadmill-note{font-size:12px;color:#7A6B8A;line-height:1.5}
-.steps-card{background:rgba(107,91,160,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(107,91,160,0.15)}
-.steps-header{font-size:16px;font-weight:700;color:#6B5B8A;margin-bottom:4px}
-.steps-target{font-size:14px;color:#8A7A9E;font-weight:500;margin-bottom:4px}
-.spin-card{background:rgba(139,92,246,0.08);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(139,92,246,0.2)}
-.spin-header{font-size:16px;font-weight:700;color:#8B5CF6;margin-bottom:4px}
-.spin-detail{font-size:13px;color:#7A6B8A;line-height:1.5;margin-bottom:4px}
-.protein-card{background:rgba(239,68,68,0.04);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(239,68,68,0.12)}
-.protein-header{font-size:16px;font-weight:700;color:#DC2626;margin-bottom:10px}
-.protein-ring-wrap{position:relative;width:100px;height:100px;margin:0 auto 8px}
-.protein-ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.protein-log-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,0.5);border-radius:8px;margin-bottom:3px;font-size:12px}
-.protein-log-name{color:#3D2E4A;font-weight:500}
-.protein-log-g{color:#6B5B8A;font-weight:600}
-.protein-log-x{color:#C4607A;cursor:pointer;margin-left:8px;font-size:14px}
-.protein-foods{display:flex;flex-wrap:wrap;gap:5px}
-.protein-pill{padding:5px 10px;background:rgba(255,255,255,0.5);border-radius:16px;font-size:11px;color:#3D2E4A;border:0.5px solid rgba(180,160,190,0.2);cursor:pointer}
-.protein-pill:active{background:rgba(107,91,138,0.1);transform:scale(0.96)}
-.protein-pill .pg{color:#A898B0;margin-left:2px}
-.protein-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
-.water-card{background:rgba(59,130,246,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(59,130,246,0.15)}
-.water-header{font-size:16px;font-weight:700;color:#3B82F6;margin-bottom:4px}
-.water-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
-.perfect-day{text-align:center;padding:14px;background:linear-gradient(135deg,rgba(91,138,94,0.12),rgba(16,185,129,0.08));border-radius:14px;border:1.5px solid rgba(91,138,94,0.3);margin-bottom:2px;animation:perfectPop 0.4s ease-out}
-.perfect-day-icon{font-size:32px;margin-bottom:4px}
-.perfect-day-title{font-size:16px;font-weight:800;color:#3D8A50;letter-spacing:0.5px}
-.perfect-day-sub{font-size:12px;color:#5B8A5E;margin-top:2px}
-@keyframes perfectPop{0%{transform:scale(0.9);opacity:0}100%{transform:scale(1);opacity:1}}
-.dash{padding:16px;border-bottom:0.5px solid rgba(180,160,190,0.15)}
-.dash-section{margin-bottom:14px}
-.dash-section:last-child{margin-bottom:0}
+.race-btn{background:rgba(196,96,122,0.12)!important;border-color:rgba(196,96,122,0.25)!important;color:#C4607A!important}
+.content{padding:16px;display:flex;flex-direction:column;gap:12px}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin-bottom:6px}
+
+/* Run card */
+.run-card{background:rgba(255,255,255,0.6);border-radius:14px;padding:14px;border:0.5px solid rgba(180,160,190,0.2)}
+.run-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.run-type{font-size:15px;font-weight:700;color:#5B8A5E}
+.run-km{font-size:12px;font-weight:600;background:rgba(91,138,94,0.1);padding:3px 10px;border-radius:12px;color:#5B8A5E}
+.run-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.run-label{font-size:10px;color:#A898B0;text-transform:uppercase;letter-spacing:0.5px}
+.run-value{font-size:13px;color:#3D2E4A;font-weight:600}
+.run-note{margin-top:8px;font-size:12px;color:#7A6B8A;border-top:0.5px solid rgba(180,160,190,0.15);padding-top:8px}
+
+/* Strava card */
+.strava-actual{padding:12px 14px;background:rgba(255,90,0,0.06);border-radius:12px;border:0.5px solid rgba(255,90,0,0.15)}
+.strava-header-row{display:flex;justify-content:space-between;align-items:center}
+.strava-title{font-size:13px;font-weight:700;color:#FC4C02}
+.strava-stats{font-size:12px;color:#7A6B8A;margin-top:4px}
+.strava-stats span{font-weight:600;color:#3D2E4A}
+.feedback-good{margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px}
+.feedback-warn{margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px}
+.feedback-amber{margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px}
+
+/* Check row */
+.check-row{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(180,160,190,0.15)}
+.check-box{width:22px;height:22px;min-width:22px;border-radius:6px;background:#5B8A5E;display:flex;align-items:center;justify-content:center}
+.check-box::after{content:"✓";color:white;font-size:13px;font-weight:700}
+.check-label{font-size:13px;color:#5B8A5E;font-weight:600}
+
+/* Dashboard cards */
+.dash{padding:16px}
 .dash-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin-bottom:8px}
-.progress-wrap{background:rgba(107,91,138,0.08);border-radius:8px;height:8px;overflow:hidden;margin-top:6px}
-.progress-bar{height:100%;border-radius:8px;transition:width 0.3s}
-.progress-text{font-size:12px;color:#A898B0;margin-top:4px}
-.week-strip{display:flex;gap:4px}
-.week-day{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.4);color:#A898B0;cursor:pointer;transition:all 0.2s}
-.week-day.today{border:2px solid #6B5B8A;color:#6B5B8A}
-.week-day.completed{background:rgba(91,138,94,0.15);color:#5B8A5E}
-.week-day.completed.today{border-color:#5B8A5E}
-.week-day.partial{background:rgba(200,160,80,0.12);color:#B8883E}
-.streak-row{display:flex;align-items:center;gap:12px}
-.streak-number{font-size:32px;font-weight:800;color:#3D2E4A}
-.streak-label{font-size:13px;color:#A898B0;line-height:1.4}
-.streak-fire{font-size:28px}
-.race-countdown{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(196,96,122,0.08);border:0.5px solid rgba(196,96,122,0.2);border-radius:8px}
-.race-countdown-days{font-size:24px;font-weight:800;color:#C4607A}
-.race-countdown-label{font-size:13px;color:#C4607A}
-.strava-run-item{padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)}
+.stat-row{display:flex;gap:8px;margin-bottom:10px}
+.stat-card{flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px}
+.stat-card .label2{font-size:10px;text-transform:uppercase;color:#A898B0}
+.stat-card .num{font-size:20px;font-weight:800;color:#3D2E4A}
+.strava-run-item{padding:7px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)}
 .strava-run-item:last-child{border-bottom:none}
 .strava-run-date{font-size:10px;color:#A898B0;text-transform:uppercase;letter-spacing:0.5px}
 .strava-run-name{font-size:13px;font-weight:600;color:#3D2E4A;margin-top:1px}
 .strava-run-stats{font-size:12px;color:#6B5B8A;margin-top:2px}
-.strava-actual{padding:10px 14px;background:rgba(255,90,0,0.06);border-radius:10px;border:0.5px solid rgba(255,90,0,0.15)}
-.strava-actual-header{font-size:13px;font-weight:700;color:#FC4C02;margin-bottom:4px}
-.strava-actual-stats{font-size:12px;color:#7A6B8A}
-.coach-card{background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(180,160,190,0.2);margin-bottom:10px}
-.coach-card-title{font-size:13px;font-weight:700;color:#6B5B8A;margin-bottom:8px}
-.coach-stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)}
-.coach-stat-row:last-child{border-bottom:none}
-.coach-stat-label{font-size:12px;color:#A898B0}
-.coach-stat-value{font-size:14px;font-weight:700;color:#3D2E4A}
-.coach-stat-sub{font-size:11px;color:#A898B0}
-.coach-feedback{padding:12px 14px;background:rgba(91,138,94,0.06);border-radius:12px;border:0.5px solid rgba(91,138,94,0.15);margin-bottom:10px}
-.coach-feedback-title{font-size:13px;font-weight:700;color:#5B8A5E;margin-bottom:6px}
-.coach-feedback-text{font-size:12px;color:#3D2E4A;line-height:1.6}
-.coach-warn{background:rgba(200,160,80,0.08);border-color:rgba(200,160,80,0.2)}
-.coach-warn .coach-feedback-title{color:#B8883E}
-.coach-good{background:rgba(91,138,94,0.08);border-color:rgba(91,138,94,0.2)}
-.coach-good .coach-feedback-title{color:#5B8A5E}
-.coach-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:4px}
-.coach-bar-bg{flex:1;height:6px;background:rgba(107,91,138,0.08);border-radius:3px;overflow:hidden}
-.coach-bar-fill{height:100%;border-radius:3px}
-.coach-bar-label{font-size:11px;color:#A898B0;min-width:35px;text-align:right}
-.coach-long-run{display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:6px}
-.coach-long-bar{flex:1;background:rgba(91,138,94,0.3);border-radius:3px 3px 0 0;min-width:0}
-.coach-long-bar.latest{background:#5B8A5E}
-.coach-long-label{font-size:9px;color:#A898B0;text-align:center;margin-top:2px}
+.best-run{padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);margin-bottom:10px;font-size:12px}
+.divider{height:12px}
+.view-label{text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#B8A5C0;padding:8px 0;margin-bottom:4px}
 </style>
 </head>
 <body>
+
+<!-- ═══════════════ DAILY VIEW ═══════════════ -->
+<div class="view-label">📍 Daily view — Sat 29 Mar</div>
+
 <div class="header">
-  <div class="label">Daily Training Plan</div>
-  <div class="nav">
-    <button id="prev">←</button>
-    <div class="date-display" id="dateDisplay"></div>
-    <button id="next">→</button>
-  </div>
-  <div class="quick-nav">
-    <button id="goHome">🏠 Home</button>
-    <button id="goToday">📍 Today</button>
-    <button id="goCoach">📊 Coach</button>
-    <button id="goRace" class="race-btn">🏁 May 3 HM</button>
-  </div>
-  <div id="blockInfo" class="block-info" style="display:none"></div>
+<div class="label">Daily training plan</div>
+<div class="nav">
+<button>←</button>
+<div class="date-display">Sat 29 Mar 2026</div>
+<button>→</button>
 </div>
-<div id="dashboard" class="dash"></div>
-<div id="coachView" class="dash" style="display:none"></div>
-<div class="content" id="content"></div>
-
-<script>
-// ─── DATA ───────────────────────────────────────────────────────────
-const BLOCKS=[{id:"preplan",name:"Pre-Plan: Getting Ready",startDate:"2026-03-27",endDate:"2026-03-29",weeks:1,weeklyKm:"~16",focus:"Final prep before plan starts Monday. 16 km long run Sunday.",color:"#10b981"},{id:"block1",name:"Block 1: Return to Base",startDate:"2026-03-30",endDate:"2026-04-26",weeks:4,weeklyKm:"28–38",focus:"Rebuild frequency to 4 runs, establish strength patterns, prep for May 3 HM",color:"#2563eb"},{id:"raceweek_hm1",name:"May 3 HM – Race Week",startDate:"2026-04-27",endDate:"2026-05-03",weeks:1,weeklyKm:"~20",focus:"Taper & race – target ~2:05",color:"#dc2626"},{id:"recovery1",name:"Post-Race Recovery",startDate:"2026-05-04",endDate:"2026-05-17",weeks:2,weeklyKm:"15–25",focus:"Absorb race, reset for aerobic build",color:"#6b7280"},{id:"block2",name:"Block 2: Aerobic Development",startDate:"2026-05-18",endDate:"2026-06-28",weeks:6,weeklyKm:"30–48",focus:"Build to 40–45 km/wk, introduce tempo, long runs to 18 km",color:"#0891b2"},{id:"block3",name:"Block 3: City2Surf Prep",startDate:"2026-06-29",endDate:"2026-08-09",weeks:6,weeklyKm:"40–48",focus:"Hill work, target sub-75 C2S",color:"#7c3aed"},{id:"block4",name:"Block 4: Volume Build",startDate:"2026-08-10",endDate:"2026-09-27",weeks:7,weeklyKm:"25→55",focus:"Post-C2S recovery → build to 55 km/wk",color:"#059669"},{id:"block5",name:"Block 5: HM Specific Build",startDate:"2026-09-28",endDate:"2026-11-08",weeks:6,weeklyKm:"50–55",focus:"Race-pace work → PEAK: Sub-2:00 Half Marathon",color:"#dc2626"},{id:"block6",name:"Block 6: Recovery & Strength",startDate:"2026-11-09",endDate:"2026-12-31",weeks:8,weeklyKm:"25–35",focus:"Glute hypertrophy focus, enjoy running",color:"#d97706"},{id:"block7",name:"Block 7: Aerobic Rebuild + Speed",startDate:"2027-01-01",endDate:"2027-02-28",weeks:8,weeklyKm:"40–50",focus:"400m/800m reps, speed development",color:"#2563eb"},{id:"block8",name:"Block 8: C2S Specific Peak",startDate:"2027-03-01",endDate:"2027-05-31",weeks:13,weeklyKm:"45–50",focus:"Hill power, sustained tempo",color:"#7c3aed"},{id:"block9",name:"Block 9: C2S Final Sharpening",startDate:"2027-06-01",endDate:"2027-08-15",weeks:11,weeklyKm:"45–50",focus:"PEAK: Sub-70 City2Surf",color:"#dc2626"}];
-
-function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength A – Glute + Push",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – when you hit all reps, add 2.5 kg next session"},{name:"DB sumo squat",sets:3,reps:"12–15",load:h?"16–20 kg DB":m?"12–14 kg DB":"10–14 kg DB → add 2 kg when you hit 15 on all sets",tempo:"Slow lower (3 sec), squeeze glutes at top",note:"Wide stance, toes out 45°. Hold 1 DB vertically at chest. Glute focus."},{name:"DB bench press",sets:h?4:m?3:3,reps:h?"6–8":"8–10",load:h?"12.5 kg DBs → build to 15 kg":m?"10–12.5 kg (maintain)":"10 kg DBs → add 1.25 kg when you hit 10 reps on all sets",tempo:"Controlled",note:""},{name:"DB shoulder press",sets:3,reps:"10–12",load:h?"10 kg DBs → build to 12.5 kg":m?"7.5–10 kg (maintain)":"7.5 kg DBs → add 1.25 kg when you hit 12 on all sets",tempo:"Controlled",note:""},{name:"Pallof press",sets:3,reps:"10 each side",load:h?"12–15 kg cable":"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
-function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength B – Posterior + Pull",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation"},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"38–42 kg → build to 48 kg":"32–35 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},{name:"Cable kickback",sets:3,reps:"15 each leg",load:h?"10–12 kg cable":"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top 1 sec",note:"Glute isolation – no swinging"},{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health"},{name:"Lat pulldown",sets:h?4:3,reps:"8–10",load:h?"35–38 kg → build to 42 kg":"30 kg → add 2.5 kg when you hit 10 on all sets",tempo:"Squeeze shoulder blades at bottom",note:""},{name:"Seated cable row",sets:3,reps:"10–12",load:h?"30–34 kg":"22–27 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Squeeze shoulder blades 1 sec",note:""}]}}
-function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Activation + Arms",duration:m?"30 min":h?"45 min":"40 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:"Warm-up – feel it in side of glutes"},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Abductor machine",sets:3,reps:h?"12–15":"15",load:h?"38–42 kg → build to 48 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full open 1 sec",note:"Glute medius – sit tall, don't lean back"},{name:"Adductor machine",sets:3,reps:"15",load:h?"38–42 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full close 1 sec",note:"Inner thigh + pelvic stability"},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → add 1 kg when you hit 15 on all sets",tempo:"2-sec lower",note:""},{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"}]}};
-
-function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
-function getBlock(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);for(const b of BLOCKS){if(c>=parseLocal(b.startDate)&&c<=parseLocal(b.endDate))return b}return null}
-function getWeek(d,b){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);return Math.floor((c-parseLocal(b.startDate))/(864e5*7))+1}
-function phase(id){if(id==="block6")return"hypertrophy";if(id==="block5"||id==="block9")return"maintenance";return"base"}
-
-function getPlan(date){
-const b=getBlock(date);if(!b)return{block:null,message:"No training scheduled – navigate to a date within Mar 2026 – Aug 2027."};
-const w=getWeek(date,b),d=date.getDay(),p=phase(b.id);
-let run=null,str=null,other=null,notes=[],race=false,spin=false;
-
-// Mon=1:GymA+Pilates, Tue=2:QualityRun+Pilates, Wed=3:GymB+EasyRun, Thu=4:Rest, Fri=5:GymC+EasyRun, Sat=6:Spin, Sun=0:LongRun
-function week(o){
-const q=o.q||{type:"Easy run",km:"6",pace:"5:50–6:10/km",int:"Zone 2",note:""};
-const ek=o.ek||"5–6",ep=o.ep||"5:50–6:10/km";
-const lr=o.lr||{type:"Long run",km:"14",pace:"5:50–6:15/km",int:"Zone 2",note:""};
-const mr=o.mr;// optional Monday morning run for blocks 4+
-const W={
-1:{str:SA(p),other:"PM: Pilates",run:mr||null},
-2:{run:q,other:"PM: Pilates"},
-3:{str:SB(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."}},
-4:{notes:["REST DAY. Recover, stretch, foam roll. Eat well."]},
-5:{str:SC(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."}},
-6:{spin:true,notes:["45 min spin class – Zone 2 cardio. Steady effort, don't smash it."]},
-0:lr.type?{run:lr}:{notes:lr.notes||["Easy day"]}
-};
-return W[d]||{notes:["Rest"]};
-}
-
-if(b.id==="preplan"){
-const P={
-5:{other:"PM: Pilates",notes:["Rest from running today. Pilates + recovery. Plan starts Monday."]},
-6:{spin:true,notes:["45 min spin – Zone 2. Easy effort."]},
-0:{run:{type:"Long run",km:"16",pace:"5:50–6:10/km",int:"Zone 2",note:"Keep HR < 155. Easy pace, no heroics."}}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes}
-}
-
-else if(b.id==="block1"){
-const longKms=[18,14,10,0];
-const dl=w>=3;const sk=longKms[w-1]||10;
-const t=week({
-q:{type:"Easy run",km:"6–7",pace:"5:45–6:05/km",int:"Zone 2",note:"Keep HR < 155. Building base — no quality sessions yet."},
-ek:dl?"4–5":"5–6",
-lr:sk>0?{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:w===1?"Longest pre-race run – dress rehearsal":dl?"Taper week":"Build week"}:{type:null,notes:["Easy 5–6 km only. No long run — race week next."]}
-});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-if(dl)notes.push("Taper week – reduced volume");
-}
-
-else if(b.id==="raceweek_hm1"){
-const P={
-1:{str:SA(p),other:"PM: Pilates",notes:["Light gym — drop 1 set each. Last strength before race."]},
-2:{run:{type:"Strides",km:"4",pace:"Easy + 4×100m strides",int:"Easy",note:"Shake out legs."},other:"PM: Pilates"},
-3:{run:{type:"Easy run",km:"3–4",pace:"6:00–6:10/km",int:"Zone 1",note:"Just a jog."}},
-4:{notes:["FULL REST. Hydrate. Lay out race gear."]},
-5:{run:{type:"Openers",km:"3",pace:"Easy jog + 4 strides",int:"Very easy",note:"Lay out race kit."}},
-6:{notes:["FULL REST. Carb-rich dinner. Sleep early. Trust the work."]},
-0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target ~5:55/km for ~2:05",int:"Honest effort",note:"km 1–5: 5:55–6:00. km 6–15: 5:50–5:55. km 16–18: honest effort. km 19–21: push if strong but DON'T empty the tank."},race:true,notes:["Gel at km 7 and km 14. Water at every station from km 5."]}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
-}
-
-else if(b.id==="recovery1"){
-if(w===1){
-const P={
-1:{notes:["FULL REST. You raced yesterday."]},
-2:{run:{type:"Recovery run",km:"4–5",pace:"6:15–6:30/km",int:"Zone 1",note:"Only if legs feel okay."},other:"PM: Pilates (gentle)"},
-3:{run:{type:"Easy run",km:"4",pace:"6:00–6:15/km",int:"Zone 1–2",note:""}},
-4:{notes:["Rest"]},
-5:{str:SC("maintenance"),notes:["Light activation only."]},
-6:{spin:true,notes:["Easy spin – 30 min only this week."]},
-0:{run:{type:"Easy run",km:"6–7",pace:"6:00–6:15/km",int:"Zone 2",note:"First longer run post-race"}}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes}
-}else{
-const t=week({q:{type:"Easy run",km:"6",pace:"5:50–6:05/km",int:"Zone 2",note:"Still recovering."},ek:"5",lr:{type:"Long run",km:"8–10",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-}
-}
-
-else if(b.id==="block2"){
-const tk=w<=2?3:w<=4?4:5,tp=w<=4?"5:25–5:30/km":"5:15–5:25/km";
-const lk=Math.min(14+(w-1),18),sk=w===6?12:lk;
-const ln=w===2?"Last 3 km at tempo effort":w===4?"Middle 4 km at moderate effort":"All easy";
-const t=week({q:{type:"Tempo run",km:"~"+(tk+4)+" ("+tk+" km tempo)",pace:"Tempo: "+tp,int:"Zone 3",note:"2 km WU → "+tk+" km tempo → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:ln}});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-if(w===6)notes.push("Deload week");
-}
-
-else if(b.id==="block3"){
-const rw=w===6;const hr=w<=2?"6×90 sec":w<=4?"8×90 sec":"5×2 min";
-if(rw){
-const P={
-1:{str:SA(p),notes:["Light gym. Last strength before C2S."]},
-2:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},
-3:{run:{type:"Easy run",km:"3",pace:"6:00/km",int:"Zone 1",note:""}},
-4:{notes:["REST"]},
-5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},
-6:{notes:["REST. Prep. Hydrate."]},
-0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~5:10–5:20/km for sub-75",int:"Strong effort",note:"Start 5:10–5:15. Maintain on Heartbreak Hill. Open up downhill."},race:true}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
-}else{
-const t=week({q:{type:"Hill repeats",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD."},ek:"5–6",lr:{type:"Long run (hilly)",km:"14–16",pace:"5:45–6:00/km",int:"Zone 2",note:"Simulate C2S terrain"}});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-}
-}
-
-else if(b.id==="block4"){
-const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"5th run — before gym. Short and easy."};
-if(w<=2){
-if(w===1){
-const P={
-1:{notes:["Rest. Recovery from C2S."]},
-2:{run:{type:"Easy run",km:"5",pace:"6:00–6:15/km",int:"Zone 1–2",note:""},other:"PM: Pilates"},
-3:{run:{type:"Easy run",km:"5",pace:"6:00–6:10/km",int:"Zone 2",note:""}},
-4:{notes:["Rest"]},
-5:{str:SC("maintenance"),notes:["Light activation only"]},
-6:{spin:true,notes:["Easy spin – 30 min only."]},
-0:{run:{type:"Long run",km:"8",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes}
-}else{
-const t=week({q:{type:"Easy run",km:"6",pace:"5:50–6:05/km",int:"Zone 2",note:"Still rebuilding."},ek:"5–6",lr:{type:"Long run",km:"12",pace:"5:55–6:15/km",int:"Zone 2",note:"Rebuilding"}});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-}
-}else{
-const lk=Math.min(16+(w-3)*2,20),sk=w===7?14:lk;
-const t=week({q:{type:"Moderate run",km:"8–10",pace:"4–6 km @ 5:25–5:35/km",int:"Zone 2–3",note:"2 km WU → tempo → CD"},ek:"5–6",lr:{type:"Long run",km:""+sk,pace:"5:45–6:10/km",int:"Zone 2",note:w===5?"20 km – your longest run ever!":""},mr:monRun});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-notes.push("5th run added — Monday AM before gym");
-}
-}
-
-else if(b.id==="block5"){
-const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"5th run — before gym."};
-const rw=w===6;
-if(rw){
-const P={
-1:{str:SA("maintenance"),notes:["Light gym. Last strength before A-race."]},
-2:{run:{type:"Strides",km:"4",pace:"Easy + 4×200m strides",int:"Easy",note:""},other:"Pilates PM"},
-3:{run:{type:"Easy run",km:"4",pace:"6:00/km",int:"Zone 1",note:""}},
-4:{notes:["REST. Hydrate. Prep gear."]},
-5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:"Lay out race kit."}},
-6:{notes:["REST. Carb-load dinner. Sleep early."]},
-0:{run:{type:"🏁 RACE: Half Marathon",km:"21.1",pace:"Target 5:38–5:42/km for sub-2:00",int:"A-RACE",note:"km 1–5: 5:42–5:45. km 6–15: 5:38–5:42. km 16–18: maintain. km 19–21: everything."},race:true}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
-}else{
-const lk=w===1?18:w===2?20:w===3?22:w===4?20:16;
-const ln=w===2?"Middle 6 km @ 5:40–5:45 (HM pace)":w===3?"LONGEST RUN":w===4?"8 km @ 5:38–5:42 (race pace)":"Taper";
-const t=week({q:{type:"Intervals",km:"~9 total",pace:(w<=2?"5":"6")+"×1 km @ 5:00–5:10/km",int:"Zone 4",note:"2 km WU → intervals (90s jog) → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:""+lk,pace:"5:45–6:10/km",int:"Zone 2",note:ln},mr:monRun});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-}
-}
-
-else if(b.id==="block6"){
-const t=week({q:{type:"Easy run",km:"5–7",pace:"Run by feel",int:"Easy",note:"Run for joy. No intensity."},ek:"5–6",ep:"Easy",lr:{type:"Long easy run",km:"10–12",pace:"Easy – fun routes",int:"Zone 2",note:"No pressure"}});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-notes.push("Glute hypertrophy phase – push strength hard");
-}
-
-else if(b.id==="block7"){
-const sr=w<=2?"8×400m @ 4:40–4:50":w<=4?"10×400m @ 4:35–4:45":w<=6?"6×600m @ 4:35–4:45":"5×800m @ 4:40–4:50";
-const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:35–5:55/km",int:"Zone 2",note:"5th run — before gym."};
-const t=week({q:{type:"Speed session",km:"~8 total",pace:sr,int:"Zone 4–5",note:"2 km WU → reps (90s jog) → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:"15–18",pace:"5:45–6:05/km",int:"Zone 2",note:""},mr:monRun});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-if(w===8)notes.push("Deload week");
-}
-
-else if(b.id==="block8"){
-const hr=w<=3?"8×90 sec":w<=6?"10×90 sec":w<=8?"6×2 min":"4×90 sec (taper)";
-const monRun={type:"Easy run (AM)",km:"5–6",pace:"5:35–5:55/km",int:"Zone 2",note:"5th run — before gym."};
-const t=week({q:{type:"Hill intervals",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD"},ek:"5–6",lr:{type:"Long run (hilly)",km:"14–18",pace:"5:40–6:00/km",int:"Zone 2",note:"Choose hilly routes"},mr:monRun});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-}
-
-else if(b.id==="block9"){
-const tp=w>=8,rw=w>=10;
-const monRun={type:"Easy run (AM)",km:tp?"5":"5–6",pace:"5:30–5:50/km",int:"Zone 2",note:"5th run — before gym."};
-if(rw){
-const P={
-1:{str:SA("maintenance"),notes:["Light gym. Last strength before A-race."]},
-2:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},
-3:{run:{type:"Easy run",km:"3",pace:"6:00/km",int:"Zone 1",note:""}},
-4:{notes:["REST"]},
-5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},
-6:{notes:["REST. Trust the work."]},
-0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~4:52/km for sub-70",int:"A-RACE",note:"km 1–4: 4:45–4:50. Heartbreak: 5:10–5:20. Descent: 4:35–4:45. Final km: everything."},race:true}
-};
-const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
-}else{
-const t=week({q:{type:"C2S rehearsal",km:tp?"8":"10–12",pace:"Race effort on hilly course",int:"Zone 3–4",note:""},ek:tp?"5":"5–6",lr:{type:"Long run",km:tp?"12":"14–16",pace:"Moderate on hills",int:"Zone 2",note:""},mr:monRun});
-run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-}
-}
-
-return{block:b,week:w,run,str,other,notes,race,spin};
-}
-
-// ─── RENDERING ──────────────────────────────────────────────────────
-let currentDate=new Date();currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
-const $=id=>document.getElementById(id);
-const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-function fmt(d){return days[d.getDay()]+" "+d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear()}
-
-// ─── FORM CUES + VIDEO LINKS ───────────────────────────────────────
-const FORM={
-"Banded glute bridge (warm-up)":{form:"Feet flat, hip-width. Drive through heels, not toes. Squeeze glutes at top — imagine cracking a walnut between your cheeks. Don't arch lower back.",link:"https://www.youtube.com/watch?v=GmRSV_n2E_0"},
-"Hip thrust (booty builder)":{form:"Set up with shoulder blades on the pad edge. Chin tucked, look forward not up. Drive through heels. At lockout, ribs down, pelvis tucked — posterior pelvic tilt. No lower back extension. Pause 2 sec and squeeze hard at top.",link:"https://www.youtube.com/watch?v=xDmFkJxPzeM"},
-"DB sumo squat":{form:"Wide stance — feet well outside shoulders, toes pointed out 45°. Hold one heavy DB vertically at chest height (goblet grip). Lower slowly by pushing hips back and bending knees — go deep, aim to get thighs parallel or below. Drive up through heels, squeeze glutes hard at the top. Keep chest up, don't round your back. The wide stance makes this glute-dominant, not quad-dominant.",link:"https://www.youtube.com/watch?v=9ZuXKqRbT9k"},
-"Bulgarian split squat (light)":{form:"Rear foot laces-down on bench. Front foot far enough forward that your knee stays behind toes. Lean torso forward 30° for glute emphasis. Drive through front heel. Keep hips square — don't rotate.",link:"https://www.youtube.com/watch?v=2C-uNgKwPLE"},
-"DB bench press":{form:"Retract shoulder blades — squeeze them together and down. Slight arch in upper back, feet flat on floor. Lower DBs to chest level with elbows at ~45° (not flared 90°). Press up and slightly inward.",link:"https://www.youtube.com/watch?v=VmB1G1K7v94"},
-"Bench press (barbell)":{form:"Retract shoulder blades, slight upper back arch. Grip just outside shoulders. Bar path: lower to mid-chest, press back up toward face in a slight arc. Elbows ~45° — not flared wide.",link:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
-"DB shoulder press":{form:"Seated or standing. Start with DBs at ear height, palms forward. Press straight up — don't let the weights drift forward. Brace core, don't arch back. Lower controlled to ear level.",link:"https://www.youtube.com/watch?v=qEwKCR5JCog"},
-"Tricep pushdowns":{form:"Stand close to cable, slight forward lean. Pin elbows to your sides — they don't move. Extend forearms down, squeeze triceps at bottom. Slow return. If elbows swing, the weight is too heavy.",link:"https://www.youtube.com/watch?v=2-LAMcpzODU"},
-"Pallof press":{form:"Stand side-on to cable at chest height. Hold handle at chest. Press straight out — resist the rotation. Arms fully extended, hold 1 sec, return. Your core is fighting the cable's pull. No twisting.",link:"https://www.youtube.com/watch?v=AH_QZLm_0-s"},
-"Banded clamshells (warm-up)":{form:"Side-lying, band above knees, heels together. Open top knee like a clamshell — rotate from the hip, not the lower back. Keep hips stacked vertically. Slow and controlled, feel it in the side of your glute.",link:"https://www.youtube.com/watch?v=cEaCnbGKmMQ"},
-"Single-leg glute bridge":{form:"Back flat on floor, one foot planted, other leg extended or knee held to chest. Drive through the planted heel. Hips level — don't let the free side drop. Squeeze glute at top for 2 sec.",link:"https://www.youtube.com/watch?v=AVAXhy6pl7o"},
-"Romanian deadlift":{form:"Feet hip-width, soft knees (slight bend, locked in position). Push hips BACK — the bar slides down your thighs. Feel the hamstring stretch. Back stays flat — the moment it rounds, that's your range of motion. Drive hips forward to return.",link:"https://www.youtube.com/watch?v=JCXUYuzwNrM"},
-"Good mornings (light)":{form:"Bar on upper back (like a squat), feet hip-width. Soft knees, hinge at hips — push them back. Lower until torso is close to parallel. Flat back throughout. This is controlled and light — it's for injury prevention, not ego.",link:"https://www.youtube.com/watch?v=YA-h3n9L4YU"},
-"Cable kickback":{form:"Face the cable, ankle strap on. Slight forward lean, brace core. Extend leg straight back — squeeze glute at the top. Don't arch your lower back to get more range. Controlled, no swinging.",link:"https://www.youtube.com/watch?v=dXMvr3uMmDc"},
-"Nordic curl eccentric":{form:"Kneel on a pad, anchor your ankles (under a bar or have someone hold them). Hands ready to catch yourself. Slowly lower your body forward — fight gravity with your hamstrings for a full 5-sec count. Push back up with your hands. You're training the lowering phase only.",link:"https://www.youtube.com/watch?v=BpKadYwbGPo"},
-"Lat pulldown":{form:"Grip just wider than shoulders. Lean back slightly (~15°). Pull the bar to your upper chest — lead with your elbows, drive them down and back. Squeeze your shoulder blades together at the bottom. Control the return.",link:"https://www.youtube.com/watch?v=CAwf7n6Luuc"},
-"Seated cable row":{form:"Sit tall, slight knee bend. Pull handle to lower ribcage — drive elbows straight back. Squeeze shoulder blades together for 1 sec. Don't lean back to cheat — your torso stays still. Control the release.",link:"https://www.youtube.com/watch?v=GZbfZ033f74"},
-"Bicep curls":{form:"Stand with elbows pinned to your sides. Curl up, rotating palms toward shoulders. Don't swing — if your torso rocks, the weight is too heavy. Slow lowering (2–3 sec eccentric).",link:"https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
-"Dead bug":{form:"Lie on back, arms straight up, knees at 90°. Press lower back into the floor — it must NOT leave the ground. Extend opposite arm and leg simultaneously. Breathe out as you extend. If your back lifts, you've gone too far.",link:"https://www.youtube.com/watch?v=I5xbsA71v1A"},
-"Banded lateral walks":{form:"Band just above knees (or ankles for harder). Quarter-squat position — stay low throughout. Step sideways, leading with the heel. Keep toes forward, don't let knees cave in. Feel the burn in the side of your glutes (gluteus medius).",link:"https://www.youtube.com/watch?v=zTOPFZrekbE"},
-"Single-leg hip thrust":{form:"Shoulder blades on bench, one foot planted, other leg extended. Drive through the planted heel. At the top: ribs down, squeeze glute, hold 1–2 sec. Keep hips level. If you feel it in your lower back, reset your pelvis position.",link:"https://www.youtube.com/watch?v=BXKB1YE5ufY"},
-"Single-leg hip thrust (weighted)":{form:"Same as bodyweight version but with a plate on your hip. Shoulder blades on bench, one foot planted. Drive through heel, squeeze at top with posterior pelvic tilt. Hold 1–2 sec. Keep hips level.",link:"https://www.youtube.com/watch?v=BXKB1YE5ufY"},
-"Step-ups (low box)":{form:"Forward lean of ~20° — this shifts the load onto your glute instead of your quad. Step up driving through the heel of the working leg. Do NOT push off the back foot — that's cheating. Stand fully, squeeze glute, then lower controlled.",link:"https://www.youtube.com/watch?v=dQqApCGd5Ss"},
-"Abductor machine":{form:"Sit tall with back against the pad — don't lean back or forward. Push knees apart against the pads, driving from the glutes. Squeeze hard at full open and hold 1 sec. Control the return — don't let the weight slam. You should feel this in the side of your glutes, not your hip flexors.",link:"https://www.youtube.com/watch?v=GNwKUo2FYGE"},
-"Adductor machine":{form:"Sit tall, back against pad. Squeeze knees together against the pads, driving from your inner thighs. Hold at full close for 1 sec. Slow release — don't let the weight pull your legs apart. Keep your core braced throughout.",link:"https://www.youtube.com/watch?v=1e0dqMnkXYI"},
-"Frog pump":{form:"Lie on back, soles of feet together, knees out wide (like a frog). Drive hips up squeezing glutes hard at top. Short range of motion — this is about the squeeze, not the height. High reps, constant tension.",link:"https://www.youtube.com/watch?v=3idsBMaqsR4"},
-"Plank hold":{form:"Forearms and toes. Body in a straight line — no sagging hips, no piking up. Tuck your pelvis slightly (posterior tilt). Squeeze glutes, brace core like you're about to be punched. Breathe normally. If your form breaks, the set is over.",link:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
-"Plank variations":{form:"Start with standard forearm plank. Progress to shoulder taps, plank walks, or plank with leg lift. Key cue for all: pelvis tucked, glutes engaged, no hip rocking side to side during variations.",link:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
-"Bird dog":{form:"On all fours, wrists under shoulders, knees under hips. Extend opposite arm and leg simultaneously — reach long. Keep hips level (put a water bottle on your lower back — it shouldn't fall). Pause 2 sec extended, return controlled.",link:"https://www.youtube.com/watch?v=wiFNA3sqjCA"},
-"Single-leg calf raises":{form:"Stand on the edge of a step on one foot. Lower heel below the step for full stretch. Rise up onto your toes, pause 1 sec at the top. Slow lowering. Hold a wall for balance if needed. Full range of motion matters here.",link:"https://www.youtube.com/watch?v=OsTQ4GKMMVU"},
-"Face pulls":{form:"Cable at face height, rope attachment. Pull toward your face, splitting the rope — hands finish beside your ears. Elbows high, squeeze shoulder blades together. This is a rear delt/rotator cuff exercise — keep it light.",link:"https://www.youtube.com/watch?v=V8dZ3pyiCBo"},
-"Incline treadmill walk":{form:"Set incline to 10–12%, speed 5.5–6.5 km/h. Walk tall — don't lean on the console or hold the handrails. Swing your arms naturally. Push through your heels on each step to engage glutes. You should feel this in your glutes and hamstrings, not your calves. If you're gripping the rails, drop the incline or speed.",link:"https://www.youtube.com/watch?v=aTxEJG2L-GI"},
-};
-
-// Normalize exercise name for lookup (strip weighted/barbell variants)
-function getForm(name){
-if(FORM[name])return FORM[name];
-// Try partial matches
-for(const k in FORM){if(name.includes(k)||k.includes(name))return FORM[k]}
-return null;
-}
-
-function renderExercise(ex,i){
-const f=getForm(ex.name);
-let tags="";
-if(ex.load)tags+=`<span class="tag tag-load">⚖️ ${ex.load}</span>`;
-if(ex.tempo)tags+=`<span class="tag tag-tempo">⏱️ ${ex.tempo}</span>`;
-if(ex.note)tags+=`<span class="tag-note">${ex.note}</span>`;
-
-let formHtml="";
-if(f){
-formHtml=`<div class="ex-form"><div class="ex-form-text">📐 ${f.form}</div>${f.link?`<a href="${f.link}" target="_blank" rel="noopener" class="ex-video-link">▶ Watch form video</a>`:""}</div>`;
-}
-
-return`<div class="exercise" id="ex-${i}" style="${i%2===0?"background:rgba(255,255,255,0.04)":""}"><div class="ex-check" onclick="toggleEx(${i})"></div><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets} × ${ex.reps}</div>${tags?`<div class="ex-tags">${tags}</div>`:""}${formHtml}</div>`;
-}
-
-function getFuel(r){
-if(!r||r.type.includes("RACE"))return null;
-const km=parseFloat(r.km)||0;
-const isQuality=r.int&&(r.int.includes("3")||r.int.includes("4")||r.int.includes("5"));
-const isTempo=r.type.toLowerCase().includes("tempo")||r.type.toLowerCase().includes("interval")||r.type.toLowerCase().includes("hill")||r.type.toLowerCase().includes("speed");
-const isLong=r.type.toLowerCase().includes("long");
-const isRecovery=r.type.toLowerCase().includes("recovery")||r.type.toLowerCase().includes("opener");
-
-let pre="",during="",after="";
-
-if(km<=5&&!isTempo){
-// Short easy run
-pre="☕ Optional: coffee + small banana or nothing if running within 60 min of waking. Stay hydrated.";
-during="💧 No fuel needed. Sip water if hot.";
-after="🥛 Glass of water + small snack if hungry. No rush on recovery meal.";
-}else if(km<=7&&!isTempo){
-// Medium easy run
-pre="🍌 Small banana or toast with honey 30–60 min before. Coffee fine.";
-during="💧 No fuel needed. Carry water if hot/humid.";
-after="🥛 20–30g protein within 45 min (yoghurt + fruit, protein shake, eggs on toast).";
-}else if(isTempo||isQuality){
-// Quality session (tempo, intervals, hills, speed)
-pre="🍞 Carb-rich snack 60–90 min before: toast + banana, oats, or rice cakes with honey. You need fuel for intensity.";
-during=km>8?"💧 Carry water. If session is 60+ min, consider a gel or 2–3 chews at the halfway mark.":"💧 Carry water. No gel needed for sessions under 60 min.";
-after="🥛 Recovery meal within 30 min: 20–30g protein + carbs. E.g. protein shake + banana, eggs on toast, yoghurt + granola.";
-}else if(isLong&&km>=14){
-// Long run 14km+
-pre="🍚 Proper meal 2–3 hrs before: oats with banana + honey, toast with PB, or rice + eggs. This is your fuel tank.";
-during=km>=16?"⚡ Gel or chews at km 7 and km 14. Water every 3–4 km. PRACTISE this now — don't try new fuel on race day.":"💧 Water every 3–4 km. Optional: 1 gel at km 8–10 if going beyond 75 min.";
-after="🥛 Recovery meal within 30 min: protein + carbs + electrolytes. E.g. protein shake + banana + pinch of salt, or a proper meal.";
-}else if(isLong||km>=10){
-// Moderate long run 10-13km
-pre="🍌 Toast + banana or oats 60–90 min before. Don't skip this.";
-during="💧 Carry water. If running 75+ min, take 1 gel or a few chews at ~45 min.";
-after="🥛 20–30g protein + carbs within 45 min. Chocolate milk works in a pinch.";
-}else if(isRecovery){
-pre="☕ Light or nothing. This is a jog, not a session.";
-during="💧 Sip water if needed.";
-after="🥛 Normal meal timing, no rush.";
-}else{
-// Default medium run
-pre="🍌 Small snack 30–60 min before if needed. Coffee fine.";
-during="💧 Carry water if warm. No fuel needed under 60 min.";
-after="🥛 20–30g protein within 45 min.";
-}
-
-return{pre,during,after};
-}
-
-function renderRun(r){
-if(!r)return"";
-const isRace=r.type.includes("RACE");
-let fuelHtml="";
-const fuel=getFuel(r);
-if(fuel){
-fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
-}
-return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div></div>`;
-}
-
-function renderStrength(s){
-if(!s)return"";
-return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div></div>`+renderTreadmill();
-}
-
-function renderTreadmill(){
-return`<div class="treadmill-card"><div class="treadmill-header">🚶‍♀️ Incline Treadmill Walk — 30 min</div><div class="treadmill-detail"><span class="tag tag-load">📐 10–12% incline, 5.5–6.5 km/h</span></div><div class="treadmill-note">Finish every gym session with this. Don't hold the handrails — swing your arms. Strong glute drive on the incline.</div><div class="run-check-row" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label">Mark treadmill complete</div></div></div>`;
-}
-
-function renderDashboard(){
-const today=new Date();
-const todayNorm=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
-const block=getBlock(todayNorm);
-let dhtml="";
-
-// ── Block Progress ──
-if(block){
-const weekInBlock=getWeek(todayNorm,block);
-const pct=Math.min(Math.round((weekInBlock/block.weeks)*100),100);
-dhtml+=`<div class="dash-section"><div class="dash-title">Current Block</div><div class="block-name" style="color:${block.color};font-size:15px">${block.name}</div><div class="progress-text">Week ${weekInBlock} of ${block.weeks} • ${block.weeklyKm} km/week</div><div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${block.color}"></div></div></div>`;
-}
-
-// ── Race Countdown ──
-const races=[{name:"Half Marathon",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race Half Marathon",date:new Date(2026,9,25,12,0,0)},{name:"City2Surf 2027",date:new Date(2027,7,8,12,0,0)}];
-const nextRace=races.find(r=>r.date>todayNorm);
-if(nextRace){
-const daysUntil=Math.ceil((nextRace.date-todayNorm)/(864e5));
-dhtml+=`<div class="dash-section"><div class="race-countdown"><div class="race-countdown-days">${daysUntil}</div><div class="race-countdown-label">days until<br><strong>${nextRace.name}</strong></div></div></div>`;
-}
-
-// ── This Week Strip ──
-const monday=new Date(todayNorm);
-const dow=monday.getDay();
-const diff=dow===0?6:dow-1;
-monday.setDate(monday.getDate()-diff);
-
-const dayLabels=["M","T","W","T","F","S","S"];
-let stripHtml="";
-for(let i=0;i<7;i++){
-const d=new Date(monday);
-d.setDate(d.getDate()+i);
-const dk="tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
-const isToday=d.getDate()===todayNorm.getDate()&&d.getMonth()===todayNorm.getMonth();
-let status="";
-try{
-const s=localStorage.getItem(dk);
-if(s){
-const st=JSON.parse(s);
-const hasChecks=st.run||st.str||st.pil||st.tm||st.steps||Object.values(st.ex||{}).some(v=>v);
-const allDone=st.steps&&(st.run||!getBlock(d)||(getBlock(d)&&st.str));
-if(allDone)status="completed";
-else if(hasChecks)status="partial";
-}
-}catch(e){}
-const dateNum=d.getDate();
-stripHtml+=`<div class="week-day ${isToday?"today":""} ${status}" onclick="navToDate(${d.getFullYear()},${d.getMonth()},${d.getDate()})">${dayLabels[i]}<br><span style="font-size:13px">${dateNum}</span></div>`;
-}
-dhtml+=`<div class="dash-section"><div class="dash-title">This Week</div><div class="week-strip">${stripHtml}</div></div>`;
-
-// ── Weekly KM Total ──
-let weeklyKm=0;
-for(let i=0;i<7;i++){
-const wd=new Date(monday);
-wd.setDate(wd.getDate()+i);
-const wp=getPlan(wd);
-if(wp.run){const km=parseFloat(wp.run.km)||0;weeklyKm+=km}
-}
-dhtml+=`<div class="dash-section"><div class="dash-title">Weekly volume</div><div class="streak-row"><div class="streak-number">${Math.round(weeklyKm)}</div><div class="streak-label">km planned<br>this week</div><div style="font-size:28px">📏</div></div></div>`;
-
-// ── Streak ──
-let streak=0;
-const checkDate=new Date(todayNorm);
-// Don't count today unless it has checks
-checkDate.setDate(checkDate.getDate()-1);
-for(let i=0;i<365;i++){
-const dk="tp-"+checkDate.getFullYear()+"-"+(checkDate.getMonth()+1)+"-"+checkDate.getDate();
-try{
-const s=localStorage.getItem(dk);
-if(s){
-const st=JSON.parse(s);
-const hasChecks=st.run||st.str||st.pil||st.tm||st.steps||Object.values(st.ex||{}).some(v=>v);
-if(hasChecks){streak++;checkDate.setDate(checkDate.getDate()-1)}
-else break;
-}else break;
-}catch(e){break}
-}
-// Check if today has any checks too
-const todayKey="tp-"+todayNorm.getFullYear()+"-"+(todayNorm.getMonth()+1)+"-"+todayNorm.getDate();
-try{const ts=localStorage.getItem(todayKey);if(ts){const tst=JSON.parse(ts);if(tst.run||tst.str||tst.pil||tst.tm||tst.steps||Object.values(tst.ex||{}).some(v=>v))streak++}}catch(e){}
-
-const fire=streak>=7?"🔥🔥🔥":streak>=3?"🔥🔥":streak>=1?"🔥":"";
-dhtml+=`<div class="dash-section"><div class="dash-title">Consistency Streak</div><div class="streak-row"><div class="streak-number">${streak}</div><div class="streak-label">day${streak!==1?"s":""} in a row<br>with training logged</div><div class="streak-fire">${fire}</div></div></div>`;
-
-dhtml+=`<div class="dash-section" id="strava-recent"></div>`;
-
-$("dashboard").innerHTML=dhtml;
-
-// Load Strava data async
-loadStrava();
-}
-
-let stravaData=null;
-let stravaLoaded=false;
-
-async function loadStrava(){
-if(stravaLoaded)return renderStravaWidgets();
-try{
-const res=await fetch("/.netlify/functions/strava");
-if(!res.ok)return;
-const ct=res.headers.get("content-type")||"";
-if(!ct.includes("application/json"))return;
-const data=await res.json();
-if(data.activities){stravaData=data.activities;stravaLoaded=true;renderStravaWidgets()}
-}catch(e){}
-}
-
-function renderStravaWidgets(){
-if(!stravaData)return;
-
-// Dashboard: recent runs
-const dashEl=$("strava-recent");
-if(dashEl){
-const runs=stravaData.filter(a=>a.type==="Run").slice(0,5);
-
-// Weekly summary: runs this week
-const today=new Date();
-const todayN=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
-const monday=new Date(todayN);
-const dow=monday.getDay();
-const diff2=dow===0?6:dow-1;
-monday.setDate(monday.getDate()-diff2);
-const mondayStr=monday.getFullYear()+"-"+String(monday.getMonth()+1).padStart(2,"0")+"-"+String(monday.getDate()).padStart(2,"0");
-
-const weekRuns=stravaData.filter(a=>a.type==="Run"&&a.date>=mondayStr);
-const weekKm=Math.round(weekRuns.reduce((s,r)=>s+r.distance_km,0)*10)/10;
-const weekCount=weekRuns.length;
-const avgPaceSec=weekRuns.length?weekRuns.reduce((s,r)=>{const p=r.pace_per_km.split(":");return s+parseInt(p[0])*60+parseInt(p[1])},0)/weekRuns.length:0;
-const avgPaceStr=avgPaceSec?Math.floor(avgPaceSec/60)+":"+String(Math.round(avgPaceSec%60)).padStart(2,"0"):"--";
-const bestRun=weekRuns.length?weekRuns.reduce((b,r)=>r.distance_km>b.distance_km?r:b,weekRuns[0]):null;
-
-let weekHtml=`<div class="dash-title">This week (Strava)</div>`;
-
-if(weekRuns.length){
-weekHtml+=`<div style="display:flex;gap:8px;margin-bottom:10px">
-<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
-<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Runs</div>
-<div style="font-size:20px;font-weight:800;color:#3D2E4A">${weekCount}</div>
+<div class="quick-nav">
+<button>🏠 Home</button>
+<button class="active">📍 Today</button>
+<button>📊 Coach</button>
+<button class="race-btn">🏁 May 3 HM</button>
 </div>
-<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
-<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Volume</div>
-<div style="font-size:20px;font-weight:800;color:#3D2E4A">${weekKm}<span style="font-size:12px"> km</span></div>
 </div>
-<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
-<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Avg pace</div>
-<div style="font-size:20px;font-weight:800;color:#3D2E4A">${avgPaceStr}</div>
+
+<div class="content">
+<!-- Plan card -->
+<div class="run-card">
+<div class="run-header">
+<div class="run-type">🏃‍♀️ Long run</div>
+<div class="run-km">16 km</div>
 </div>
-</div>`;
+<div class="run-grid">
+<div><div class="run-label">Pace</div><div class="run-value">5:50–6:10/km</div></div>
+<div><div class="run-label">Intensity</div><div class="run-value">Zone 2</div></div>
+</div>
+<div class="run-note">Keep HR < 155. Easy pace, no heroics.</div>
+<div class="check-row">
+<div class="check-box"></div>
+<div class="check-label">Run complete ✓ (auto-synced)</div>
+</div>
+</div>
 
-if(bestRun){
-const bd=new Date(bestRun.date);
-const bday=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][bd.getDay()];
-weekHtml+=`<div style="padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);margin-bottom:10px;font-size:12px">
-<span style="color:#3D8A50;font-weight:700">⭐ Longest run:</span>
-<span style="color:#3D2E4A"> ${bestRun.distance_km} km on ${bday} at ${bestRun.pace_per_km}/km</span></div>`;
-}
-}else{
-weekHtml+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">No runs logged yet this week</div>`;
-}
-
-// Recent runs list
-if(runs.length){
-weekHtml+=`<div style="margin-top:6px">`;
-runs.map(r=>{
-const d=new Date(r.date);
-const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
-const dd=d.getDate();
-const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
-weekHtml+=`<div class="strava-run-item"><div class="strava-run-date">${day} ${dd} ${mm}</div><div class="strava-run-name">${r.name}</div><div class="strava-run-stats">${r.distance_km} km · ${r.pace_per_km}/km${r.avg_hr?" · "+Math.round(r.avg_hr)+" bpm":""}</div></div>`;
-});
-weekHtml+=`</div>`;
-}
-
-dashEl.innerHTML=weekHtml;
-}
-
-// Daily view: match Strava activity to today's date
-const dailyEl=$("strava-daily");
-if(dailyEl){
-const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
-const matches=stravaData.filter(a=>a.type==="Run"&&a.date.startsWith(dateStr));
-if(matches.length){
-const m=matches[0];
-const plan=getPlan(currentDate);
-
-// Auto-tick run checkbox if Strava has a run for this day
-const runCheck=$("run-check");
-const runLabel=$("run-label");
-if(runCheck&&!runCheck.classList.contains("done")){
-runCheck.classList.add("done");
-if(runLabel){runLabel.classList.add("done");runLabel.textContent="Run complete ✓ (auto-synced)"}
-saveRun(true);
-}
-
-// Build pace comparison feedback
-let feedback="";
-if(plan.run&&plan.run.pace){
-const paceStr=plan.run.pace;
-// Extract target pace range from plan (e.g. "5:50–6:10/km")
-const paceMatch=paceStr.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
-if(paceMatch){
-const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
-const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
-const actualParts=m.pace_per_km.split(":");
-const actual=parseInt(actualParts[0])*60+parseInt(actualParts[1]);
-
-if(actual<targetMin-10){
-const diff=targetMin-actual;
-feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px">
-<span style="color:#DC2626;font-weight:700">⚡ ${diff}s faster than planned.</span>
-<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy — save the speed for quality sessions.":"Watch the effort — don't blow up early."}</span></div>`;
-}else if(actual>targetMax+15){
-const diff=actual-targetMax;
-feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px">
-<span style="color:#B8883E;font-weight:700">🐢 ${diff}s slower than planned.</span>
-<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"That's fine for easy days — no stress.":"Consider if fatigue, heat, or hills were a factor."}</span></div>`;
-}else{
-feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px">
+<!-- Strava actual card — ON TARGET -->
+<div class="strava-actual">
+<div class="strava-header-row">
+<div class="strava-title">📡 Strava: Lunch Run</div>
+<div style="font-size:11px;color:#3D8A50">↓ 0.9 km short</div>
+</div>
+<div class="strava-stats">
+<span>15.12 km</span> · <span>5:45/km</span> · 87 min · ⛰️ 219m
+</div>
+<div class="feedback-good">
 <span style="color:#3D8A50;font-weight:700">✅ Right on target.</span>
-<span style="color:#7A6B8A"> Plan said ${paceStr}. Nailed it.</span></div>`;
-}
-}
-}
-
-// Distance comparison
-let distFeedback="";
-if(plan.run&&plan.run.km){
-const plannedKm=parseFloat(plan.run.km)||0;
-if(plannedKm>0){
-const diff=m.distance_km-plannedKm;
-if(Math.abs(diff)<=0.5){
-distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
-}else if(diff>0.5){
-distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
-}else{
-distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
-}
-}
-}
-
-dailyEl.innerHTML=`<div class="strava-actual">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div class="strava-actual-header">📡 Strava: ${m.name}</div>
-${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
+<span style="color:#7A6B8A"> Plan said 5:50–6:10/km. Nailed it.</span>
 </div>
-<div class="strava-actual-stats">
-<span style="font-weight:600">${m.distance_km} km</span> · 
-<span style="font-weight:600">${m.pace_per_km}/km</span> · 
-<span>${m.moving_time_min} min</span>
-${m.avg_hr?" · <span>❤️ "+Math.round(m.avg_hr)+" bpm</span>":""}
-${m.elevation_gain>20?" · <span>⛰️ "+Math.round(m.elevation_gain)+"m</span>":""}
 </div>
-${feedback}
-</div>`;
-}else{
-dailyEl.innerHTML="";
-}
-}
-}
 
-function renderCoachView(){
-const cv=$("coachView");
-if(!stravaLoaded){
-cv.innerHTML=`<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">📊</div><div style="color:#A898B0;font-size:14px">Loading Strava data...</div></div>`;
-const timeout=setTimeout(()=>{if(!stravaLoaded){cv.innerHTML=`<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">📊</div><div style="color:#A898B0;font-size:14px">Strava not available — deploy to Netlify to connect.</div></div>`}},5000);
-loadStrava().then(()=>{clearTimeout(timeout);if(viewMode==="coach")renderCoachView()});
-return;
-}
-if(!stravaData||!stravaData.length){
-cv.innerHTML=`<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="color:#A898B0;font-size:14px">No Strava data available</div></div>`;
-return;
-}
+<div style="height:20px"></div>
 
-const runs=stravaData.filter(a=>a.type==="Run");
-const today=new Date();
-const todayNorm=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
-let html=`<div class="dash-section"><div class="dash-title" style="font-size:13px">📊 Coaching analysis</div></div>`;
+<!-- Example 2: TOO FAST on an easy day -->
+<div style="padding:8px 12px;background:rgba(107,91,138,0.06);border-radius:8px;font-size:10px;color:#A898B0;text-align:center;margin-bottom:4px">↓ Example: if you ran too fast on an easy day ↓</div>
 
-// ── 1. Weekly Volume vs Plan ──
-// Get this week's runs
-const monday=new Date(todayNorm);
-const dow=monday.getDay();
-const diff=dow===0?6:dow-1;
-monday.setDate(monday.getDate()-diff);
-let actualKm=0;
-runs.forEach(r=>{
-const rd=new Date(r.date);
-if(rd>=monday&&rd<=todayNorm)actualKm+=r.distance_km;
-});
-const block=getBlock(todayNorm);
-const plannedRange=block?block.weeklyKm:"--";
-const plannedMid=block?parseInt(block.weeklyKm.replace(/[^0-9]/g,"").substring(0,2)):30;
-const volPct=Math.min(Math.round((actualKm/plannedMid)*100),150);
-const volColor=volPct>=80?"#5B8A5E":volPct>=50?"#B8883E":"#C4607A";
-
-html+=`<div class="coach-card"><div class="coach-card-title">Weekly volume</div>
-<div class="coach-stat-row"><div class="coach-stat-label">Actual this week</div><div class="coach-stat-value">${Math.round(actualKm*10)/10} km</div></div>
-<div class="coach-stat-row"><div class="coach-stat-label">Plan target</div><div class="coach-stat-value">${plannedRange} km</div></div>
-<div class="coach-bar-wrap"><div class="coach-bar-bg"><div class="coach-bar-fill" style="width:${Math.min(volPct,100)}%;background:${volColor}"></div></div><div class="coach-bar-label">${volPct}%</div></div></div>`;
-
-// Volume feedback
-if(volPct>=90){
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Volume on track</div><div class="coach-feedback-text">You're hitting your planned distance for the week. This is exactly where you need to be heading into the May 3 half marathon.</div></div>`;
-}else if(volPct>=60){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Volume slightly low</div><div class="coach-feedback-text">You're a bit under the planned volume. If you still have runs left this week, no stress — just make sure you get the long run in. The long run is the most important session.</div></div>`;
-}else{
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Volume well under plan</div><div class="coach-feedback-text">You're significantly under the planned km this week. If you missed runs due to illness or fatigue, that's fine — don't try to cram them in. Just resume the plan next week. If it's motivation, remember: consistency beats perfection.</div></div>`;
-}
-
-// ── 2. Easy Pace Trend ──
-const easyRuns=runs.filter(r=>{
-const km=r.distance_km;
-const name=(r.name||"").toLowerCase();
-return km>=4&&km<=8&&!name.includes("tempo")&&!name.includes("interval")&&!name.includes("hill")&&!name.includes("speed")&&!name.includes("race");
-});
-
-if(easyRuns.length>=2){
-// Parse pace to seconds
-function paceToSec(p){const pts=p.split(":");return parseInt(pts[0])*60+parseInt(pts[1])}
-function secToStr(s){return Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0")}
-
-const recent5=easyRuns.slice(0,5);
-const avgRecent=recent5.reduce((s,r)=>s+paceToSec(r.pace_per_km),0)/recent5.length;
-const avgRecentStr=secToStr(avgRecent);
-const fastest=Math.min(...recent5.map(r=>paceToSec(r.pace_per_km)));
-const slowest=Math.max(...recent5.map(r=>paceToSec(r.pace_per_km)));
-const fastestStr=secToStr(fastest);
-const slowestStr=secToStr(slowest);
-const range=slowest-fastest;
-
-// Target zone
-const zoneMin=5*60+50;// 5:50
-const zoneMax=6*60+10;// 6:10
-
-html+=`<div class="coach-card"><div class="coach-card-title">Easy run analysis</div>`;
-
-// Individual runs list
-html+=`<div style="margin-bottom:10px">`;
-recent5.forEach(r=>{
-const d=new Date(r.date);
-const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
-const dd=d.getDate();
-const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
-const paceSec=paceToSec(r.pace_per_km);
-const inZone=paceSec>=zoneMin&&paceSec<=zoneMax;
-const tooFast=paceSec<zoneMin;
-const icon=tooFast?"🔴":inZone?"🟢":"🟡";
-html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
-<div style="font-size:12px;color:#A898B0">${day} ${dd} ${mm}</div>
-<div style="font-size:12px;color:#3D2E4A">${r.distance_km} km</div>
-<div style="font-size:13px;font-weight:700;color:${tooFast?"#DC2626":inZone?"#3D8A50":"#B8883E"}">${r.pace_per_km}/km ${icon}</div>
-</div>`;
-});
-html+=`</div>`;
-
-// Summary stats
-html+=`<div style="display:flex;gap:8px;margin-bottom:10px">
-<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
-<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Average</div>
-<div style="font-size:18px;font-weight:800;color:#3D2E4A">${avgRecentStr}</div>
-<div style="font-size:10px;color:#A898B0">/km</div>
+<div class="strava-actual">
+<div class="strava-header-row">
+<div class="strava-title">📡 Strava: Afternoon Run</div>
+<div style="font-size:11px;color:#3D8A50">✅ Distance spot on</div>
 </div>
-<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
-<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Fastest</div>
-<div style="font-size:18px;font-weight:800;color:#DC2626">${fastestStr}</div>
-<div style="font-size:10px;color:#A898B0">/km</div>
+<div class="strava-stats">
+<span>5.04 km</span> · <span>5:37/km</span> · 28 min
 </div>
-<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
-<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Slowest</div>
-<div style="font-size:18px;font-weight:800;color:#3D8A50">${slowestStr}</div>
-<div style="font-size:10px;color:#A898B0">/km</div>
+<div class="feedback-warn">
+<span style="color:#DC2626;font-weight:700">⚡ 13s faster than planned.</span>
+<span style="color:#7A6B8A"> Plan said 5:50–6:10/km. Easy days should feel genuinely easy — save the speed for quality sessions.</span>
 </div>
-</div>`;
-
-// Target zone visual
-const runsInZone=recent5.filter(r=>{const p=paceToSec(r.pace_per_km);return p>=zoneMin&&p<=zoneMax}).length;
-const runsTooFast=recent5.filter(r=>paceToSec(r.pace_per_km)<zoneMin).length;
-const zonePct=Math.round((runsInZone/recent5.length)*100);
-html+=`<div style="padding:8px 12px;background:rgba(255,255,255,0.4);border-radius:8px;margin-bottom:10px">
-<div style="display:flex;justify-content:space-between;margin-bottom:4px">
-<span style="font-size:11px;color:#A898B0">Target zone: 5:50–6:10/km</span>
-<span style="font-size:11px;font-weight:700;color:${zonePct>=60?"#3D8A50":"#B8883E"}">${runsInZone}/${recent5.length} in zone</span>
 </div>
-<div style="display:flex;gap:3px">`;
-recent5.forEach(r=>{
-const p=paceToSec(r.pace_per_km);
-const col=p<zoneMin?"#DC2626":p<=zoneMax?"#3D8A50":"#B8883E";
-html+=`<div style="flex:1;height:6px;border-radius:3px;background:${col}"></div>`;
-});
-html+=`</div></div>`;
-html+=`</div>`;
 
-// Coaching feedback
-const tooFastCount=runsTooFast;
-if(tooFastCount>=3){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Most easy runs are too fast</div><div class="coach-feedback-text">${tooFastCount} of your last ${recent5.length} easy runs were faster than 5:50/km. This is the #1 mistake distance runners make — running easy days too hard. It feels productive but it accumulates fatigue and blunts your quality sessions. Your Tuesday speedwork and Sunday long run suffer when Wednesday and Friday aren't genuinely easy. Aim for 5:50–6:10/km even if it feels embarrassingly slow. You should be able to hold a full conversation.</div></div>`;
-}else if(tooFastCount>=1){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚡ Watch the pace on easy days</div><div class="coach-feedback-text">${tooFastCount} of your last ${recent5.length} easy runs crept below 5:50/km. Not a crisis, but keep an eye on it. Easy means easy — if you wouldn't call it "comfortable" for the entire run, slow down. The aerobic benefit is the same at 5:50 and 6:10, but the recovery cost is very different.</div></div>`;
-}else if(range>25){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">📊 Pace range is quite wide</div><div class="coach-feedback-text">Your easy runs range from ${fastestStr} to ${slowestStr}/km (${Math.round(range)}s difference). Consistency matters more than speed on easy days. Try to keep them all within a tighter 10–15 second band. External factors (heat, hills, fatigue) explain some variation, but aim for more predictable pacing.</div></div>`;
-}else{
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Easy runs are dialled in</div><div class="coach-feedback-text">${runsInZone} of ${recent5.length} runs are in the 5:50–6:10/km zone. This is textbook. You're building aerobic base without excess fatigue, which means your quality sessions and long runs are getting the best version of you. This discipline is what separates runners who plateau from runners who keep improving.</div></div>`;
-}
-}
+<div style="height:8px"></div>
 
-// ── 3. Long Run Progression ──
-const longRuns=runs.filter(r=>r.distance_km>=10).sort((a,b)=>new Date(a.date)-new Date(b.date));
-if(longRuns.length>=2){
-const maxKm=Math.max(...longRuns.map(r=>r.distance_km));
-const latest=longRuns[longRuns.length-1];
-const totalLongKm=Math.round(longRuns.reduce((s,r)=>s+r.distance_km,0)*10)/10;
-
-html+=`<div class="coach-card" style="background:linear-gradient(135deg,rgba(91,138,94,0.08),rgba(16,185,129,0.04));border-color:rgba(91,138,94,0.2)">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-<div class="coach-card-title" style="margin-bottom:0;color:#3D8A50">Long run progression</div>
-<div style="font-size:11px;color:#5B8A5E;background:rgba(91,138,94,0.12);padding:3px 10px;border-radius:12px;font-weight:600">${longRuns.length} long runs logged</div>
-</div>`;
-
-// Big stat: latest long run
-html+=`<div style="display:flex;gap:8px;margin-bottom:14px">
-<div style="text-align:center;flex:1;padding:12px 6px;background:rgba(255,255,255,0.5);border-radius:10px;display:flex;flex-direction:column;justify-content:space-between">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;min-height:28px;display:flex;align-items:center;justify-content:center">Latest</div>
-<div style="font-size:26px;font-weight:800;color:#3D8A50;line-height:1">${latest.distance_km}</div>
-<div style="font-size:12px;font-weight:600;color:#5B8A5E">km</div>
-<div style="font-size:11px;color:#7A8A7A;margin-top:2px">${latest.pace_per_km}/km</div>
+<!-- Example 3: A BIT SLOW -->
+<div class="strava-actual">
+<div class="strava-header-row">
+<div class="strava-title">📡 Strava: Morning Run</div>
+<div style="font-size:11px;color:#B8883E">↓ 1.2 km short</div>
 </div>
-<div style="text-align:center;flex:1;padding:12px 6px;background:rgba(255,255,255,0.5);border-radius:10px;display:flex;flex-direction:column;justify-content:space-between">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;min-height:28px;display:flex;align-items:center;justify-content:center">Longest</div>
-<div style="font-size:26px;font-weight:800;color:#3D8A50;line-height:1">${maxKm}</div>
-<div style="font-size:12px;font-weight:600;color:#5B8A5E">km</div>
-<div style="font-size:11px;color:#7A8A7A;margin-top:2px">↑ building</div>
+<div class="strava-stats">
+<span>4.8 km</span> · <span>6:28/km</span> · 31 min · ❤️ 152 bpm
 </div>
-<div style="text-align:center;flex:1;padding:12px 6px;background:rgba(255,255,255,0.5);border-radius:10px;display:flex;flex-direction:column;justify-content:space-between">
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:#5B8A5E;min-height:28px;display:flex;align-items:center;justify-content:center">Total</div>
-<div style="font-size:26px;font-weight:800;color:#3D8A50;line-height:1">${totalLongKm}</div>
-<div style="font-size:12px;font-weight:600;color:#5B8A5E">km</div>
-<div style="font-size:11px;color:#7A8A7A;margin-top:2px">long runs</div>
+<div class="feedback-amber">
+<span style="color:#B8883E;font-weight:700">🐢 18s slower than planned.</span>
+<span style="color:#7A6B8A"> Plan said 5:50–6:10/km. That's fine for easy days — no stress.</span>
 </div>
-</div>`;
-
-// Visual bar chart
-html+=`<div style="display:flex;align-items:flex-end;gap:4px;height:80px;padding:0 4px">`;
-longRuns.forEach((r,i)=>{
-const pct=Math.max(Math.round((r.distance_km/maxKm)*100),12);
-const isLatest=i===longRuns.length-1;
-const d=new Date(r.date);
-const dd=d.getDate();
-const mmNames=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const mm=mmNames[d.getMonth()];
-const barColor=isLatest?"linear-gradient(180deg,#3D8A50,#5BAA6E)":"linear-gradient(180deg,rgba(91,138,94,0.25),rgba(91,138,94,0.4))";
-html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-<div style="font-size:10px;font-weight:700;color:${isLatest?"#3D8A50":"#A898B0"}">${r.distance_km}</div>
-<div style="width:100%;height:${pct}%;background:${barColor};border-radius:6px 6px 0 0;${isLatest?"box-shadow:0 0 8px rgba(91,138,94,0.3)":""}"></div>
-<div style="font-size:9px;color:#A898B0">${dd}</div>
-<div style="font-size:8px;color:#B8A5C0">${mm}</div>
-</div>`;
-});
-html+=`</div>`;
-
-// 21.1 km target line context
-html+=`<div style="margin-top:10px;padding:8px 12px;background:rgba(196,96,122,0.06);border-radius:8px;border:0.5px solid rgba(196,96,122,0.12);display:flex;align-items:center;gap:8px">
-<div style="font-size:20px">🏁</div>
-<div><div style="font-size:11px;font-weight:600;color:#C4607A">Race distance: 21.1 km</div>
-<div style="font-size:10px;color:#A898B0">Your longest run is ${Math.round((maxKm/21.1)*100)}% of race distance</div></div>
-</div>`;
-
-html+=`</div>`;
-
-// Long run feedback
-const prev=longRuns[longRuns.length-2];
-const jump=latest.distance_km-prev.distance_km;
-if(jump>3){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Big jump in long run distance</div><div class="coach-feedback-text">You went from ${prev.distance_km} km to ${latest.distance_km} km — a ${Math.round(jump*10)/10} km increase. Generally you want to increase long runs by no more than 2 km per week to avoid injury. If you felt fine, you're probably okay, but don't jump again next week.</div></div>`;
-}else if(latest.distance_km>=15){
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Long run endurance building nicely</div><div class="coach-feedback-text">Your latest long run was ${latest.distance_km} km at ${latest.pace_per_km}/km. This is strong prep for the half marathon. You're proving your body can handle the distance — now it's about sharpening the pace.</div></div>`;
-}else{
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Long run progressing</div><div class="coach-feedback-text">Your last long run was ${latest.distance_km} km. Keep building gradually — you'll peak at 18 km before the May 3 race.</div></div>`;
-}
-}
-
-// ── 4. Pace vs Plan ──
-html+=`<div class="coach-card"><div class="coach-card-title">Recent runs vs plan</div>`;
-runs.slice(0,5).forEach(r=>{
-const d=new Date(r.date);
-const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
-const dd=d.getDate();
-const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
-const planned=getPlan(new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0));
-const planPace=planned.run?planned.run.pace:"—";
-const planKm=planned.run?planned.run.km:"—";
-html+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
-<div style="display:flex;justify-content:space-between"><div style="font-size:12px;font-weight:600;color:#3D2E4A">${day} ${dd} ${mm} — ${r.name}</div></div>
-<div style="display:flex;gap:16px;margin-top:3px">
-<div><div style="font-size:10px;color:#FC4C02">ACTUAL</div><div style="font-size:12px;color:#3D2E4A;font-weight:500">${r.distance_km} km · ${r.pace_per_km}/km</div></div>
-<div><div style="font-size:10px;color:#6B5B8A">PLAN</div><div style="font-size:12px;color:#6B5B8A">${planKm} km · ${planPace}</div></div>
-</div></div>`;
-});
-html+=`</div>`;
-
-// Overall coaching note
-const totalRuns=runs.length;
-const totalKm=Math.round(runs.reduce((s,r)=>s+r.distance_km,0)*10)/10;
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">📝 Coach's note</div><div class="coach-feedback-text">You've logged ${totalRuns} runs totalling ${totalKm} km in the last 30 days. `;
-if(totalRuns>=12){html+=`That's excellent consistency — you're building the aerobic base that sub-2:00 demands. `}
-else if(totalRuns>=8){html+=`Good consistency. Keep showing up and the fitness will compound. `}
-else{html+=`Frequency could be higher — aim for 4 runs per week to build the aerobic base you need. `}
-html+=`Biggest priority right now: nail the long runs on Sunday and keep easy days easy. The May 3 race will tell us a lot about where you're at.</div></div>`;
-
-cv.innerHTML=html;
-}
-
-function navToDate(y,m,d){currentDate=new Date(y,m,d,12,0,0);viewMode="day";render()}
-
-let viewMode="home";
-
-function render(){
-const dash=$("dashboard");
-const coach=$("coachView");
-const content=$("content");
-if(viewMode==="home"){
-renderDashboard();
-dash.style.display="block";
-coach.style.display="none";
-content.style.display="flex";
-const n=new Date();
-currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);
-}else if(viewMode==="coach"){
-dash.style.display="none";
-coach.style.display="block";
-content.style.display="none";
-renderCoachView();
-return;
-}else{
-dash.style.display="none";
-coach.style.display="none";
-content.style.display="flex";
-}
-$("dateDisplay").textContent=fmt(currentDate);
-const plan=getPlan(currentDate);
-const bi=$("blockInfo");
-let html="";
-
-if(plan.block&&viewMode!=="home"){
-bi.style.display="block";
-bi.style.background=plan.block.color+"22";
-bi.style.border="1px solid "+plan.block.color+"44";
-bi.innerHTML=`<div class="block-name" style="color:${plan.block.color}">${plan.block.name}</div><div class="block-detail">Week ${plan.week} of ${plan.block.weeks} • ${plan.block.weeklyKm} km/week • ${plan.block.focus}</div>`;
-}else{
-bi.style.display="none";
-}
-
-if(plan.race){
-html+=`<div class="race-banner"><div class="icon">🏁</div><div class="title">RACE DAY</div><div class="sub">Trust the work. Execute the plan.</div></div>`;
-}
-
-html+=renderRun(plan.run);
-html+=`<div id="strava-daily"></div>`;
-html+=renderStrength(plan.str);
-
-if(plan.spin){
-html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
-}
-
-if(plan.other){
-const isPilates=plan.other.toLowerCase().includes("pilates");
-const emoji=isPilates?"🧘‍♀️ ":"";
-const label=isPilates?"Pilates":"Also today";
-html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>`:""}</div>`;
-}
-
-if(plan.notes&&plan.notes.length){
-html+=`<div class="notes-card"><div class="notes-title">📝 Notes</div>${plan.notes.map(n=>`<div class="notes-text">${n}</div>`).join("")}</div>`;
-}
-
-if(!plan.run&&!plan.str&&!plan.other&&!plan.spin&&(!plan.notes||!plan.notes.length)){
-if(plan.block){
-html+=`<div class="rest-card"><div class="rest-icon">😴</div><div class="rest-title">Rest Day</div><div class="rest-sub">Recovery is training. Foam roll, stretch, eat well.</div></div>`;
-}else{
-html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No training scheduled."}</div><div class="rest-sub">Navigate to Apr 2026 – Aug 2027</div></div>`;
-}
-}
-
-$("content").innerHTML=html;
-
-// Daily tracker cards (every day)
-const dailyCards=`
-<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
-<div class="protein-card">
-<div class="protein-header">🥩 Protein tracker</div>
-<div class="protein-ring-wrap">
-<svg width="100" height="100"><circle cx="50" cy="50" r="42" stroke="rgba(107,91,138,0.1)" stroke-width="7" fill="none"/><circle id="protein-ring" cx="50" cy="50" r="42" stroke="#6B5B8A" stroke-width="7" fill="none" stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/></svg>
-<div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0">of 110g</span></div>
 </div>
-<div id="protein-status" style="text-align:center;font-size:12px;color:#A898B0;margin-bottom:8px">Tap foods below to log</div>
-<div id="protein-log" style="margin-bottom:8px"></div>
-<div style="font-size:11px;font-weight:600;color:#6B5B8A;margin-bottom:6px">Tap to add</div>
-<div class="protein-foods" id="protein-foods"></div>
-<div id="protein-tip" style="margin-top:8px;padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);font-size:11px;color:#5B8A5E"></div>
 </div>
-<div class="water-card"><div class="water-header">💧 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>
-`;
-$("content").innerHTML+=dailyCards;
 
-renderProtein();
-restoreChecks();
-}
+<!-- ═══════════════ HOME DASHBOARD ═══════════════ -->
+<div style="height:30px;background:rgba(107,91,138,0.06)"></div>
+<div class="view-label">🏠 Home dashboard — Strava section</div>
 
-function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
-$("prev").onclick=()=>nav(-1);
-$("next").onclick=()=>nav(1);
+<div class="dash" style="background:rgba(255,255,255,0.3);margin:0 8px;border-radius:14px;padding:16px">
+<div class="dash-title">This week (Strava)</div>
 
-function setActiveTab(id){
-["goHome","goToday","goCoach","goRace"].forEach(b=>{$(b).classList.remove("active")});
-$(id).classList.add("active");
-}
+<div class="stat-row">
+<div class="stat-card">
+<div class="label2">Runs</div>
+<div class="num">3</div>
+</div>
+<div class="stat-card">
+<div class="label2">Volume</div>
+<div class="num">25.3<span style="font-size:12px"> km</span></div>
+</div>
+<div class="stat-card">
+<div class="label2">Avg pace</div>
+<div class="num">5:46</div>
+</div>
+</div>
 
-$("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday");window.scrollTo({top:0,behavior:"smooth"})};
-$("goHome").onclick=()=>{viewMode="home";render();setActiveTab("goHome");window.scrollTo({top:0,behavior:"smooth"})};
-$("goCoach").onclick=()=>{viewMode="coach";render();setActiveTab("goCoach");window.scrollTo({top:0,behavior:"smooth"})};
-const RACES=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race HM",date:new Date(2026,9,25,12,0,0)},{name:"C2S 2027",date:new Date(2027,7,8,12,0,0)}];
-function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES.find(r=>r.date>=nn)||RACES[RACES.length-1]}
-function updateRaceBtn(){const r=getNextRace();$("goRace").textContent="🏁 "+r.name}
-$("goRace").onclick=()=>{const r=getNextRace();currentDate=new Date(r.date);viewMode="day";render();setActiveTab("goRace");window.scrollTo({top:0,behavior:"smooth"})};
-updateRaceBtn();
-setActiveTab("goHome");
+<div class="best-run">
+<span style="color:#3D8A50;font-weight:700">⭐ Longest run:</span>
+<span style="color:#3D2E4A"> 15.12 km on Sat at 5:45/km</span>
+</div>
 
-// Checkbox state storage (persists across sessions via localStorage)
-function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
-function getState(){
-const k=dateKey(currentDate);
-try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}
-return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,protein:false,water:false};
-}
-function setState(s){
-const k=dateKey(currentDate);
-try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}
-}
-function saveEx(i,done){const s=getState();s.ex[i]=done;setState(s)}
-function saveRun(done){const s=getState();s.run=done;setState(s)}
-function saveStr(done){const s=getState();s.str=done;setState(s)}
-function savePil(done){const s=getState();s.pil=done;setState(s)}
+<div class="strava-run-item">
+<div class="strava-run-date">Sat 29 Mar</div>
+<div class="strava-run-name">Lunch Run</div>
+<div class="strava-run-stats">15.12 km · 5:45/km</div>
+</div>
+<div class="strava-run-item">
+<div class="strava-run-date">Tue 25 Mar</div>
+<div class="strava-run-name">Afternoon Run</div>
+<div class="strava-run-stats">5.04 km · 5:37/km</div>
+</div>
+<div class="strava-run-item">
+<div class="strava-run-date">Mon 24 Mar</div>
+<div class="strava-run-name">Morning Run</div>
+<div class="strava-run-stats">5.1 km · 5:55/km</div>
+</div>
+<div class="strava-run-item">
+<div class="strava-run-date">Sat 22 Mar</div>
+<div class="strava-run-name">Lunch Run</div>
+<div class="strava-run-stats">15.17 km · 5:55/km</div>
+</div>
+<div class="strava-run-item">
+<div class="strava-run-date">Thu 19 Mar</div>
+<div class="strava-run-name">Morning Run</div>
+<div class="strava-run-stats">5.08 km · 5:48/km</div>
+</div>
+</div>
 
-function restoreChecks(){
-const s=getState();
-// Restore exercise checks
-Object.keys(s.ex).forEach(i=>{
-const el=$("ex-"+i);
-if(el&&s.ex[i]){el.querySelector(".ex-check").classList.add("done");el.classList.add("checked")}
-});
-// Restore run check
-const rc=$("run-check"),rl=$("run-label");
-if(rc&&s.run){rc.classList.add("done");rl.classList.add("done");rl.textContent="Run complete ✓"}
-// Restore strength check
-const sc=$("str-check"),sl=$("str-label");
-if(sc&&s.str){sc.classList.add("done");sl.classList.add("done");sl.textContent="Session complete ✓"}
-// Restore pilates check
-const pc=$("pil-check"),pl=$("pil-label");
-if(pc&&s.pil){pc.classList.add("done");pl.classList.add("done");pl.textContent="Pilates complete ✓"}
-// Restore treadmill check
-const tc=$("tm-check"),tl=$("tm-label");
-if(tc&&s.tm){tc.classList.add("done");tl.classList.add("done");tl.textContent="Treadmill complete ✓"}
-// Restore steps check
-const stc=$("steps-check"),stl=$("steps-label");
-if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent="14k steps complete ✓"}
-// Restore spin check
-const spc=$("spin-check"),spl=$("spin-label");
-if(spc&&s.spin){spc.classList.add("done");spl.classList.add("done");spl.textContent="Spin complete ✓"}
-// Restore protein check
-const prc=$("protein-check"),prl=$("protein-label");
-if(prc&&s.protein){prc.classList.add("done");prl.classList.add("done");prl.textContent="Protein target hit ✓"}
-// Restore water check
-const wc=$("water-check"),wl=$("water-label");
-if(wc&&s.water){wc.classList.add("done");wl.classList.add("done");wl.textContent="2L+ water hit ✓"}
-// Check perfect day
-checkPerfectDay();
-}
+<div style="padding:20px 16px;text-align:center;font-size:11px;color:#B8A5C0">
+This mockup uses your actual Strava data from the API.<br>
+Upload the latest index.html to GitHub to see it live.
+</div>
 
-function checkPerfectDay(){
-const s=getState();
-const log=getProteinLog();
-const proteinHit=log.reduce((sum,f)=>sum+f.g,0)>=110;
-// Check what's on today
-const hasRun=!!$("run-check");
-const hasStr=!!$("str-check");
-const hasPil=!!$("pil-check");
-const hasTm=!!$("tm-check");
-const hasSpin=!!$("spin-check");
-const hasSteps=!!$("steps-check");
-const hasWater=!!$("water-check");
-
-let allDone=true;
-if(hasRun&&!s.run)allDone=false;
-if(hasStr&&!s.str)allDone=false;
-if(hasPil&&!s.pil)allDone=false;
-if(hasTm&&!s.tm)allDone=false;
-if(hasSpin&&!s.spin)allDone=false;
-if(hasSteps&&!s.steps)allDone=false;
-if(hasWater&&!s.water)allDone=false;
-if(!proteinHit)allDone=false;
-
-const existing=$("perfect-day-banner");
-if(allDone&&!existing){
-const banner=document.createElement("div");
-banner.id="perfect-day-banner";
-banner.className="perfect-day";
-banner.innerHTML=`<div class="perfect-day-icon">⭐</div><div class="perfect-day-title">PERFECT DAY</div><div class="perfect-day-sub">Every box ticked. That's how champions are built.</div>`;
-$("content").insertBefore(banner,$("content").firstChild);
-}else if(!allDone&&existing){
-existing.remove();
-}
-}
-
-// Checkbox toggles
-function toggleEx(i){
-const el=$("ex-"+i);
-const ch=el.querySelector(".ex-check");
-const done=ch.classList.toggle("done");
-el.classList.toggle("checked",done);
-saveEx(i,done);checkPerfectDay();
-}
-function toggleRun(){
-const ch=$("run-check");
-const lb=$("run-label");
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"Run complete ✓":"Mark run complete";
-saveRun(done);checkPerfectDay();
-}
-function toggleStrength(){
-const ch=$("str-check");
-const lb=$("str-label");
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"Session complete ✓":"Mark session complete";
-saveStr(done);checkPerfectDay();
-}
-function togglePilates(){
-const ch=$("pil-check");
-const lb=$("pil-label");
-if(!ch)return;
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"Pilates complete ✓":"Mark Pilates complete";
-savePil(done);checkPerfectDay();
-}
-function toggleTreadmill(){
-const ch=$("tm-check");
-const lb=$("tm-label");
-if(!ch)return;
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"Treadmill complete ✓":"Mark treadmill complete";
-const s=getState();s.tm=done;setState(s);checkPerfectDay();
-}
-function toggleSteps(){
-const ch=$("steps-check");
-const lb=$("steps-label");
-if(!ch)return;
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"14k steps complete ✓":"Mark 14k steps complete";
-const s=getState();s.steps=done;setState(s);checkPerfectDay();
-}
-function toggleSpin(){
-const ch=$("spin-check");
-const lb=$("spin-label");
-if(!ch)return;
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"Spin complete ✓":"Mark spin complete";
-const s=getState();s.spin=done;setState(s);checkPerfectDay();
-}
-function toggleProtein(){
-const ch=$("protein-check");
-const lb=$("protein-label");
-if(!ch)return;
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"Protein target hit ✓":"Hit protein target";
-const s=getState();s.protein=done;setState(s);checkPerfectDay();
-}
-function toggleWater(){
-const ch=$("water-check");
-const lb=$("water-label");
-if(!ch)return;
-const done=ch.classList.toggle("done");
-lb.classList.toggle("done",done);
-lb.textContent=done?"2L+ water hit ✓":"Hit 2L+ water";
-const s=getState();s.water=done;setState(s);checkPerfectDay();
-}
-
-// ── Protein Tracker ──
-const PFOODS=[
-{emoji:"🥩",name:"200g lean mince beef",g:42},
-{emoji:"🥩",name:"Steak (150g)",g:42},
-{emoji:"🥤",name:"Cali Press Arnold",g:36},
-{emoji:"🍗",name:"200g minced chicken",g:34},
-{emoji:"🐟",name:"Salmon portion",g:34},
-{emoji:"🐟",name:"Can of tuna",g:25},
-{emoji:"🥄",name:"Chobani Fit passionfruit",g:15},
-{emoji:"🧀",name:"Cottage cheese (200g)",g:14},
-{emoji:"☕",name:"Oat flat white",g:2},
-];
-
-function proteinKey(){return"tp-prot-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
-function getProteinLog(){try{const s=localStorage.getItem(proteinKey());return s?JSON.parse(s):[]}catch(e){return[]}}
-function saveProteinLog(log){try{localStorage.setItem(proteinKey(),JSON.stringify(log))}catch(e){}}
-
-function addProtein(i){
-const log=getProteinLog();
-log.push({...PFOODS[i]});
-saveProteinLog(log);
-renderProtein();
-}
-function removeProtein(i){
-const log=getProteinLog();
-log.splice(i,1);
-saveProteinLog(log);
-renderProtein();
-}
-
-function renderProtein(){
-const foodsEl=$("protein-foods");
-const logEl=$("protein-log");
-const totalEl=$("protein-total");
-const ringEl=$("protein-ring");
-const statusEl=$("protein-status");
-const tipEl=$("protein-tip");
-if(!foodsEl)return;
-
-const log=getProteinLog();
-const total=log.reduce((s,f)=>s+f.g,0);
-const pct=Math.min(Math.round((total/110)*100),100);
-const remaining=110-total;
-
-foodsEl.innerHTML=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i})">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
-
-if(log.length===0){
-logEl.innerHTML=`<div style="text-align:center;padding:8px;color:#B8A5C0;font-size:11px">Nothing logged yet</div>`;
-}else{
-logEl.innerHTML=log.map((f,i)=>`<div class="protein-log-item"><span class="protein-log-name">${f.emoji} ${f.name}</span><span><span class="protein-log-g">${f.g}g</span><span class="protein-log-x" onclick="removeProtein(${i})"> ×</span></span></div>`).join("");
-}
-
-totalEl.textContent=total+"g";
-const circ=263.9;
-const offset=circ-(pct/100)*circ;
-ringEl.style.strokeDashoffset=offset;
-ringEl.style.stroke=total>=110?"#5B8A5E":"#6B5B8A";
-
-if(total>=110){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.color="#5B8A5E"}
-else if(total>0){statusEl.textContent=remaining+"g to go";statusEl.style.color="#6B5B8A"}
-else{statusEl.textContent="Tap foods below to log";statusEl.style.color="#A898B0"}
-
-if(total>=110){
-const msgs=[
-"That's "+Math.round(total/0.63)/100+"g/kg — right in the optimal range for muscle protein synthesis.",
-"110g+ locks in recovery. Your muscles repair strongest in the 24 hrs after training.",
-"Consistent protein > perfect protein. You're building the habit that builds the physique.",
-"At 1.6–2.0g/kg, you're maximising lean muscle retention while cutting fat. Science says so.",
-"Protein target hit. This is what separates people who train from people who transform.",
-"Your body can only use ~30–40g per meal for muscle building. Spreading it across the day = smarter gains.",
-"Fun fact: 110g protein requires ~440 calories. That's high satiety for relatively low energy — your appetite thanks you.",
-"Recovery nutrition locked in. Tomorrow's session will feel better because of what you ate today.",
-"Protein is the only macro that builds and repairs muscle tissue. You gave your body exactly what it needs.",
-"Every day you hit this target, you're compounding. 30 days of this = visible change."
-];
-const dayIdx=currentDate.getDate()%msgs.length;
-tipEl.innerHTML="✅ "+msgs[dayIdx];
-}
-else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) or a can of tuna (25g) closes the gap."}
-else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
-else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
-else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Tap your meals above."}
-}
-
-render();
-</script>
 </body>
 </html>
