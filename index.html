@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -624,27 +623,37 @@ dhtml+=`<div class="dash-section"><div class="dash-title">This Week</div><div cl
 
 // ── Weekly Plan Overview ──
 const weekPlanLabels=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const weekPlanEmojis=["💪","🏃‍♀️","💪🏃‍♀️","😴","💪🏃‍♀️","🚴‍♀️","🏃‍♀️"];
 let planOverview="";
 for(let i=0;i<7;i++){
 const wd=new Date(monday);
 wd.setDate(wd.getDate()+i);
 const wp=getPlan(wd);
+const wdMovedOut=getMovedOut(wd);
+const wdMovedIn=getMovedIn(wd);
 let items=[];
-if(wp.str)items.push("💪 "+wp.str.name.replace("Strength ","").split("–")[0].trim());
-if(wp.run)items.push("🏃‍♀️ "+wp.run.type+(wp.run.km?" · "+wp.run.km+" km":""));
-if(wp.spin)items.push("🚴‍♀️ Spin Class");
-if(wp.other&&wp.other.toLowerCase().includes("pilates"))items.push("🧘‍♀️ Pilates");
+if(wp.str&&!wdMovedOut.includes("str"))items.push("💪 "+wp.str.name);
+if(wp.run&&!wdMovedOut.includes("run"))items.push("🏃‍♀️ "+wp.run.type+(wp.run.km?" · "+wp.run.km+" km":""));
+if(wp.spin&&!wdMovedOut.includes("spin"))items.push("🚴‍♀️ Spin Class");
+if(wp.other&&wp.other.toLowerCase().includes("pilates")&&!wdMovedOut.includes("pilates"))items.push("🧘‍♀️ Pilates");
+// Add moved-in sessions
+wdMovedIn.forEach(item=>{
+const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const orig=new Date(item.originY,item.originM,item.originD,12,0,0);
+const fromLabel=days[orig.getDay()]+" "+orig.getDate()+" "+mns[orig.getMonth()];
+if(item.type==="run")items.push("🏃‍♀️ "+item.label+" <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
+else if(item.type==="str")items.push("💪 "+item.label+" <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
+else if(item.type==="spin")items.push("🚴‍♀️ Spin <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
+else if(item.type==="pilates")items.push("🧘‍♀️ Pilates <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
+});
 if(!items.length){
 if(wp.notes&&wp.notes.length)items.push("😴 Rest Day");
 else items.push("😴 Rest");
 }
 const isToday2=wd.getDate()===todayNorm.getDate()&&wd.getMonth()===todayNorm.getMonth();
 planOverview+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08);${isToday2?"background:rgba(107,91,138,0.06);border-radius:6px;padding:8px 10px;margin:0 -10px":""}">
-<div style="display:flex;justify-content:space-between;align-items:center">
 <div style="font-size:12px;font-weight:700;color:${isToday2?"#6B5B8A":"#3D2E4A"}">${weekPlanLabels[i]}${isToday2?" ← today":""}</div>
-</div>
-<div style="font-size:11px;color:#7A6B8A;margin-top:2px;line-height:1.5">${items.join("<br>")}</div>
+<div style="font-size:11px;color:#7A6B8A;margin-top:2px;line-height:1.6">${items.join("<br>")}</div>
 </div>`;
 }
 dhtml+=`<div class="dash-section"><div class="dash-title">Week at a Glance</div>${planOverview}</div>`;
@@ -713,7 +722,8 @@ weekHtml+=`<div style="display:flex;gap:8px;margin-bottom:10px">
 </div>`;
 
 if(bestRun){
-const bd=new Date(bestRun.date);
+const bp=bestRun.date.substring(0,10).split("-");
+const bd=new Date(+bp[0],+bp[1]-1,+bp[2],12,0,0);
 const bday=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][bd.getDay()];
 weekHtml+=`<div style="padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);margin-bottom:10px;font-size:12px">
 <span style="color:#3D8A50;font-weight:700">⭐ Longest run:</span>
@@ -727,7 +737,8 @@ weekHtml+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12
 if(runs.length){
 weekHtml+=`<div style="margin-top:6px">`;
 runs.map(r=>{
-const d=new Date(r.date);
+const p=r.date.substring(0,10).split("-");
+const d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
@@ -918,7 +929,8 @@ html+=`<div class="coach-card"><div class="coach-card-title">Easy Run Analysis</
 // Individual runs list
 html+=`<div style="margin-bottom:10px">`;
 recent5.forEach(r=>{
-const d=new Date(r.date);
+const p=r.date.substring(0,10).split("-");
+const d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
@@ -1061,17 +1073,61 @@ html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">
 
 // ── 4. Pace vs Plan ──
 html+=`<div class="coach-card"><div class="coach-card-title">Recent Runs vs Plan</div>`;
-runs.slice(0,5).forEach(r=>{
-const d=new Date(r.date);
+runs.slice(0,8).forEach(r=>{
+const p=r.date.substring(0,10).split("-");
+const d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
-const planned=getPlan(new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0));
-const planPace=planned.run?planned.run.pace:"—";
-const planKm=planned.run?planned.run.km:"—";
+const planned=getPlan(d);
+const planRun=planned.run;
+const planPace=planRun?planRun.pace:"—";
+const planKm=planRun?planRun.km:"—";
+
+// Determine traffic light
+let indicator="";let indicatorText="";let indicatorColor="";
+if(planRun){
+// Parse planned pace range
+const paceMatch=planRun.pace.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
+const planKmNum=parseFloat(planRun.km)||0;
+const actualKmNum=r.distance_km;
+const actualPaceSec=r.pace_per_km.split(":").reduce((m,s,i)=>i===0?+s*60:m+ +s,0);
+
+let paceOk=null;let distOk=null;
+if(paceMatch){
+const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
+const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
+paceOk=actualPaceSec>=targetMin-15&&actualPaceSec<=targetMax+20;
+const paceFast=actualPaceSec<targetMin-15;
+}
+// Distance: within 1km either way is fine, or if plan has a range pick midpoint
+const planKmMatch=planRun.km.toString().match(/(\d+\.?\d*)/g);
+const planKmMid=planKmMatch?planKmMatch.reduce((s,n,i,a)=>s+ +n/a.length,0):0;
+if(planKmMid>0)distOk=Math.abs(actualKmNum-planKmMid)<=1.5;
+
+if(paceOk===null&&distOk===null){indicator="⚪";indicatorColor="#A898B0";indicatorText="No pace target";}
+else if(paceOk&&(distOk||distOk===null)){indicator="🟢";indicatorColor="#3D8A50";indicatorText="On plan";}
+else if(paceOk&&distOk===false){indicator="🟡";indicatorColor="#B8883E";indicatorText=actualKmNum<planKmMid-1.5?"Short on distance":"Extra distance";}
+else if(paceOk===false&&(distOk||distOk===null)){
+const actualPaceSec2=r.pace_per_km.split(":").reduce((m,s,i)=>i===0?+s*60:m+ +s,0);
+const paceMatch2=planRun.pace.match(/(\d):(\d\d)/);
+const tMin=paceMatch2?parseInt(paceMatch2[1])*60+parseInt(paceMatch2[2]):0;
+indicator=actualPaceSec2<tMin-15?"🔴":"🟡";
+indicatorColor=actualPaceSec2<tMin-15?"#DC2626":"#B8883E";
+indicatorText=actualPaceSec2<tMin-15?"Too fast":"Slightly off pace";
+}
+else{indicator="🟡";indicatorColor="#B8883E";indicatorText="Partially on plan";}
+}else{
+indicator="⚪";indicatorColor="#A898B0";indicatorText="Rest day run";
+}
+
 html+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
-<div style="display:flex;justify-content:space-between"><div style="font-size:12px;font-weight:600;color:#3D2E4A">${day} ${dd} ${mm} — ${r.name}</div></div>
-<div style="display:flex;gap:16px;margin-top:3px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:12px;font-weight:600;color:#3D2E4A">${day} ${dd} ${mm} — ${r.name}</div>
+<div style="font-size:16px" title="${indicatorText}">${indicator}</div>
+</div>
+<div style="font-size:10px;color:${indicatorColor};font-weight:600;margin-bottom:3px">${indicatorText}</div>
+<div style="display:flex;gap:16px">
 <div><div style="font-size:10px;color:#FC4C02">ACTUAL</div><div style="font-size:12px;color:#3D2E4A;font-weight:500">${r.distance_km} km · ${r.pace_per_km}/km</div></div>
 <div><div style="font-size:10px;color:#6B5B8A">PLAN</div><div style="font-size:12px;color:#6B5B8A">${planKm} km · ${planPace}</div></div>
 </div></div>`;
@@ -1633,6 +1689,5 @@ render();
 
 render();
 </script>
-
 </body>
 </html>
