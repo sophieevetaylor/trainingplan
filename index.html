@@ -753,12 +753,23 @@ dashEl.innerHTML=weekHtml;
 
 // Daily view: match Strava activity to today's date
 const dailyEl=$("strava-daily");
+console.log("🟠 Strava daily check — dailyEl exists:", !!dailyEl, "stravaData:", stravaData?stravaData.length+" activities":"null");
 if(dailyEl){
 const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
+console.log("🟠 Looking for date:", dateStr, "— dates in Strava:", stravaData?stravaData.slice(0,5).map(a=>a.date):[]);
 const matches=stravaData.filter(a=>a.type==="Run"&&a.date.startsWith(dateStr));
+console.log("🟠 Matches found:", matches.length);
 if(matches.length){
 const m=matches[0];
-const plan=getPlan(currentDate);
+// Get plan for this day — if run was moved in from another day, use that day's plan instead
+let plan=getPlan(currentDate);
+if(!plan.run){
+const movedIn=getMovedIn(currentDate);
+const movedRun=movedIn.find(x=>x.type==="run");
+if(movedRun){
+plan=getPlan(new Date(movedRun.originY,movedRun.originM,movedRun.originD,12,0,0));
+}
+}
 
 // Auto-tick run checkbox if Strava has a run for this day
 const runCheck=$("run-check");
