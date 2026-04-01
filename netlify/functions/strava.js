@@ -44,7 +44,7 @@ exports.handler = async (event) => {
         name: a.name,
         type: a.type,
         sport_type: a.sport_type,
-        date: a.start_date_local,
+        date: a.start_date_local.substring(0, 10),
         distance_km: Math.round((a.distance / 1000) * 100) / 100,
         moving_time_min: Math.round(a.moving_time / 60),
         elapsed_time_min: Math.round(a.elapsed_time / 60),
