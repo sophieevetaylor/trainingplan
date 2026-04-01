@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1324,6 +1325,8 @@ $("content").innerHTML+=dailyCards;
 renderProtein();
 restoreChecks();
 restoreExLogs();
+// Re-run Strava widgets now that strava-daily div exists in DOM
+if(stravaLoaded)renderStravaWidgets();
 }
 
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
@@ -1689,5 +1692,6 @@ render();
 
 render();
 </script>
+
 </body>
 </html>
