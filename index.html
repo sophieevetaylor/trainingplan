@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -540,7 +539,42 @@ after="🥛 20–30g protein within 45 min.";
 return{pre,during,after};
 }
 
-function renderRun(r){
+function buildStravaHtml(m,planRun){
+let feedback="";
+if(planRun&&planRun.pace){
+const paceMatch=planRun.pace.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
+if(paceMatch){
+const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
+const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
+const actual=m.pace_per_km.split(":").reduce((s,v,i)=>i===0?+v*60:s+ +v,0);
+if(actual<targetMin-10){feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px"><span style="color:#DC2626;font-weight:700">⚡ ${targetMin-actual}s faster than planned.</span> <span style="color:#7A6B8A">Plan said ${planRun.pace}. ${planRun.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy — save the speed for quality sessions.":"Watch the effort — don't blow up early."}</span></div>`;}
+else if(actual>targetMax+15){feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px"><span style="color:#B8883E;font-weight:700">🐢 ${actual-targetMax}s slower than planned.</span> <span style="color:#7A6B8A">Plan said ${planRun.pace}. ${planRun.type.toLowerCase().includes("easy")?"That's fine for easy days — no stress.":"Consider if fatigue, heat, or hills were a factor."}</span></div>`;}
+else{feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px"><span style="color:#3D8A50;font-weight:700">✅ Right on target.</span> <span style="color:#7A6B8A">Plan said ${planRun.pace}. Nailed it.</span></div>`;}
+}
+}
+let distFeedback="";
+if(planRun&&planRun.km){
+const plannedKm=parseFloat(planRun.km)||0;
+if(plannedKm>0){
+const diff=m.distance_km-plannedKm;
+if(Math.abs(diff)<=0.5)distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
+else if(diff>0.5)distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
+else distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
+}
+}
+return`<div style="margin-top:10px;padding:10px 12px;background:rgba(252,76,2,0.06);border-radius:8px;border:0.5px solid rgba(252,76,2,0.15)">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+<div style="font-size:12px;font-weight:700;color:#FC4C02"><svg width="12" height="12" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:4px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>${m.name}</div>
+${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
+</div>
+<div style="font-size:12px;color:#7A6B8A">
+<span style="font-weight:600;color:#3D2E4A">${m.distance_km} km</span> · <span style="font-weight:600;color:#3D2E4A">${m.pace_per_km}/km</span> · ${m.moving_time_min} min${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}${m.elevation_gain>20?" · ⛰️ "+Math.round(m.elevation_gain)+"m":""}
+</div>
+${feedback}
+</div>`;
+}
+
+function renderRun(r,stravaActivity){
 if(!r)return"";
 const isRace=r.type.includes("RACE");
 let fuelHtml="";
@@ -548,7 +582,8 @@ const fuel=getFuel(r);
 if(fuel){
 fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
 }
-return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>${isRace?"":moveBtn("run",r.type)}</div>`;
+const stravaHtml=stravaActivity?buildStravaHtml(stravaActivity,r):"";
+return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${stravaHtml}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>${isRace?"":moveBtn("run",r.type)}</div>`;
 }
 
 function renderStrength(s){
@@ -761,17 +796,14 @@ const matches=stravaData.filter(a=>a.type==="Run"&&a.date.startsWith(dateStr));
 console.log("🟠 Matches found:", matches.length);
 if(matches.length){
 const m=matches[0];
-// Get plan for this day — if run was moved in from another day, use that day's plan instead
+// Get plan — if run was moved in from another day, use that day's plan
 let plan=getPlan(currentDate);
 if(!plan.run){
 const movedIn=getMovedIn(currentDate);
 const movedRun=movedIn.find(x=>x.type==="run");
-if(movedRun){
-plan=getPlan(new Date(movedRun.originY,movedRun.originM,movedRun.originD,12,0,0));
+if(movedRun)plan=getPlan(new Date(movedRun.originY,movedRun.originM,movedRun.originD,12,0,0));
 }
-}
-
-// Auto-tick run checkbox if Strava has a run for this day
+// Auto-tick run checkbox
 const runCheck=$("run-check");
 const runLabel=$("run-label");
 if(runCheck&&!runCheck.classList.contains("done")){
@@ -779,67 +811,20 @@ runCheck.classList.add("done");
 if(runLabel){runLabel.classList.add("done");runLabel.textContent="Run complete ✓ (auto-synced)"}
 saveRun(true);
 }
-
-// Build pace comparison feedback
-let feedback="";
-if(plan.run&&plan.run.pace){
-const paceStr=plan.run.pace;
-// Extract target pace range from plan (e.g. "5:50–6:10/km")
-const paceMatch=paceStr.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
-if(paceMatch){
-const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
-const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
-const actualParts=m.pace_per_km.split(":");
-const actual=parseInt(actualParts[0])*60+parseInt(actualParts[1]);
-
-if(actual<targetMin-10){
-const diff=targetMin-actual;
-feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px">
-<span style="color:#DC2626;font-weight:700">⚡ ${diff}s faster than planned.</span>
-<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy — save the speed for quality sessions.":"Watch the effort — don't blow up early."}</span></div>`;
-}else if(actual>targetMax+15){
-const diff=actual-targetMax;
-feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px">
-<span style="color:#B8883E;font-weight:700">🐢 ${diff}s slower than planned.</span>
-<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"That's fine for easy days — no stress.":"Consider if fatigue, heat, or hills were a factor."}</span></div>`;
-}else{
-feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px">
-<span style="color:#3D8A50;font-weight:700">✅ Right on target.</span>
-<span style="color:#7A6B8A"> Plan said ${paceStr}. Nailed it.</span></div>`;
+// Inject Strava card inside the run card, before the check row
+const runCard=document.querySelector(".run-card.normal");
+if(runCard){
+const existing=runCard.querySelector(".strava-inline");
+if(!existing){
+const stravaDiv=document.createElement("div");
+stravaDiv.className="strava-inline";
+stravaDiv.innerHTML=buildStravaHtml(m,plan.run);
+const checkRow=runCard.querySelector(".run-check-row");
+if(checkRow)runCard.insertBefore(stravaDiv,checkRow);
+else runCard.appendChild(stravaDiv);
 }
 }
-}
-
-// Distance comparison
-let distFeedback="";
-if(plan.run&&plan.run.km){
-const plannedKm=parseFloat(plan.run.km)||0;
-if(plannedKm>0){
-const diff=m.distance_km-plannedKm;
-if(Math.abs(diff)<=0.5){
-distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
-}else if(diff>0.5){
-distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
-}else{
-distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
-}
-}
-}
-
-dailyEl.innerHTML=`<div class="strava-actual">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div class="strava-actual-header"><svg width="14" height="14" viewBox="0 0 64 64" style="vertical-align:-2px;margin-right:4px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg> Strava: ${m.name}</div>
-${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
-</div>
-<div class="strava-actual-stats">
-<span style="font-weight:600">${m.distance_km} km</span> · 
-<span style="font-weight:600">${m.pace_per_km}/km</span> · 
-<span>${m.moving_time_min} min</span>
-${m.avg_hr?" · <span>❤️ "+Math.round(m.avg_hr)+" bpm</span>":""}
-${m.elevation_gain>20?" · <span>⛰️ "+Math.round(m.elevation_gain)+"m</span>":""}
-</div>
-${feedback}
-</div>`;
+dailyEl.innerHTML="";
 }else{
 dailyEl.innerHTML="";
 }
@@ -1703,6 +1688,5 @@ render();
 
 render();
 </script>
-
 </body>
 </html>
