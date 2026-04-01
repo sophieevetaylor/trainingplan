@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -848,7 +849,8 @@ const diff=dow===0?6:dow-1;
 monday.setDate(monday.getDate()-diff);
 let actualKm=0;
 runs.forEach(r=>{
-const rd=new Date(r.date);
+const p=r.date.substring(0,10).split("-");
+const rd=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
 if(rd>=monday&&rd<=todayNorm)actualKm+=r.distance_km;
 });
 const block=getBlock(todayNorm);
@@ -1616,5 +1618,6 @@ render();
 
 render();
 </script>
+
 </body>
 </html>
