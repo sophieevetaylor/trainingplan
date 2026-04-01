@@ -938,10 +938,10 @@ const paceSec=paceToSec(r.pace_per_km);
 const inZone=paceSec>=zoneMin&&paceSec<=zoneMax;
 const tooFast=paceSec<zoneMin;
 const icon=tooFast?"🔴":inZone?"🟢":"🟡";
-html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
+html+=`<div style="display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
 <div style="font-size:12px;color:#A898B0">${day} ${dd} ${mm}</div>
-<div style="font-size:12px;color:#3D2E4A">${r.distance_km} km</div>
-<div style="font-size:13px;font-weight:700;color:${tooFast?"#DC2626":inZone?"#3D8A50":"#B8883E"}">${r.pace_per_km}/km ${icon}</div>
+<div style="font-size:12px;color:#3D2E4A;text-align:center">${r.distance_km} km</div>
+<div style="font-size:13px;font-weight:700;color:${tooFast?"#DC2626":inZone?"#3D8A50":"#B8883E"};text-align:right">${r.pace_per_km}/km ${icon}</div>
 </div>`;
 });
 html+=`</div>`;
