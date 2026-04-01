@@ -547,12 +547,12 @@ const fuel=getFuel(r);
 if(fuel){
 fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
 }
-return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div></div>`;
+return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>${isRace?"":moveBtn("run",r.type)}</div>`;
 }
 
 function renderStrength(s){
 if(!s)return"";
-return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div></div>`+renderTreadmill();
+return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div>${moveBtn("str",s.name)}</div></div>`+renderTreadmill();
 }
 
 function renderTreadmill(){
@@ -1197,14 +1197,14 @@ html+=`<div id="strava-daily"></div>`;
 if(!hasStrMoved)html+=renderStrength(plan.str);
 
 if(plan.spin&&!hasSpinMoved){
-html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
+html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div>${moveBtn("spin","Spin Class")}</div>`;
 }
 
 if(plan.other&&!hasPilatesMoved){
 const isPilates=plan.other.toLowerCase().includes("pilates");
 const emoji=isPilates?"🧘‍♀️ ":"";
 const label=isPilates?"Pilates":"Also today";
-html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>`:""}</div>`;
+html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>${moveBtn("pilates","Pilates")}`:""}</div>`;
 }
 
 // Render any sessions moved IN to today from other days
@@ -1251,16 +1251,6 @@ $("content").innerHTML+=dailyCards;
 renderProtein();
 restoreChecks();
 restoreExLogs();
-
-// Add long-press to moveable cards
-const runCard=document.querySelector(".run-card.normal");
-if(runCard)addLongPress(runCard,"run",plan.run?plan.run.type:"Run");
-const strCard=document.querySelector(".strength-card");
-if(strCard)addLongPress(strCard,"str",plan.str?plan.str.name:"Strength");
-const spinCard=document.querySelector(".spin-card");
-if(spinCard)addLongPress(spinCard,"spin","Spin Class");
-const pilCard=document.querySelector(".other-card.pilates");
-if(pilCard)addLongPress(pilCard,"pilates","Pilates");
 }
 
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
@@ -1553,12 +1543,15 @@ if(r&&log[i].r)r.value=log[i].r;
 }
 
 // ── Move Session System ──
-// Storage keys
 function movedKey(d){return"tp-moved2-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function getMovedOut(d){try{return JSON.parse(localStorage.getItem(movedKey(d))||"[]").filter(x=>x.action==="removed").map(x=>x.type)}catch(e){return[]}}
 function getMovedIn(d){try{return JSON.parse(localStorage.getItem(movedKey(d))||"[]").filter(x=>x.action==="added")}catch(e){return[]}}
 
-// Render a moved-in session card by type, using plan data from its origin date
+// Small "move" button rendered inside each session card
+function moveBtn(type,label){
+return`<div style="margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(180,160,190,0.15)"><button onclick="showMoveModal('${type}','${label.replace(/'/g,"\\'")}')" style="background:none;border:1px solid rgba(180,160,190,0.35);border-radius:6px;padding:5px 12px;font-size:12px;color:#A898B0;cursor:pointer;width:100%">📅 Move to another day</button></div>`;
+}
+
 function renderMovedInCard(item){
 const originDate=new Date(item.originY,item.originM,item.originD,12,0,0);
 const originPlan=getPlan(originDate);
@@ -1566,87 +1559,59 @@ const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","De
 const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const fromLabel=days[originDate.getDay()]+" "+originDate.getDate()+" "+mns[originDate.getMonth()];
 const badge=`<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">📅 Moved from ${fromLabel}</div>`;
-if(item.type==="run"&&originPlan.run){
-return`<div>${badge}${renderRun(originPlan.run)}</div>`;
-}
-if(item.type==="str"&&originPlan.str){
-return`<div>${badge}${renderStrength(originPlan.str)}</div>`;
-}
-if(item.type==="spin"){
-return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div></div></div>`;
-}
-if(item.type==="pilates"){
-return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div></div></div>`;
-}
+if(item.type==="run"&&originPlan.run)return`<div>${badge}${renderRun(originPlan.run)}</div>`;
+if(item.type==="str"&&originPlan.str)return`<div>${badge}${renderStrength(originPlan.str)}</div>`;
+if(item.type==="spin")return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div></div></div>`;
+if(item.type==="pilates")return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div></div></div>`;
 return"";
 }
 
+// Capture source date at the moment the modal opens, not at moveSession call time
 let moveTarget=null;
+let moveSourceDate=null;
 function showMoveModal(sessionType,sessionLabel){
 moveTarget={type:sessionType,label:sessionLabel};
-// Use the date being viewed (currentDate), not today
-const mon=new Date(currentDate);
+moveSourceDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
+const mon=new Date(moveSourceDate);
 const dw=mon.getDay();
-const df=dw===0?6:dw-1;
-mon.setDate(mon.getDate()-df);
+mon.setDate(mon.getDate()-(dw===0?6:dw-1));
 const dayNames=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 let optHtml="";
 for(let i=0;i<7;i++){
 const d=new Date(mon);
 d.setDate(d.getDate()+i);
-const isCurrent=d.getDate()===currentDate.getDate()&&d.getMonth()===currentDate.getMonth()&&d.getFullYear()===currentDate.getFullYear();
+const isCurrent=d.getDate()===moveSourceDate.getDate()&&d.getMonth()===moveSourceDate.getMonth()&&d.getFullYear()===moveSourceDate.getFullYear();
 if(isCurrent)continue;
-optHtml+=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})">
-<div class="move-day-name">${dayNames[i]}</div>
-<div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div>
-</div>`;
+optHtml+=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})"><div class="move-day-name">${dayNames[i]}</div><div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div></div>`;
 }
 const overlay=document.createElement("div");
 overlay.className="move-overlay";
 overlay.id="moveOverlay";
-overlay.innerHTML=`<div class="move-modal">
-<div class="move-modal-title">Move: ${sessionLabel}</div>
-<div class="move-modal-sub">Hold detected — pick a day this week to move it to</div>
-${optHtml}
-<div class="move-cancel" onclick="closeMoveModal()">Cancel</div>
-</div>`;
+overlay.innerHTML=`<div class="move-modal"><div class="move-modal-title">Move: ${sessionLabel}</div><div class="move-modal-sub">Pick a day this week to move it to</div>${optHtml}<div class="move-cancel" onclick="closeMoveModal()">Cancel</div></div>`;
 document.body.appendChild(overlay);
 overlay.onclick=function(e){if(e.target===overlay)closeMoveModal()};
 }
-function closeMoveModal(){const o=$("moveOverlay");if(o)o.remove();moveTarget=null}
+function closeMoveModal(){const o=$("moveOverlay");if(o)o.remove();moveTarget=null;}
 function moveSession(y,m,d){
-// Record removal on source day
-const fromKey=movedKey(currentDate);
+if(!moveTarget||!moveSourceDate)return;
+const src=moveSourceDate;
 try{
+// Write "removed" to source day
+const fromKey=movedKey(src);
 let fm=JSON.parse(localStorage.getItem(fromKey)||"[]");
-// Remove any prior move of this type so it's idempotent
 fm=fm.filter(x=>!(x.type===moveTarget.type&&x.action==="removed"));
 fm.push({type:moveTarget.type,label:moveTarget.label,action:"removed"});
 localStorage.setItem(fromKey,JSON.stringify(fm));
-// Record addition on target day, with origin info so we can re-render from source plan
+// Write "added" to target day
 const toKey=movedKey(new Date(y,m,d,12,0,0));
 let tm=JSON.parse(localStorage.getItem(toKey)||"[]");
-tm=tm.filter(x=>!(x.type===moveTarget.type&&x.action==="added"&&x.originY===currentDate.getFullYear()&&x.originM===currentDate.getMonth()&&x.originD===currentDate.getDate()));
-tm.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:currentDate.getFullYear(),originM:currentDate.getMonth(),originD:currentDate.getDate()});
+tm=tm.filter(x=>!(x.type===moveTarget.type&&x.action==="added"));
+tm.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:src.getFullYear(),originM:src.getMonth(),originD:src.getDate()});
 localStorage.setItem(toKey,JSON.stringify(tm));
-}catch(e){}
+}catch(e){console.error("moveSession error",e);}
 closeMoveModal();
 render();
-}
-
-// Long press handler — works on both touch and mouse
-let longPressTimer=null;
-function addLongPress(el,type,label){
-if(!el)return;
-function start(){longPressTimer=setTimeout(()=>{showMoveModal(type,label)},600)}
-function cancel(){clearTimeout(longPressTimer)}
-el.addEventListener("touchstart",start,{passive:true});
-el.addEventListener("touchend",cancel,{passive:true});
-el.addEventListener("touchmove",cancel,{passive:true});
-el.addEventListener("mousedown",start);
-el.addEventListener("mouseup",cancel);
-el.addEventListener("mouseleave",cancel);
 }
 
 render();
