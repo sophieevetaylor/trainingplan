@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1707,8 +1708,8 @@ const fromLabel=days[originDate.getDay()]+" "+originDate.getDate()+" "+mns[origi
 const badge=`<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">📅 Moved from ${fromLabel}</div>`;
 if(item.type==="run"&&originPlan.run)return`<div>${badge}${renderRun(originPlan.run)}</div>`;
 if(item.type==="str"&&originPlan.str)return`<div>${badge}${renderStrength(originPlan.str)}</div>`;
-if(item.type==="spin")return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div>${moveBtn("spin","Spin Class")}</div></div>`;
-if(item.type==="pilates")return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div>${moveBtn("pilates","Pilates")}</div></div>`;
+if(item.type==="spin")return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div>${moveBtn("spin","Spin Class")}</div></div>`;
+if(item.type==="pilates")return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div><div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>${moveBtn("pilates","Pilates")}</div></div>`;
 return"";
 }
 
@@ -1780,5 +1781,6 @@ render();
 
 render();
 </script>
+
 </body>
 </html>
