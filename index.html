@@ -1707,8 +1707,8 @@ const fromLabel=days[originDate.getDay()]+" "+originDate.getDate()+" "+mns[origi
 const badge=`<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">📅 Moved from ${fromLabel}</div>`;
 if(item.type==="run"&&originPlan.run)return`<div>${badge}${renderRun(originPlan.run)}</div>`;
 if(item.type==="str"&&originPlan.str)return`<div>${badge}${renderStrength(originPlan.str)}</div>`;
-if(item.type==="spin")return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div></div></div>`;
-if(item.type==="pilates")return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div></div></div>`;
+if(item.type==="spin")return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div>${moveBtn("spin","Spin Class")}</div></div>`;
+if(item.type==="pilates")return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div>${moveBtn("pilates","Pilates")}</div></div>`;
 return"";
 }
 
@@ -1743,17 +1743,35 @@ function moveSession(y,m,d){
 if(!moveTarget||!moveSourceDate)return;
 const src=moveSourceDate;
 try{
-// Write "removed" to source day
 const fromKey=movedKey(src);
 let fm=JSON.parse(localStorage.getItem(fromKey)||"[]");
+
+// Check if this session was itself moved IN to the source day — if so, find the true origin
+const existingMovedIn=fm.find(x=>x.type===moveTarget.type&&x.action==="added");
+let trueOriginY,trueOriginM,trueOriginD;
+if(existingMovedIn){
+// Session was moved in here — true origin is wherever it came from
+trueOriginY=existingMovedIn.originY;
+trueOriginM=existingMovedIn.originM;
+trueOriginD=existingMovedIn.originD;
+// Remove the "added" record from the current day (it's leaving)
+fm=fm.filter(x=>!(x.type===moveTarget.type&&x.action==="added"));
+localStorage.setItem(fromKey,JSON.stringify(fm));
+}else{
+// Session lives natively on this day — mark it as removed
+trueOriginY=src.getFullYear();
+trueOriginM=src.getMonth();
+trueOriginD=src.getDate();
 fm=fm.filter(x=>!(x.type===moveTarget.type&&x.action==="removed"));
 fm.push({type:moveTarget.type,label:moveTarget.label,action:"removed"});
 localStorage.setItem(fromKey,JSON.stringify(fm));
-// Write "added" to target day
+}
+
+// Write "added" to target day, pointing back to true origin
 const toKey=movedKey(new Date(y,m,d,12,0,0));
 let tm=JSON.parse(localStorage.getItem(toKey)||"[]");
 tm=tm.filter(x=>!(x.type===moveTarget.type&&x.action==="added"));
-tm.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:src.getFullYear(),originM:src.getMonth(),originD:src.getDate()});
+tm.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:trueOriginY,originM:trueOriginM,originD:trueOriginD});
 localStorage.setItem(toKey,JSON.stringify(tm));
 }catch(e){console.error("moveSession error",e);}
 closeMoveModal();
