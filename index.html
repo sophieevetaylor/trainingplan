@@ -1522,13 +1522,49 @@ const PFOODS=[
 {emoji:"☕",name:"Oat flat white",g:2},
 ];
 
+const CUSTOM_FOODS_KEY="tp-custom-foods";
+function getCustomFoods(){try{return JSON.parse(localStorage.getItem(CUSTOM_FOODS_KEY)||"[]")}catch(e){return[]}}
+function saveCustomFoods(foods){try{localStorage.setItem(CUSTOM_FOODS_KEY,JSON.stringify(foods))}catch(e){}}
+
+function addCustomFood(){
+const emoji=$("cf-emoji").value.trim()||"🍽️";
+const name=$("cf-name").value.trim();
+const g=parseInt($("cf-grams").textContent)||0;
+if(!name||g<=0)return;
+const custom=getCustomFoods();
+custom.push({emoji,name,g});
+saveCustomFoods(custom);
+$("cf-name").value="";
+$("cf-emoji").value="";
+$("cf-grams").textContent="20";
+$("custom-food-form").style.display="none";
+renderProtein();
+}
+function deleteCustomFood(i){
+const custom=getCustomFoods();
+custom.splice(i,1);
+saveCustomFoods(custom);
+renderProtein();
+}
+function adjustGrams(delta){
+const el=$("cf-grams");
+const val=Math.max(5,Math.min(200,(parseInt(el.textContent)||20)+delta));
+el.textContent=val;
+}
+function toggleCustomForm(){
+const form=$("custom-food-form");
+form.style.display=form.style.display==="none"?"block":"none";
+}
+
 function proteinKey(){return"tp-prot-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
 function getProteinLog(){try{const s=localStorage.getItem(proteinKey());return s?JSON.parse(s):[]}catch(e){return[]}}
 function saveProteinLog(log){try{localStorage.setItem(proteinKey(),JSON.stringify(log))}catch(e){}}
 
-function addProtein(i){
+function addProtein(i,isCustom){
 const log=getProteinLog();
-log.push({...PFOODS[i]});
+const food=isCustom?getCustomFoods()[i]:PFOODS[i];
+if(!food)return;
+log.push({...food});
 saveProteinLog(log);
 renderProtein();
 }
@@ -1552,8 +1588,46 @@ const log=getProteinLog();
 const total=log.reduce((s,f)=>s+f.g,0);
 const pct=Math.min(Math.round((total/110)*100),100);
 const remaining=110-total;
+const custom=getCustomFoods();
 
-foodsEl.innerHTML=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i})">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
+// Built-in foods
+let foodsHtml=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i},false)">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
+// Custom foods with delete button
+if(custom.length){
+foodsHtml+=custom.map((f,i)=>`<div class="protein-pill" style="position:relative;padding-right:22px" onclick="addProtein(${i},true)">${f.emoji} ${f.name} <span class="pg">${f.g}g</span><span onclick="event.stopPropagation();deleteCustomFood(${i})" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);color:#C4607A;font-size:13px;cursor:pointer">×</span></div>`).join("");
+}
+// Add custom button
+foodsHtml+=`<div class="protein-pill" onclick="toggleCustomForm()" style="border-style:dashed;color:#6B5B8A">＋ Add food</div>`;
+foodsEl.innerHTML=foodsHtml;
+
+// Custom food form
+let formEl=$("custom-food-form");
+if(!formEl){
+const formDiv=document.createElement("div");
+formDiv.id="custom-food-form";
+formDiv.style.display="none";
+formDiv.style.cssText="margin-top:10px;padding:12px;background:rgba(107,91,138,0.06);border-radius:10px;border:0.5px solid rgba(107,91,138,0.2)";
+formDiv.innerHTML=`
+<div style="font-size:12px;font-weight:700;color:#6B5B8A;margin-bottom:8px">Add custom food</div>
+<div style="display:flex;gap:8px;margin-bottom:8px">
+<input id="cf-emoji" type="text" placeholder="🍽️" maxlength="2" style="width:48px;text-align:center;font-size:18px;border:1px solid rgba(180,160,190,0.3);border-radius:8px;padding:6px;background:rgba(255,255,255,0.6);outline:none">
+<input id="cf-name" type="text" placeholder="Food name" style="flex:1;border:1px solid rgba(180,160,190,0.3);border-radius:8px;padding:6px 10px;font-size:13px;background:rgba(255,255,255,0.6);outline:none;color:#3D2E4A">
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+<div style="font-size:12px;color:#A898B0">Protein (g)</div>
+<div style="display:flex;align-items:center;gap:10px">
+<button onclick="adjustGrams(-5)" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
+<span id="cf-grams" style="font-size:18px;font-weight:700;color:#3D2E4A;min-width:32px;text-align:center">20</span>
+<button onclick="adjustGrams(5)" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">＋</button>
+</div>
+</div>
+<div style="display:flex;gap:8px">
+<button onclick="toggleCustomForm()" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:none;font-size:13px;color:#A898B0;cursor:pointer">Cancel</button>
+<button onclick="addCustomFood()" style="flex:2;padding:8px;border-radius:8px;border:none;background:#6B5B8A;font-size:13px;color:white;font-weight:600;cursor:pointer">Save food</button>
+</div>`;
+foodsEl.parentNode.insertBefore(formDiv,foodsEl.nextSibling);
+formEl=formDiv;
+}
 
 if(log.length===0){
 logEl.innerHTML=`<div style="text-align:center;padding:8px;color:#B8A5C0;font-size:11px">Nothing logged yet</div>`;
