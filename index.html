@@ -1719,23 +1719,31 @@ let moveSourceDate=null;
 function showMoveModal(sessionType,sessionLabel){
 moveTarget={type:sessionType,label:sessionLabel};
 moveSourceDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
-const mon=new Date(moveSourceDate);
-const dw=mon.getDay();
-mon.setDate(mon.getDate()-(dw===0?6:dw-1));
-const dayNames=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-let optHtml="";
-for(let i=0;i<7;i++){
-const d=new Date(mon);
+// Build 15 days: 7 before, today (skipped), 7 after
+let prevHtml="",nextHtml="";
+for(let i=-7;i<=7;i++){
+if(i===0)continue;
+const d=new Date(moveSourceDate);
 d.setDate(d.getDate()+i);
-const isCurrent=d.getDate()===moveSourceDate.getDate()&&d.getMonth()===moveSourceDate.getMonth()&&d.getFullYear()===moveSourceDate.getFullYear();
-if(isCurrent)continue;
-optHtml+=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})"><div class="move-day-name">${dayNames[i]}</div><div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div></div>`;
+const dayName=dayNames[d.getDay()];
+const opt=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})"><div class="move-day-name">${dayName}</div><div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div></div>`;
+if(i<0)prevHtml+=opt;
+else nextHtml+=opt;
 }
 const overlay=document.createElement("div");
 overlay.className="move-overlay";
 overlay.id="moveOverlay";
-overlay.innerHTML=`<div class="move-modal"><div class="move-modal-title">Move: ${sessionLabel}</div><div class="move-modal-sub">Pick a day this week to move it to</div>${optHtml}<div class="move-cancel" onclick="closeMoveModal()">Cancel</div></div>`;
+overlay.innerHTML=`<div class="move-modal" style="max-height:85vh;overflow-y:auto">
+<div class="move-modal-title">Move: ${sessionLabel}</div>
+<div class="move-modal-sub">Pick any day within the next or previous 7 days</div>
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin:8px 0 4px">Previous 7 days</div>
+${prevHtml}
+<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin:8px 0 4px">Next 7 days</div>
+${nextHtml}
+<div class="move-cancel" onclick="closeMoveModal()">Cancel</div>
+</div>`;
 document.body.appendChild(overlay);
 overlay.onclick=function(e){if(e.target===overlay)closeMoveModal()};
 }
