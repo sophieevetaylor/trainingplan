@@ -1302,12 +1302,12 @@ $("content").innerHTML=html;
 
 // Daily tracker cards (every day)
 const dailyCards=`
-<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
+<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target" id="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
 <div class="protein-card">
 <div class="protein-header">🥩 Protein Tracker</div>
 <div class="protein-ring-wrap">
 <svg width="100" height="100"><circle cx="50" cy="50" r="42" stroke="rgba(107,91,138,0.1)" stroke-width="7" fill="none"/><circle id="protein-ring" cx="50" cy="50" r="42" stroke="#6B5B8A" stroke-width="7" fill="none" stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/></svg>
-<div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0">of 110g</span></div>
+<div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0" id="protein-of-label">of 110g</span></div>
 </div>
 <div id="protein-status" style="text-align:center;font-size:12px;color:#A898B0;margin-bottom:8px">Tap foods below to log</div>
 <div id="protein-log" style="margin-bottom:8px"></div>
@@ -1318,6 +1318,21 @@ const dailyCards=`
 <div class="water-card"><div class="water-header">💧 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>
 `;
 $("content").innerHTML+=dailyCards;
+
+// Holiday mode card
+const holidayCard=document.createElement("div");
+holidayCard.id="holiday-card";
+const hm=isHolidayMode();
+holidayCard.style.cssText="background:rgba(255,255,255,0.4);border-radius:14px;padding:12px 16px;border:0.5px solid rgba(180,160,190,0.15);margin-top:4px";
+holidayCard.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+<div><div style="font-size:14px;font-weight:600;color:#3D2E4A">🏖️ Holiday Mode</div><div style="font-size:11px;color:#A898B0;margin-top:2px">${hm?"Active — easier targets today":"Off — tap to reduce today's targets"}</div></div>
+<div onclick="toggleHolidayMode()" style="width:44px;height:26px;border-radius:13px;background:${hm?"#6B5B8A":"rgba(180,160,190,0.3)"};cursor:pointer;position:relative;transition:background 0.2s">
+<div style="width:20px;height:20px;border-radius:10px;background:white;position:absolute;top:3px;${hm?"right:3px":"left:3px"};transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div>
+</div></div>
+${hm?`<div style="margin-top:8px;padding:8px 10px;background:rgba(107,91,138,0.08);border-radius:8px;font-size:11px;color:#6B5B8A">
+✅ Today's win: water + 60g protein + 8k steps. Training is a bonus, not a requirement.
+</div>`:""}`;
+$("content").appendChild(holidayCard);
 
 renderProtein();
 restoreChecks();
@@ -1363,6 +1378,12 @@ function savePil(done){const s=getState();s.pil=done;setState(s)}
 
 function restoreChecks(){
 const s=getState();
+const holiday=isHolidayMode();
+// Apply holiday mode targets to steps label
+const stepsTarget=$("steps-target");
+if(stepsTarget)stepsTarget.textContent=holiday?"Target: 8,000 steps 🏖️":"Target: 14,000 steps";
+const ofLabel=$("protein-of-label");
+if(ofLabel)ofLabel.textContent=holiday?"of 60g 🏖️":"of 110g";
 // Restore exercise checks
 Object.keys(s.ex).forEach(i=>{
 const el=$("ex-"+i);
@@ -1382,7 +1403,7 @@ const tc=$("tm-check"),tl=$("tm-label");
 if(tc&&s.tm){tc.classList.add("done");tl.classList.add("done");tl.textContent="Treadmill complete ✓"}
 // Restore steps check
 const stc=$("steps-check"),stl=$("steps-label");
-if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent="14k steps complete ✓"}
+if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent=holiday?"8k steps complete ✓":"14k steps complete ✓"}
 // Restore spin check
 const spc=$("spin-check"),spl=$("spin-label");
 if(spc&&s.spin){spc.classList.add("done");spl.classList.add("done");spl.textContent="Spin complete ✓"}
@@ -1396,11 +1417,34 @@ if(wc&&s.water){wc.classList.add("done");wl.classList.add("done");wl.textContent
 checkPerfectDay();
 }
 
+function holidayKey(){return"tp-holiday-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
+function isHolidayMode(){try{return localStorage.getItem(holidayKey())==="1"}catch(e){return false}}
+function toggleHolidayMode(){
+try{localStorage.setItem(holidayKey(),isHolidayMode()?"0":"1")}catch(e){}
+render();
+}
+
 function checkPerfectDay(){
 const s=getState();
 const log=getProteinLog();
+const holiday=isHolidayMode();
+
+if(holiday){
+// Holiday mode: just need water + 60g protein + 8k steps
+const proteinHit=log.reduce((sum,f)=>sum+f.g,0)>=60;
+const allDone=s.water&&proteinHit&&s.steps;
+const existing=$("perfect-day-banner");
+if(allDone&&!existing){
+const banner=document.createElement("div");
+banner.id="perfect-day-banner";
+banner.className="perfect-day";
+banner.innerHTML=`<div class="perfect-day-icon">🏖️</div><div class="perfect-day-title">HOLIDAY WIN</div><div class="perfect-day-sub">Rested, hydrated, fuelled. That's the job.</div>`;
+$("content").insertBefore(banner,$("content").firstChild);
+}else if(!allDone&&existing){existing.remove()}
+return;
+}
+
 const proteinHit=log.reduce((sum,f)=>sum+f.g,0)>=110;
-// Check what's on today
 const hasRun=!!$("run-check");
 const hasStr=!!$("str-check");
 const hasPil=!!$("pil-check");
@@ -1587,9 +1631,14 @@ if(!foodsEl)return;
 
 const log=getProteinLog();
 const total=log.reduce((s,f)=>s+f.g,0);
-const pct=Math.min(Math.round((total/110)*100),100);
-const remaining=110-total;
+const holiday=isHolidayMode();
+const target=holiday?60:110;
+const pct=Math.min(Math.round((total/target)*100),100);
+const remaining=target-total;
 const custom=getCustomFoods();
+// Update ring label
+const ofLabel=$("protein-of-label");
+if(ofLabel)ofLabel.textContent=holiday?"of 60g 🏖️":"of 110g";
 
 // Built-in foods
 let foodsHtml=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i},false)">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
@@ -1640,13 +1689,14 @@ totalEl.textContent=total+"g";
 const circ=263.9;
 const offset=circ-(pct/100)*circ;
 ringEl.style.strokeDashoffset=offset;
-ringEl.style.stroke=total>=110?"#5B8A5E":"#6B5B8A";
+ringEl.style.stroke=total>=target?"#5B8A5E":"#6B5B8A";
 
-if(total>=110){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.color="#5B8A5E"}
+if(total>=target){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.color="#5B8A5E"}
 else if(total>0){statusEl.textContent=remaining+"g to go";statusEl.style.color="#6B5B8A"}
 else{statusEl.textContent="Tap foods below to log";statusEl.style.color="#A898B0"}
 
-if(total>=110){
+if(total>=target){
+if(holiday){tipEl.innerHTML="🏖️ Holiday protein sorted. Enjoy the break — your body will thank you.";return;}
 const msgs=[
 "That's "+Math.round(total/0.63)/100+"g/kg — right in the optimal range for muscle protein synthesis.",
 "110g+ locks in recovery. Your muscles repair strongest in the 24 hrs after training.",
@@ -1662,6 +1712,9 @@ const msgs=[
 const dayIdx=currentDate.getDate()%msgs.length;
 tipEl.innerHTML="✅ "+msgs[dayIdx];
 }
+else if(holiday&&remaining<=20){tipEl.innerHTML="🏖️ Almost at holiday target! Just a little more."}
+else if(holiday&&total>0){tipEl.innerHTML="🏖️ "+remaining+"g to reach holiday target of 60g."}
+else if(holiday){tipEl.innerHTML="🏖️ Holiday target: 60g protein. Easy to hit with a couple of good meals."}
 else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) or a can of tuna (25g) closes the gap."}
 else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
 else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
