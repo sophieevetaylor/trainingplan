@@ -114,6 +114,16 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .water-card{background:rgba(59,130,246,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(59,130,246,0.15)}
 .water-header{font-size:16px;font-weight:700;color:#3B82F6;margin-bottom:4px}
 .water-target{font-size:13px;color:#7A6B8A;margin-bottom:4px}
+.weight-card{background:rgba(168,85,247,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(168,85,247,0.15)}
+.weight-header{font-size:16px;font-weight:700;color:#8B5CF6;margin-bottom:8px}
+.weight-input-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.weight-input{width:80px;padding:6px 10px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);font-size:16px;font-weight:700;background:rgba(255,255,255,0.6);color:#3D2E4A;text-align:center;-webkit-appearance:none}
+.weight-input:focus{outline:none;border-color:#8B5CF6}
+.weight-unit{font-size:13px;color:#A898B0}
+.weight-saved{font-size:12px;color:#5B8A5E;font-weight:600}
+.weight-spark{display:flex;align-items:flex-end;gap:2px;height:40px;margin-top:6px;padding:4px 0}
+.weight-spark-bar{flex:1;border-radius:2px 2px 0 0;min-width:0;transition:height 0.3s}
+.weight-change{font-size:11px;margin-top:4px}
 .move-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
 .move-modal{background:linear-gradient(135deg,#FDF2F5,#EDE6F2);border-radius:16px;padding:20px;width:100%;max-width:320px}
 .move-modal-title{font-size:14px;font-weight:700;color:#3D2E4A;margin-bottom:4px}
@@ -208,9 +218,9 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 // ─── DATA ───────────────────────────────────────────────────────────
 const BLOCKS=[{id:"preplan",name:"Pre-Plan: Getting Ready",startDate:"2026-03-27",endDate:"2026-03-29",weeks:1,weeklyKm:"~16",focus:"Final prep before plan starts Monday. 16 km long run Sunday.",color:"#10b981"},{id:"block1",name:"Block 1: Return to Base",startDate:"2026-03-30",endDate:"2026-04-26",weeks:4,weeklyKm:"28–38",focus:"Rebuild frequency to 4 runs, establish strength patterns, prep for May 3 HM",color:"#2563eb"},{id:"raceweek_hm1",name:"May 3 HM – Race Week",startDate:"2026-04-27",endDate:"2026-05-03",weeks:1,weeklyKm:"~20",focus:"Taper & race – target ~2:05",color:"#dc2626"},{id:"recovery1",name:"Post-Race Recovery",startDate:"2026-05-04",endDate:"2026-05-17",weeks:2,weeklyKm:"15–25",focus:"Absorb race, reset for aerobic build",color:"#6b7280"},{id:"block2",name:"Block 2: Aerobic Development",startDate:"2026-05-18",endDate:"2026-06-28",weeks:6,weeklyKm:"30–48",focus:"Build to 40–45 km/wk, introduce tempo, long runs to 18 km",color:"#0891b2"},{id:"block3",name:"Block 3: City2Surf Prep",startDate:"2026-06-29",endDate:"2026-08-09",weeks:6,weeklyKm:"40–48",focus:"Hill work, target sub-75 C2S",color:"#7c3aed"},{id:"block4",name:"Block 4: Volume Build",startDate:"2026-08-10",endDate:"2026-09-27",weeks:7,weeklyKm:"25→55",focus:"Post-C2S recovery → build to 55 km/wk",color:"#059669"},{id:"block5",name:"Block 5: HM Specific Build",startDate:"2026-09-28",endDate:"2026-11-08",weeks:6,weeklyKm:"50–55",focus:"Race-pace work → PEAK: Sub-2:00 Half Marathon",color:"#dc2626"},{id:"block6",name:"Block 6: Recovery & Strength",startDate:"2026-11-09",endDate:"2026-12-31",weeks:8,weeklyKm:"25–35",focus:"Glute hypertrophy focus, enjoy running",color:"#d97706"},{id:"block7",name:"Block 7: Aerobic Rebuild + Speed",startDate:"2027-01-01",endDate:"2027-02-28",weeks:8,weeklyKm:"40–50",focus:"400m/800m reps, speed development",color:"#2563eb"},{id:"block8",name:"Block 8: C2S Specific Peak",startDate:"2027-03-01",endDate:"2027-05-31",weeks:13,weeklyKm:"45–50",focus:"Hill power, sustained tempo",color:"#7c3aed"},{id:"block9",name:"Block 9: C2S Final Sharpening",startDate:"2027-06-01",endDate:"2027-08-15",weeks:11,weeklyKm:"45–50",focus:"PEAK: Sub-70 City2Surf",color:"#dc2626"}];
 
-function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Gym (Push + Lower Body)",duration:h?"55 min":m?"45 min":"50 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – when you hit all reps, add 2.5 kg next session"},{name:"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:"Keep hips level – don't let the non-working side drop"},{name:"DB sumo squat",sets:3,reps:"12–15",load:h?"16–20 kg DB":m?"12–14 kg DB":"10–14 kg DB → add 2 kg when you hit 15 on all sets",tempo:"Slow lower (3 sec), squeeze glutes at top",note:"Wide stance, toes out 45°. Hold 1 DB vertically at chest. Glute focus."},{name:"Abductor machine",sets:3,reps:h?"12–15":"15",load:h?"38–42 kg → build to 48 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full open 1 sec",note:"Glute medius – sit tall, don't lean back"},{name:"DB bench press",sets:h?4:m?3:3,reps:h?"6–8":"8–10",load:h?"12.5 kg DBs → build to 15 kg":m?"10–12.5 kg (maintain)":"10 kg DBs → add 1.25 kg when you hit 10 reps on all sets",tempo:"Controlled",note:""},{name:"DB shoulder press",sets:3,reps:"10–12",load:h?"10 kg DBs → build to 12.5 kg":m?"7.5–10 kg (maintain)":"7.5 kg DBs → add 1.25 kg when you hit 12 on all sets",tempo:"Controlled",note:""},{name:"Pallof press",sets:3,reps:"10 each side",load:h?"12–15 kg cable":"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
-function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Gym (Pull + Lower Body)",duration:h?"55 min":m?"45 min":"50 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation – feel it in the side of your glutes"},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"38–42 kg → build to 48 kg":"32–35 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand. This is a glute + hamstring lift, not a back lift."},{name:"Cable kickback",sets:3,reps:"15 each leg",load:h?"10–12 kg cable":"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top 1 sec",note:"Glute isolation – no swinging, keep torso still"},{name:"Adductor machine",sets:3,reps:"15",load:h?"38–42 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full close 1 sec",note:"Inner thigh + pelvic stability"},{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health"},{name:"Lat pulldown",sets:h?4:3,reps:"8–10",load:h?"35–38 kg → build to 42 kg":"30 kg → add 2.5 kg when you hit 10 on all sets",tempo:"Squeeze shoulder blades at bottom",note:""},{name:"Seated cable row",sets:3,reps:"10–12",load:h?"30–34 kg":"22–27 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Squeeze shoulder blades 1 sec",note:""},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → add 1 kg when you hit 15 on all sets",tempo:"2-sec lower",note:""},{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"}]}}
-function SC(p){return SA(p);};
+function SA(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength A – Glute + Push",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation – squeeze hard"},{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8–10":m?"8":"10–12",load:h?"60–65 kg → build to 70 kg":m?"58–62 kg (maintain)":"55–58 kg → build to 62 kg",tempo:"2-sec pause at lockout",note:"KEY LIFT – when you hit all reps, add 2.5 kg next session"},{name:"DB sumo squat",sets:3,reps:"12–15",load:h?"16–20 kg DB":m?"12–14 kg DB":"10–14 kg DB → add 2 kg when you hit 15 on all sets",tempo:"Slow lower (3 sec), squeeze glutes at top",note:"Wide stance, toes out 45°. Hold 1 DB vertically at chest. Glute focus."},{name:"DB bench press",sets:h?4:m?3:3,reps:h?"6–8":"8–10",load:h?"12.5 kg DBs → build to 15 kg":m?"10–12.5 kg (maintain)":"10 kg DBs → add 1.25 kg when you hit 10 reps on all sets",tempo:"Controlled",note:""},{name:"DB shoulder press",sets:3,reps:"10–12",load:h?"10 kg DBs → build to 12.5 kg":m?"7.5–10 kg (maintain)":"7.5 kg DBs → add 1.25 kg when you hit 12 on all sets",tempo:"Controlled",note:""},{name:"Pallof press",sets:3,reps:"10 each side",load:h?"12–15 kg cable":"8–10 kg cable → build to 12 kg",tempo:"Slow, controlled",note:"Core – anti-rotation"}]}}
+function SB(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength B – Posterior + Pull",duration:h?"55 min":m?"40 min":"45 min",exercises:[{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation"},{name:"Romanian deadlift",sets:h?4:3,reps:h?"8–10":"10–12",load:h?"38–42 kg → build to 48 kg":"32–35 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},{name:"Cable kickback",sets:3,reps:"15 each leg",load:h?"10–12 kg cable":"5–8 kg cable → build to 10 kg",tempo:"Squeeze at top 1 sec",note:"Glute isolation – no swinging"},{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4–5":"6–8",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health"},{name:"Lat pulldown",sets:h?4:3,reps:"8–10",load:h?"35–38 kg → build to 42 kg":"30 kg → add 2.5 kg when you hit 10 on all sets",tempo:"Squeeze shoulder blades at bottom",note:""},{name:"Seated cable row",sets:3,reps:"10–12",load:h?"30–34 kg":"22–27 kg → add 2.5 kg when you hit 12 on all sets",tempo:"Squeeze shoulder blades 1 sec",note:""}]}}
+function SC(p){const h=p==="hypertrophy",m=p==="maintenance";return{name:"Strength C – Activation + Arms",duration:m?"30 min":h?"45 min":"40 min",exercises:[{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low",note:"Warm-up – feel it in side of glutes"},{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"5–10 kg plate on hip":"Bodyweight",tempo:"Squeeze at top",note:""},{name:"Abductor machine",sets:3,reps:h?"12–15":"15",load:h?"38–42 kg → build to 48 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full open 1 sec",note:"Glute medius – sit tall, don't lean back"},{name:"Adductor machine",sets:3,reps:"15",load:h?"38–42 kg":"25–30 kg → add 2.5 kg when you hit 15 on all sets",tempo:"Squeeze at full close 1 sec",note:"Inner thigh + pelvic stability"},{name:"Bicep curls",sets:3,reps:"12–15",load:h?"8–10 kg DBs":"6 kg DBs → add 1 kg when you hit 15 on all sets",tempo:"2-sec lower",note:""},{name:m?"Plank hold":"Plank variations",sets:3,reps:m?"30–45 sec":"45–60 sec",load:"Bodyweight",tempo:"Brace hard",note:"Core"}]}};
 
 function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
 function getBlock(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);for(const b of BLOCKS){if(c>=parseLocal(b.startDate)&&c<=parseLocal(b.endDate))return b}return null}
@@ -540,42 +550,7 @@ after="🥛 20–30g protein within 45 min.";
 return{pre,during,after};
 }
 
-function buildStravaHtml(m,planRun){
-let feedback="";
-if(planRun&&planRun.pace){
-const paceMatch=planRun.pace.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
-if(paceMatch){
-const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
-const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
-const actual=m.pace_per_km.split(":").reduce((s,v,i)=>i===0?+v*60:s+ +v,0);
-if(actual<targetMin-10){feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px"><span style="color:#DC2626;font-weight:700">⚡ ${targetMin-actual}s faster than planned.</span> <span style="color:#7A6B8A">Plan said ${planRun.pace}. ${planRun.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy — save the speed for quality sessions.":"Watch the effort — don't blow up early."}</span></div>`;}
-else if(actual>targetMax+15){feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px"><span style="color:#B8883E;font-weight:700">🐢 ${actual-targetMax}s slower than planned.</span> <span style="color:#7A6B8A">Plan said ${planRun.pace}. ${planRun.type.toLowerCase().includes("easy")?"That's fine for easy days — no stress.":"Consider if fatigue, heat, or hills were a factor."}</span></div>`;}
-else{feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px"><span style="color:#3D8A50;font-weight:700">✅ Right on target.</span> <span style="color:#7A6B8A">Plan said ${planRun.pace}. Nailed it.</span></div>`;}
-}
-}
-let distFeedback="";
-if(planRun&&planRun.km){
-const plannedKm=parseFloat(planRun.km)||0;
-if(plannedKm>0){
-const diff=m.distance_km-plannedKm;
-if(Math.abs(diff)<=0.5)distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
-else if(diff>0.5)distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
-else distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
-}
-}
-return`<div style="margin-top:10px;padding:10px 12px;background:rgba(252,76,2,0.06);border-radius:8px;border:0.5px solid rgba(252,76,2,0.15)">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-<div style="font-size:12px;font-weight:700;color:#FC4C02"><svg width="12" height="12" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:4px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>${m.name}</div>
-${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
-</div>
-<div style="font-size:12px;color:#7A6B8A">
-<span style="font-weight:600;color:#3D2E4A">${m.distance_km} km</span> · <span style="font-weight:600;color:#3D2E4A">${m.pace_per_km}/km</span> · ${m.moving_time_min} min${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}${m.elevation_gain>20?" · ⛰️ "+Math.round(m.elevation_gain)+"m":""}
-</div>
-${feedback}
-</div>`;
-}
-
-function renderRun(r,stravaActivity){
+function renderRun(r){
 if(!r)return"";
 const isRace=r.type.includes("RACE");
 let fuelHtml="";
@@ -583,13 +558,12 @@ const fuel=getFuel(r);
 if(fuel){
 fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
 }
-const stravaHtml=stravaActivity?buildStravaHtml(stravaActivity,r):"";
-return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${stravaHtml}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>${isRace?"":moveBtn("run",r.type)}</div>`;
+return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div></div>`;
 }
 
 function renderStrength(s){
 if(!s)return"";
-return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div>${moveBtn("str",s.name)}</div></div>`+renderTreadmill();
+return`<div class="strength-card"><div class="strength-header"><div class="strength-name">💪 ${s.name}</div><div class="strength-dur">${s.duration}</div></div><div style="display:flex;flex-direction:column;gap:4px">${s.exercises.map((e,i)=>renderExercise(e,i)).join("")}<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div></div>`+renderTreadmill();
 }
 
 function renderTreadmill(){
@@ -660,37 +634,27 @@ dhtml+=`<div class="dash-section"><div class="dash-title">This Week</div><div cl
 
 // ── Weekly Plan Overview ──
 const weekPlanLabels=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const weekPlanEmojis=["💪","🏃‍♀️","💪🏃‍♀️","😴","💪🏃‍♀️","🚴‍♀️","🏃‍♀️"];
 let planOverview="";
 for(let i=0;i<7;i++){
 const wd=new Date(monday);
 wd.setDate(wd.getDate()+i);
 const wp=getPlan(wd);
-const wdMovedOut=getMovedOut(wd);
-const wdMovedIn=getMovedIn(wd);
 let items=[];
-if(wp.str&&!wdMovedOut.includes("str"))items.push("💪 "+wp.str.name);
-if(wp.run&&!wdMovedOut.includes("run"))items.push("🏃‍♀️ "+wp.run.type+(wp.run.km?" · "+wp.run.km+" km":""));
-if(wp.spin&&!wdMovedOut.includes("spin"))items.push("🚴‍♀️ Spin Class");
-if(wp.other&&wp.other.toLowerCase().includes("pilates")&&!wdMovedOut.includes("pilates"))items.push("🧘‍♀️ Pilates");
-// Add moved-in sessions
-wdMovedIn.forEach(item=>{
-const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const orig=new Date(item.originY,item.originM,item.originD,12,0,0);
-const fromLabel=days[orig.getDay()]+" "+orig.getDate()+" "+mns[orig.getMonth()];
-if(item.type==="run")items.push("🏃‍♀️ "+item.label+" <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
-else if(item.type==="str")items.push("💪 "+item.label+" <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
-else if(item.type==="spin")items.push("🚴‍♀️ Spin <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
-else if(item.type==="pilates")items.push("🧘‍♀️ Pilates <span style='color:#C4607A;font-size:10px'>(from "+fromLabel+")</span>");
-});
+if(wp.str)items.push("💪 "+wp.str.name.replace("Strength ","").split("–")[0].trim());
+if(wp.run)items.push("🏃‍♀️ "+wp.run.type+(wp.run.km?" · "+wp.run.km+" km":""));
+if(wp.spin)items.push("🚴‍♀️ Spin Class");
+if(wp.other&&wp.other.toLowerCase().includes("pilates"))items.push("🧘‍♀️ Pilates");
 if(!items.length){
 if(wp.notes&&wp.notes.length)items.push("😴 Rest Day");
 else items.push("😴 Rest");
 }
 const isToday2=wd.getDate()===todayNorm.getDate()&&wd.getMonth()===todayNorm.getMonth();
 planOverview+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08);${isToday2?"background:rgba(107,91,138,0.06);border-radius:6px;padding:8px 10px;margin:0 -10px":""}">
+<div style="display:flex;justify-content:space-between;align-items:center">
 <div style="font-size:12px;font-weight:700;color:${isToday2?"#6B5B8A":"#3D2E4A"}">${weekPlanLabels[i]}${isToday2?" ← today":""}</div>
-<div style="font-size:11px;color:#7A6B8A;margin-top:2px;line-height:1.6">${items.join("<br>")}</div>
+</div>
+<div style="font-size:11px;color:#7A6B8A;margin-top:2px;line-height:1.5">${items.join("<br>")}</div>
 </div>`;
 }
 dhtml+=`<div class="dash-section"><div class="dash-title">Week at a Glance</div>${planOverview}</div>`;
@@ -759,8 +723,7 @@ weekHtml+=`<div style="display:flex;gap:8px;margin-bottom:10px">
 </div>`;
 
 if(bestRun){
-const bp=bestRun.date.substring(0,10).split("-");
-const bd=new Date(+bp[0],+bp[1]-1,+bp[2],12,0,0);
+const bd=new Date(bestRun.date);
 const bday=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][bd.getDay()];
 weekHtml+=`<div style="padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);margin-bottom:10px;font-size:12px">
 <span style="color:#3D8A50;font-weight:700">⭐ Longest run:</span>
@@ -774,8 +737,7 @@ weekHtml+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12
 if(runs.length){
 weekHtml+=`<div style="margin-top:6px">`;
 runs.map(r=>{
-const p=r.date.substring(0,10).split("-");
-const d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
+const d=new Date(r.date);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
@@ -789,22 +751,14 @@ dashEl.innerHTML=weekHtml;
 
 // Daily view: match Strava activity to today's date
 const dailyEl=$("strava-daily");
-console.log("🟠 Strava daily check — dailyEl exists:", !!dailyEl, "stravaData:", stravaData?stravaData.length+" activities":"null");
 if(dailyEl){
 const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
-console.log("🟠 Looking for date:", dateStr, "— dates in Strava:", stravaData?stravaData.slice(0,5).map(a=>a.date):[]);
 const matches=stravaData.filter(a=>a.type==="Run"&&a.date.startsWith(dateStr));
-console.log("🟠 Matches found:", matches.length);
 if(matches.length){
 const m=matches[0];
-// Get plan — if run was moved in from another day, use that day's plan
-let plan=getPlan(currentDate);
-if(!plan.run){
-const movedIn=getMovedIn(currentDate);
-const movedRun=movedIn.find(x=>x.type==="run");
-if(movedRun)plan=getPlan(new Date(movedRun.originY,movedRun.originM,movedRun.originD,12,0,0));
-}
-// Auto-tick run checkbox
+const plan=getPlan(currentDate);
+
+// Auto-tick run checkbox if Strava has a run for this day
 const runCheck=$("run-check");
 const runLabel=$("run-label");
 if(runCheck&&!runCheck.classList.contains("done")){
@@ -812,20 +766,67 @@ runCheck.classList.add("done");
 if(runLabel){runLabel.classList.add("done");runLabel.textContent="Run complete ✓ (auto-synced)"}
 saveRun(true);
 }
-// Inject Strava card inside the run card, before the check row
-const runCard=document.querySelector(".run-card.normal");
-if(runCard){
-const existing=runCard.querySelector(".strava-inline");
-if(!existing){
-const stravaDiv=document.createElement("div");
-stravaDiv.className="strava-inline";
-stravaDiv.innerHTML=buildStravaHtml(m,plan.run);
-const checkRow=runCard.querySelector(".run-check-row");
-if(checkRow)runCard.insertBefore(stravaDiv,checkRow);
-else runCard.appendChild(stravaDiv);
+
+// Build pace comparison feedback
+let feedback="";
+if(plan.run&&plan.run.pace){
+const paceStr=plan.run.pace;
+// Extract target pace range from plan (e.g. "5:50–6:10/km")
+const paceMatch=paceStr.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
+if(paceMatch){
+const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
+const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
+const actualParts=m.pace_per_km.split(":");
+const actual=parseInt(actualParts[0])*60+parseInt(actualParts[1]);
+
+if(actual<targetMin-10){
+const diff=targetMin-actual;
+feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px">
+<span style="color:#DC2626;font-weight:700">⚡ ${diff}s faster than planned.</span>
+<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy — save the speed for quality sessions.":"Watch the effort — don't blow up early."}</span></div>`;
+}else if(actual>targetMax+15){
+const diff=actual-targetMax;
+feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px">
+<span style="color:#B8883E;font-weight:700">🐢 ${diff}s slower than planned.</span>
+<span style="color:#7A6B8A"> Plan said ${paceStr}. ${plan.run.type.toLowerCase().includes("easy")?"That's fine for easy days — no stress.":"Consider if fatigue, heat, or hills were a factor."}</span></div>`;
+}else{
+feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px">
+<span style="color:#3D8A50;font-weight:700">✅ Right on target.</span>
+<span style="color:#7A6B8A"> Plan said ${paceStr}. Nailed it.</span></div>`;
 }
 }
-dailyEl.innerHTML="";
+}
+
+// Distance comparison
+let distFeedback="";
+if(plan.run&&plan.run.km){
+const plannedKm=parseFloat(plan.run.km)||0;
+if(plannedKm>0){
+const diff=m.distance_km-plannedKm;
+if(Math.abs(diff)<=0.5){
+distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
+}else if(diff>0.5){
+distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
+}else{
+distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
+}
+}
+}
+
+dailyEl.innerHTML=`<div class="strava-actual">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="strava-actual-header"><svg width="14" height="14" viewBox="0 0 64 64" style="vertical-align:-2px;margin-right:4px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg> Strava: ${m.name}</div>
+${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
+</div>
+<div class="strava-actual-stats">
+<span style="font-weight:600">${m.distance_km} km</span> · 
+<span style="font-weight:600">${m.pace_per_km}/km</span> · 
+<span>${m.moving_time_min} min</span>
+${m.avg_hr?" · <span>❤️ "+Math.round(m.avg_hr)+" bpm</span>":""}
+${m.elevation_gain>20?" · <span>⛰️ "+Math.round(m.elevation_gain)+"m</span>":""}
+</div>
+${feedback}
+</div>`;
 }else{
 dailyEl.innerHTML="";
 }
@@ -858,43 +859,27 @@ const diff=dow===0?6:dow-1;
 monday.setDate(monday.getDate()-diff);
 let actualKm=0;
 runs.forEach(r=>{
-const p=r.date.substring(0,10).split("-");
-const rd=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
+const rd=new Date(r.date);
 if(rd>=monday&&rd<=todayNorm)actualKm+=r.distance_km;
 });
 const block=getBlock(todayNorm);
 const plannedRange=block?block.weeklyKm:"--";
-// Parse the weekly km range to get a midpoint (e.g. "28–38" → 33)
-const kmNums=(block?block.weeklyKm:"30").match(/\d+/g)||["30"];
-const plannedMid=kmNums.length>=2?Math.round((parseInt(kmNums[0])+parseInt(kmNums[kmNums.length-1]))/2):parseInt(kmNums[0]);
-// Cumulative volume weights by day, based on actual run schedule:
-// Tue: quality run ~6.5km, Wed: easy ~5.5km, Fri: easy ~5.5km, Sun: long run ~remainder
-// With midpoint M: Tue=6.5/M, Wed=12/M, Thu=12/M, Fri=17.5/M, Sat=17.5/M, Sun=100%
-// Using fixed proportions: Tue≈20%, Wed≈37%, Thu≈37%, Fri≈54%, Sat≈54%, Sun=100%
-// Index: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-const runDayWeights=[1.0, 0.0, 0.20, 0.37, 0.37, 0.54, 0.54];
-const todayDow=todayNorm.getDay();// 0=Sun
-const expectedByNow=Math.round(plannedMid*runDayWeights[todayDow]*10)/10;
-const volPct=expectedByNow>0?Math.min(Math.round((actualKm/expectedByNow)*100),150):100;
-const volColor=volPct>=85?"#5B8A5E":volPct>=60?"#B8883E":"#C4607A";
-const daysLeft=todayDow===0?0:7-todayDow;
-const remainingKm=Math.max(Math.round((plannedMid-actualKm)*10)/10,0);
+const plannedMid=block?parseInt(block.weeklyKm.replace(/[^0-9]/g,"").substring(0,2)):30;
+const volPct=Math.min(Math.round((actualKm/plannedMid)*100),150);
+const volColor=volPct>=80?"#5B8A5E":volPct>=50?"#B8883E":"#C4607A";
 
 html+=`<div class="coach-card"><div class="coach-card-title">Weekly Volume</div>
-<div class="coach-stat-row"><div class="coach-stat-label">Done this week</div><div class="coach-stat-value">${Math.round(actualKm*10)/10} km</div></div>
-<div class="coach-stat-row"><div class="coach-stat-label">Expected by ${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][todayDow]}</div><div class="coach-stat-value">${expectedByNow} km</div></div>
-<div class="coach-stat-row"><div class="coach-stat-label">Week target</div><div class="coach-stat-value">${plannedRange} km</div></div>
-<div class="coach-bar-wrap"><div class="coach-bar-bg"><div class="coach-bar-fill" style="width:${Math.min(volPct,100)}%;background:${volColor}"></div></div><div class="coach-bar-label">${volPct}%</div></div>
-${remainingKm>0&&daysLeft>0?`<div style="font-size:11px;color:#A898B0;margin-top:6px">${remainingKm} km to go · ${daysLeft} day${daysLeft>1?"s":""} left</div>`:`<div style="font-size:11px;color:#5B8A5E;margin-top:6px">Weekly target reached 🎉</div>`}
-</div>`;
+<div class="coach-stat-row"><div class="coach-stat-label">Actual this week</div><div class="coach-stat-value">${Math.round(actualKm*10)/10} km</div></div>
+<div class="coach-stat-row"><div class="coach-stat-label">Plan target</div><div class="coach-stat-value">${plannedRange} km</div></div>
+<div class="coach-bar-wrap"><div class="coach-bar-bg"><div class="coach-bar-fill" style="width:${Math.min(volPct,100)}%;background:${volColor}"></div></div><div class="coach-bar-label">${volPct}%</div></div></div>`;
 
 // Volume feedback
 if(volPct>=90){
-html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Right on track</div><div class="coach-feedback-text">You're exactly where you should be for this point in the week. Keep it up and the long run on Sunday will land you in the target range.</div></div>`;
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Volume on track</div><div class="coach-feedback-text">You're hitting your planned distance for the week. This is exactly where you need to be heading into the May 3 half marathon.</div></div>`;
 }else if(volPct>=60){
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Slightly behind pace</div><div class="coach-feedback-text">You're a little behind where you'd expect to be by today — but there's still time. Make sure you get the remaining runs in, especially the long run. Don't skip it to "make up" distance on shorter runs.</div></div>`;
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Volume slightly low</div><div class="coach-feedback-text">You're a bit under the planned volume. If you still have runs left this week, no stress — just make sure you get the long run in. The long run is the most important session.</div></div>`;
 }else{
-html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Behind for this point in the week</div><div class="coach-feedback-text">You're behind where you'd expect to be by today. If runs were missed due to fatigue or illness, that's fine — don't try to cram them in. Just get back on track and prioritise the long run if you can only do one more this week.</div></div>`;
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Volume well under plan</div><div class="coach-feedback-text">You're significantly under the planned km this week. If you missed runs due to illness or fatigue, that's fine — don't try to cram them in. Just resume the plan next week. If it's motivation, remember: consistency beats perfection.</div></div>`;
 }
 
 // ── 2. Easy Pace Trend ──
@@ -927,8 +912,7 @@ html+=`<div class="coach-card"><div class="coach-card-title">Easy Run Analysis</
 // Individual runs list
 html+=`<div style="margin-bottom:10px">`;
 recent5.forEach(r=>{
-const p=r.date.substring(0,10).split("-");
-const d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
+const d=new Date(r.date);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
@@ -936,10 +920,10 @@ const paceSec=paceToSec(r.pace_per_km);
 const inZone=paceSec>=zoneMin&&paceSec<=zoneMax;
 const tooFast=paceSec<zoneMin;
 const icon=tooFast?"🔴":inZone?"🟢":"🟡";
-html+=`<div style="display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
+html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
 <div style="font-size:12px;color:#A898B0">${day} ${dd} ${mm}</div>
-<div style="font-size:12px;color:#3D2E4A;text-align:center">${r.distance_km} km</div>
-<div style="font-size:13px;font-weight:700;color:${tooFast?"#DC2626":inZone?"#3D8A50":"#B8883E"};text-align:right">${r.pace_per_km}/km ${icon}</div>
+<div style="font-size:12px;color:#3D2E4A">${r.distance_km} km</div>
+<div style="font-size:13px;font-weight:700;color:${tooFast?"#DC2626":inZone?"#3D8A50":"#B8883E"}">${r.pace_per_km}/km ${icon}</div>
 </div>`;
 });
 html+=`</div>`;
@@ -1071,61 +1055,17 @@ html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">
 
 // ── 4. Pace vs Plan ──
 html+=`<div class="coach-card"><div class="coach-card-title">Recent Runs vs Plan</div>`;
-runs.slice(0,8).forEach(r=>{
-const p=r.date.substring(0,10).split("-");
-const d=new Date(+p[0],+p[1]-1,+p[2],12,0,0);
+runs.slice(0,5).forEach(r=>{
+const d=new Date(r.date);
 const day=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 const dd=d.getDate();
 const mm=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
-const planned=getPlan(d);
-const planRun=planned.run;
-const planPace=planRun?planRun.pace:"—";
-const planKm=planRun?planRun.km:"—";
-
-// Determine traffic light
-let indicator="";let indicatorText="";let indicatorColor="";
-if(planRun){
-// Parse planned pace range
-const paceMatch=planRun.pace.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
-const planKmNum=parseFloat(planRun.km)||0;
-const actualKmNum=r.distance_km;
-const actualPaceSec=r.pace_per_km.split(":").reduce((m,s,i)=>i===0?+s*60:m+ +s,0);
-
-let paceOk=null;let distOk=null;
-if(paceMatch){
-const targetMin=parseInt(paceMatch[1])*60+parseInt(paceMatch[2]);
-const targetMax=parseInt(paceMatch[3])*60+parseInt(paceMatch[4]);
-paceOk=actualPaceSec>=targetMin-15&&actualPaceSec<=targetMax+20;
-const paceFast=actualPaceSec<targetMin-15;
-}
-// Distance: within 1km either way is fine, or if plan has a range pick midpoint
-const planKmMatch=planRun.km.toString().match(/(\d+\.?\d*)/g);
-const planKmMid=planKmMatch?planKmMatch.reduce((s,n,i,a)=>s+ +n/a.length,0):0;
-if(planKmMid>0)distOk=Math.abs(actualKmNum-planKmMid)<=1.5;
-
-if(paceOk===null&&distOk===null){indicator="⚪";indicatorColor="#A898B0";indicatorText="No pace target";}
-else if(paceOk&&(distOk||distOk===null)){indicator="🟢";indicatorColor="#3D8A50";indicatorText="On plan";}
-else if(paceOk&&distOk===false){indicator="🟡";indicatorColor="#B8883E";indicatorText=actualKmNum<planKmMid-1.5?"Short on distance":"Extra distance";}
-else if(paceOk===false&&(distOk||distOk===null)){
-const actualPaceSec2=r.pace_per_km.split(":").reduce((m,s,i)=>i===0?+s*60:m+ +s,0);
-const paceMatch2=planRun.pace.match(/(\d):(\d\d)/);
-const tMin=paceMatch2?parseInt(paceMatch2[1])*60+parseInt(paceMatch2[2]):0;
-indicator=actualPaceSec2<tMin-15?"🔴":"🟡";
-indicatorColor=actualPaceSec2<tMin-15?"#DC2626":"#B8883E";
-indicatorText=actualPaceSec2<tMin-15?"Too fast":"Slightly off pace";
-}
-else{indicator="🟡";indicatorColor="#B8883E";indicatorText="Partially on plan";}
-}else{
-indicator="⚪";indicatorColor="#A898B0";indicatorText="Rest day run";
-}
-
+const planned=getPlan(new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0));
+const planPace=planned.run?planned.run.pace:"—";
+const planKm=planned.run?planned.run.km:"—";
 html+=`<div style="padding:8px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div style="font-size:12px;font-weight:600;color:#3D2E4A">${day} ${dd} ${mm} — ${r.name}</div>
-<div style="font-size:16px" title="${indicatorText}">${indicator}</div>
-</div>
-<div style="font-size:10px;color:${indicatorColor};font-weight:600;margin-bottom:3px">${indicatorText}</div>
-<div style="display:flex;gap:16px">
+<div style="display:flex;justify-content:space-between"><div style="font-size:12px;font-weight:600;color:#3D2E4A">${day} ${dd} ${mm} — ${r.name}</div></div>
+<div style="display:flex;gap:16px;margin-top:3px">
 <div><div style="font-size:10px;color:#FC4C02">ACTUAL</div><div style="font-size:12px;color:#3D2E4A;font-weight:500">${r.distance_km} km · ${r.pace_per_km}/km</div></div>
 <div><div style="font-size:10px;color:#6B5B8A">PLAN</div><div style="font-size:12px;color:#6B5B8A">${planKm} km · ${planPace}</div></div>
 </div></div>`;
@@ -1201,6 +1141,95 @@ html+=`<div style="text-align:center;padding:16px;color:#A898B0;font-size:12px">
 }
 html+=`</div>`;
 
+// ── Weight Trend ──
+const weightHistory=[];
+const whStart=new Date(todayNorm);
+for(let i=0;i<90;i++){
+const ww=getWeight(whStart);
+if(ww)weightHistory.push({date:new Date(whStart),weight:ww});
+whStart.setDate(whStart.getDate()-1);
+}
+weightHistory.reverse();
+
+html+=`<div class="coach-card"><div class="coach-card-title">⚖️ Weight Trend</div>`;
+
+if(weightHistory.length>=3){
+const weights=weightHistory.map(e=>e.weight);
+const min=Math.min(...weights);
+const max=Math.max(...weights);
+const range=max-min||0.5;
+const latest=weights[weights.length-1];
+const oldest=weights[0];
+const diff90=Math.round((latest-oldest)*10)/10;
+const avg=Math.round(weights.reduce((s,w)=>s+w,0)/weights.length*10)/10;
+
+// Last 7 days avg vs previous 7 days avg
+const last7=weightHistory.filter(e=>{const d=(todayNorm-e.date)/(864e5);return d<=7}).map(e=>e.weight);
+const prev7=weightHistory.filter(e=>{const d=(todayNorm-e.date)/(864e5);return d>7&&d<=14}).map(e=>e.weight);
+const avg7=last7.length?Math.round(last7.reduce((s,w)=>s+w,0)/last7.length*10)/10:null;
+const avgP7=prev7.length?Math.round(prev7.reduce((s,w)=>s+w,0)/prev7.length*10)/10:null;
+const weekDiff=avg7&&avgP7?Math.round((avg7-avgP7)*10)/10:null;
+
+// Stat cards
+html+=`<div style="display:flex;gap:8px;margin-bottom:12px">
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Current</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${latest}</div>
+<div style="font-size:10px;color:#A898B0">kg</div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Average</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${avg}</div>
+<div style="font-size:10px;color:#A898B0">kg</div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Change</div>
+<div style="font-size:20px;font-weight:800;color:${diff90<0?"#5B8A5E":diff90>0?"#C4607A":"#6B5B8A"}">${diff90>0?"+":""}${diff90}</div>
+<div style="font-size:10px;color:#A898B0">kg</div>
+</div>
+</div>`;
+
+// Bar chart
+html+=`<div style="display:flex;align-items:flex-end;gap:2px;height:60px;margin-bottom:6px">`;
+const displayEntries=weightHistory.slice(-30);
+displayEntries.forEach((e,i)=>{
+const pct=Math.max(Math.round(((e.weight-min)/range)*100),8);
+const isLatest=i===displayEntries.length-1;
+html+=`<div style="flex:1;height:${pct}%;background:${isLatest?"#8B5CF6":"rgba(139,92,246,0.2)"};border-radius:2px 2px 0 0" title="${e.weight} kg"></div>`;
+});
+html+=`</div>`;
+html+=`<div style="display:flex;justify-content:space-between;font-size:10px;color:#A898B0">
+<span>${Math.round(min*10)/10} kg</span>
+<span>Last ${displayEntries.length} entries</span>
+<span>${Math.round(max*10)/10} kg</span>
+</div>`;
+
+// Week-over-week
+if(weekDiff!==null){
+html+=`<div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.4);border-radius:8px;font-size:12px">
+<span style="color:#A898B0">This week avg:</span> <span style="font-weight:700;color:#3D2E4A">${avg7} kg</span>
+${avgP7?` · <span style="color:#A898B0">Last week:</span> <span style="font-weight:700;color:#3D2E4A">${avgP7} kg</span>
+· <span style="font-weight:700;color:${weekDiff<0?"#5B8A5E":weekDiff>0?"#C4607A":"#6B5B8A"}">${weekDiff>0?"+":""}${weekDiff} kg</span>`:""}
+</div>`;
+}
+
+// Coaching feedback
+if(Math.abs(diff90)<=0.5){
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Weight stable</div><div class="coach-feedback-text">Your weight has stayed within ±0.5 kg over the tracking period. This is ideal for a training block — you're fuelling your training without gaining or losing inappropriately. Consistency here supports recovery and performance.</div></div>`;
+}else if(diff90<-1){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">📉 Weight trending down</div><div class="coach-feedback-text">You've dropped ${Math.abs(diff90)} kg. If intentional (body recomposition), that's fine as long as energy and recovery feel good. If unintentional, check you're eating enough to support your training load — underfuelling will hurt performance and increase injury risk. Your protein target (100–126g/day) helps preserve muscle during any weight loss.</div></div>`;
+}else if(diff90>1){
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">📈 Weight trending up</div><div class="coach-feedback-text">You've gained ${diff90} kg. If this coincides with the hypertrophy block (Block 6), some gain is expected and healthy — you're building muscle. Outside of that, check if anything's changed with nutrition or training consistency. Daily fluctuations of 0.5–1 kg are normal (water, food timing).</div></div>`;
+}else{
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Minor fluctuation — normal</div><div class="coach-feedback-text">A ${Math.abs(diff90)} kg change is within normal daily variation. Don't read too much into individual readings — the trend over 2–4 weeks is what matters.</div></div>`;
+}
+}else if(weightHistory.length>=1){
+html+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">${weightHistory.length} weigh-in${weightHistory.length>1?"s":""} logged. Need 3+ entries to show trend analysis.</div>`;
+}else{
+html+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">No weight data logged yet. Use the ⚖️ Weight card in your daily view to start tracking.</div>`;
+}
+html+=`</div>`;
+
 cv.innerHTML=html;
 }
 
@@ -1256,41 +1285,26 @@ if(plan.race){
 html+=`<div class="race-banner"><div class="icon">🏁</div><div class="title">RACE DAY</div><div class="sub">Trust the work. Execute the plan.</div></div>`;
 }
 
-// Check what's been moved out of today
-const movedOut=getMovedOut(currentDate);
-const hasRunMoved=movedOut.includes("run");
-const hasStrMoved=movedOut.includes("str");
-const hasSpinMoved=movedOut.includes("spin");
-const hasPilatesMoved=movedOut.includes("pilates");
-
-if(!hasRunMoved)html+=renderRun(plan.run);
+html+=renderRun(plan.run);
 html+=`<div id="strava-daily"></div>`;
-if(!hasStrMoved)html+=renderStrength(plan.str);
+html+=renderStrength(plan.str);
 
-if(plan.spin&&!hasSpinMoved){
-html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div>${moveBtn("spin","Spin Class")}</div>`;
+if(plan.spin){
+html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
 }
 
-if(plan.other&&!hasPilatesMoved){
+if(plan.other){
 const isPilates=plan.other.toLowerCase().includes("pilates");
 const emoji=isPilates?"🧘‍♀️ ":"";
 const label=isPilates?"Pilates":"Also today";
-html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>${moveBtn("pilates","Pilates")}`:""}</div>`;
+html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>`:""}</div>`;
 }
-
-// Render any sessions moved IN to today from other days
-const movedIn=getMovedIn(currentDate);
-movedIn.forEach(item=>{html+=renderMovedInCard(item);});
 
 if(plan.notes&&plan.notes.length){
 html+=`<div class="notes-card"><div class="notes-title">📝 Notes</div>${plan.notes.map(n=>`<div class="notes-text">${n}</div>`).join("")}</div>`;
 }
 
-const effectiveRun=!hasRunMoved&&plan.run;
-const effectiveStr=!hasStrMoved&&plan.str;
-const effectiveSpin=!hasSpinMoved&&plan.spin;
-const effectiveOther=!hasPilatesMoved&&plan.other;
-if(!effectiveRun&&!effectiveStr&&!effectiveOther&&!effectiveSpin&&(!plan.notes||!plan.notes.length)&&!movedIn.length){
+if(!plan.run&&!plan.str&&!plan.other&&!plan.spin&&(!plan.notes||!plan.notes.length)){
 if(plan.block){
 html+=`<div class="rest-card"><div class="rest-icon">😴</div><div class="rest-title">Rest Day</div><div class="rest-sub">Recovery is training. Foam roll, stretch, eat well.</div></div>`;
 }else{
@@ -1302,12 +1316,12 @@ $("content").innerHTML=html;
 
 // Daily tracker cards (every day)
 const dailyCards=`
-<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target" id="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
+<div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
 <div class="protein-card">
 <div class="protein-header">🥩 Protein Tracker</div>
 <div class="protein-ring-wrap">
 <svg width="100" height="100"><circle cx="50" cy="50" r="42" stroke="rgba(107,91,138,0.1)" stroke-width="7" fill="none"/><circle id="protein-ring" cx="50" cy="50" r="42" stroke="#6B5B8A" stroke-width="7" fill="none" stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/></svg>
-<div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0" id="protein-of-label">of 110g</span></div>
+<div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0">of 110g</span></div>
 </div>
 <div id="protein-status" style="text-align:center;font-size:12px;color:#A898B0;margin-bottom:8px">Tap foods below to log</div>
 <div id="protein-log" style="margin-bottom:8px"></div>
@@ -1316,29 +1330,30 @@ const dailyCards=`
 <div id="protein-tip" style="margin-top:8px;padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);font-size:11px;color:#5B8A5E"></div>
 </div>
 <div class="water-card"><div class="water-header">💧 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>
+<div class="weight-card">
+<div class="weight-header">⚖️ Weight</div>
+<div class="weight-input-row">
+<input type="number" step="0.1" placeholder="63.0" id="weight-input" class="weight-input" onchange="saveWeight()">
+<span class="weight-unit">kg</span>
+<span class="weight-saved" id="weight-saved"></span>
+</div>
+<div id="weight-spark-container"></div>
+</div>
 `;
 $("content").innerHTML+=dailyCards;
-
-// Holiday mode card
-const holidayCard=document.createElement("div");
-holidayCard.id="holiday-card";
-const hm=isHolidayMode();
-holidayCard.style.cssText="background:rgba(255,255,255,0.4);border-radius:14px;padding:12px 16px;border:0.5px solid rgba(180,160,190,0.15);margin-top:4px";
-holidayCard.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
-<div><div style="font-size:14px;font-weight:600;color:#3D2E4A">🏖️ Holiday Mode</div><div style="font-size:11px;color:#A898B0;margin-top:2px">${hm?"Active — easier targets today":"Off — tap to reduce today's targets"}</div></div>
-<div onclick="toggleHolidayMode()" style="width:44px;height:26px;border-radius:13px;background:${hm?"#6B5B8A":"rgba(180,160,190,0.3)"};cursor:pointer;position:relative;transition:background 0.2s">
-<div style="width:20px;height:20px;border-radius:10px;background:white;position:absolute;top:3px;${hm?"right:3px":"left:3px"};transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div>
-</div></div>
-${hm?`<div style="margin-top:8px;padding:8px 10px;background:rgba(107,91,138,0.08);border-radius:8px;font-size:11px;color:#6B5B8A">
-✅ Today's win: water + 60g protein + 8k steps. Training is a bonus, not a requirement.
-</div>`:""}`;
-$("content").appendChild(holidayCard);
 
 renderProtein();
 restoreChecks();
 restoreExLogs();
-// Re-run Strava widgets now that strava-daily div exists in DOM
-if(stravaLoaded)renderStravaWidgets();
+restoreWeight();
+
+// Add long-press to moveable cards
+const runCard=document.querySelector(".run-card.normal");
+if(runCard)addLongPress(runCard,"run","Easy Run");
+const spinCard=document.querySelector(".spin-card");
+if(spinCard)addLongPress(spinCard,"spin","Spin Class");
+const pilCard=document.querySelector(".other-card.pilates");
+if(pilCard)addLongPress(pilCard,"pilates","Pilates");
 }
 
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
@@ -1378,12 +1393,6 @@ function savePil(done){const s=getState();s.pil=done;setState(s)}
 
 function restoreChecks(){
 const s=getState();
-const holiday=isHolidayMode();
-// Apply holiday mode targets to steps label
-const stepsTarget=$("steps-target");
-if(stepsTarget)stepsTarget.textContent=holiday?"Target: 8,000 steps 🏖️":"Target: 14,000 steps";
-const ofLabel=$("protein-of-label");
-if(ofLabel)ofLabel.textContent=holiday?"of 60g 🏖️":"of 110g";
 // Restore exercise checks
 Object.keys(s.ex).forEach(i=>{
 const el=$("ex-"+i);
@@ -1403,7 +1412,7 @@ const tc=$("tm-check"),tl=$("tm-label");
 if(tc&&s.tm){tc.classList.add("done");tl.classList.add("done");tl.textContent="Treadmill complete ✓"}
 // Restore steps check
 const stc=$("steps-check"),stl=$("steps-label");
-if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent=holiday?"8k steps complete ✓":"14k steps complete ✓"}
+if(stc&&s.steps){stc.classList.add("done");stl.classList.add("done");stl.textContent="14k steps complete ✓"}
 // Restore spin check
 const spc=$("spin-check"),spl=$("spin-label");
 if(spc&&s.spin){spc.classList.add("done");spl.classList.add("done");spl.textContent="Spin complete ✓"}
@@ -1417,34 +1426,11 @@ if(wc&&s.water){wc.classList.add("done");wl.classList.add("done");wl.textContent
 checkPerfectDay();
 }
 
-function holidayKey(){return"tp-holiday-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
-function isHolidayMode(){try{return localStorage.getItem(holidayKey())==="1"}catch(e){return false}}
-function toggleHolidayMode(){
-try{localStorage.setItem(holidayKey(),isHolidayMode()?"0":"1")}catch(e){}
-render();
-}
-
 function checkPerfectDay(){
 const s=getState();
 const log=getProteinLog();
-const holiday=isHolidayMode();
-
-if(holiday){
-// Holiday mode: just need water + 60g protein + 8k steps
-const proteinHit=log.reduce((sum,f)=>sum+f.g,0)>=60;
-const allDone=s.water&&proteinHit&&s.steps;
-const existing=$("perfect-day-banner");
-if(allDone&&!existing){
-const banner=document.createElement("div");
-banner.id="perfect-day-banner";
-banner.className="perfect-day";
-banner.innerHTML=`<div class="perfect-day-icon">🏖️</div><div class="perfect-day-title">HOLIDAY WIN</div><div class="perfect-day-sub">Rested, hydrated, fuelled. That's the job.</div>`;
-$("content").insertBefore(banner,$("content").firstChild);
-}else if(!allDone&&existing){existing.remove()}
-return;
-}
-
 const proteinHit=log.reduce((sum,f)=>sum+f.g,0)>=110;
+// Check what's on today
 const hasRun=!!$("run-check");
 const hasStr=!!$("str-check");
 const hasPil=!!$("pil-check");
@@ -1567,49 +1553,13 @@ const PFOODS=[
 {emoji:"☕",name:"Oat flat white",g:2},
 ];
 
-const CUSTOM_FOODS_KEY="tp-custom-foods";
-function getCustomFoods(){try{return JSON.parse(localStorage.getItem(CUSTOM_FOODS_KEY)||"[]")}catch(e){return[]}}
-function saveCustomFoods(foods){try{localStorage.setItem(CUSTOM_FOODS_KEY,JSON.stringify(foods))}catch(e){}}
-
-function addCustomFood(){
-const emoji=$("cf-emoji").value.trim()||"🍽️";
-const name=$("cf-name").value.trim();
-const g=parseInt($("cf-grams").textContent)||0;
-if(!name||g<=0)return;
-const custom=getCustomFoods();
-custom.push({emoji,name,g});
-saveCustomFoods(custom);
-$("cf-name").value="";
-$("cf-emoji").value="";
-$("cf-grams").textContent="20";
-$("custom-food-form").style.display="none";
-renderProtein();
-}
-function deleteCustomFood(i){
-const custom=getCustomFoods();
-custom.splice(i,1);
-saveCustomFoods(custom);
-renderProtein();
-}
-function adjustGrams(delta){
-const el=$("cf-grams");
-const val=Math.max(5,Math.min(200,(parseInt(el.textContent)||20)+delta));
-el.textContent=val;
-}
-function toggleCustomForm(){
-const form=$("custom-food-form");
-form.style.display=form.style.display==="none"?"block":"none";
-}
-
 function proteinKey(){return"tp-prot-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
 function getProteinLog(){try{const s=localStorage.getItem(proteinKey());return s?JSON.parse(s):[]}catch(e){return[]}}
 function saveProteinLog(log){try{localStorage.setItem(proteinKey(),JSON.stringify(log))}catch(e){}}
 
-function addProtein(i,isCustom){
+function addProtein(i){
 const log=getProteinLog();
-const food=isCustom?getCustomFoods()[i]:PFOODS[i];
-if(!food)return;
-log.push({...food});
+log.push({...PFOODS[i]});
 saveProteinLog(log);
 renderProtein();
 }
@@ -1631,53 +1581,10 @@ if(!foodsEl)return;
 
 const log=getProteinLog();
 const total=log.reduce((s,f)=>s+f.g,0);
-const holiday=isHolidayMode();
-const target=holiday?60:110;
-const pct=Math.min(Math.round((total/target)*100),100);
-const remaining=target-total;
-const custom=getCustomFoods();
-// Update ring label
-const ofLabel=$("protein-of-label");
-if(ofLabel)ofLabel.textContent=holiday?"of 60g 🏖️":"of 110g";
+const pct=Math.min(Math.round((total/110)*100),100);
+const remaining=110-total;
 
-// Built-in foods
-let foodsHtml=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i},false)">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
-// Custom foods with delete button
-if(custom.length){
-foodsHtml+=custom.map((f,i)=>`<div class="protein-pill" style="position:relative;padding-right:22px" onclick="addProtein(${i},true)">${f.emoji} ${f.name} <span class="pg">${f.g}g</span><span onclick="event.stopPropagation();deleteCustomFood(${i})" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);color:#C4607A;font-size:13px;cursor:pointer">×</span></div>`).join("");
-}
-// Add custom button
-foodsHtml+=`<div class="protein-pill" onclick="toggleCustomForm()" style="border-style:dashed;color:#6B5B8A">＋ Add food</div>`;
-foodsEl.innerHTML=foodsHtml;
-
-// Custom food form
-let formEl=$("custom-food-form");
-if(!formEl){
-const formDiv=document.createElement("div");
-formDiv.id="custom-food-form";
-formDiv.style.display="none";
-formDiv.style.cssText="margin-top:10px;padding:12px;background:rgba(107,91,138,0.06);border-radius:10px;border:0.5px solid rgba(107,91,138,0.2)";
-formDiv.innerHTML=`
-<div style="font-size:12px;font-weight:700;color:#6B5B8A;margin-bottom:8px">Add custom food</div>
-<div style="display:flex;gap:8px;margin-bottom:8px">
-<input id="cf-emoji" type="text" placeholder="🍽️" maxlength="2" style="width:48px;text-align:center;font-size:18px;border:1px solid rgba(180,160,190,0.3);border-radius:8px;padding:6px;background:rgba(255,255,255,0.6);outline:none">
-<input id="cf-name" type="text" placeholder="Food name" style="flex:1;border:1px solid rgba(180,160,190,0.3);border-radius:8px;padding:6px 10px;font-size:13px;background:rgba(255,255,255,0.6);outline:none;color:#3D2E4A">
-</div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-<div style="font-size:12px;color:#A898B0">Protein (g)</div>
-<div style="display:flex;align-items:center;gap:10px">
-<button onclick="adjustGrams(-5)" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
-<span id="cf-grams" style="font-size:18px;font-weight:700;color:#3D2E4A;min-width:32px;text-align:center">20</span>
-<button onclick="adjustGrams(5)" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">＋</button>
-</div>
-</div>
-<div style="display:flex;gap:8px">
-<button onclick="toggleCustomForm()" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:none;font-size:13px;color:#A898B0;cursor:pointer">Cancel</button>
-<button onclick="addCustomFood()" style="flex:2;padding:8px;border-radius:8px;border:none;background:#6B5B8A;font-size:13px;color:white;font-weight:600;cursor:pointer">Save food</button>
-</div>`;
-foodsEl.parentNode.insertBefore(formDiv,foodsEl.nextSibling);
-formEl=formDiv;
-}
+foodsEl.innerHTML=PFOODS.map((f,i)=>`<div class="protein-pill" onclick="addProtein(${i})">${f.emoji} ${f.name} <span class="pg">${f.g}g</span></div>`).join("");
 
 if(log.length===0){
 logEl.innerHTML=`<div style="text-align:center;padding:8px;color:#B8A5C0;font-size:11px">Nothing logged yet</div>`;
@@ -1689,14 +1596,13 @@ totalEl.textContent=total+"g";
 const circ=263.9;
 const offset=circ-(pct/100)*circ;
 ringEl.style.strokeDashoffset=offset;
-ringEl.style.stroke=total>=target?"#5B8A5E":"#6B5B8A";
+ringEl.style.stroke=total>=110?"#5B8A5E":"#6B5B8A";
 
-if(total>=target){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.color="#5B8A5E"}
+if(total>=110){statusEl.textContent="✅ Target hit! "+total+"g";statusEl.style.color="#5B8A5E"}
 else if(total>0){statusEl.textContent=remaining+"g to go";statusEl.style.color="#6B5B8A"}
 else{statusEl.textContent="Tap foods below to log";statusEl.style.color="#A898B0"}
 
-if(total>=target){
-if(holiday){tipEl.innerHTML="🏖️ Holiday protein sorted. Enjoy the break — your body will thank you.";return;}
+if(total>=110){
 const msgs=[
 "That's "+Math.round(total/0.63)/100+"g/kg — right in the optimal range for muscle protein synthesis.",
 "110g+ locks in recovery. Your muscles repair strongest in the 24 hrs after training.",
@@ -1712,13 +1618,75 @@ const msgs=[
 const dayIdx=currentDate.getDate()%msgs.length;
 tipEl.innerHTML="✅ "+msgs[dayIdx];
 }
-else if(holiday&&remaining<=20){tipEl.innerHTML="🏖️ Almost at holiday target! Just a little more."}
-else if(holiday&&total>0){tipEl.innerHTML="🏖️ "+remaining+"g to reach holiday target of 60g."}
-else if(holiday){tipEl.innerHTML="🏖️ Holiday target: 60g protein. Easy to hit with a couple of good meals."}
 else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) or a can of tuna (25g) closes the gap."}
 else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
 else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
 else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Tap your meals above."}
+}
+
+// ── Daily Weight Tracker ──
+function weightKey(d){return"tp-weight-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function saveWeight(){
+const input=$("weight-input");
+if(!input||!input.value)return;
+const w=parseFloat(input.value);
+if(isNaN(w)||w<30||w>200)return;
+try{localStorage.setItem(weightKey(currentDate),JSON.stringify(w))}catch(e){}
+const saved=$("weight-saved");
+if(saved)saved.textContent="✓ Saved";
+renderWeightSpark();
+}
+function getWeight(d){
+try{const v=localStorage.getItem(weightKey(d));return v?JSON.parse(v):null}catch(e){return null}
+}
+function restoreWeight(){
+const input=$("weight-input");
+if(!input)return;
+const w=getWeight(currentDate);
+if(w){input.value=w;const saved=$("weight-saved");if(saved)saved.textContent="✓ Saved"}
+renderWeightSpark();
+}
+function getWeightHistory(numDays){
+const entries=[];
+const d=new Date(currentDate);
+for(let i=0;i<numDays;i++){
+const w=getWeight(d);
+if(w)entries.push({date:new Date(d),weight:w});
+d.setDate(d.getDate()-1);
+}
+return entries.reverse();
+}
+function renderWeightSpark(){
+const container=$("weight-spark-container");
+if(!container)return;
+const history=getWeightHistory(30);
+if(history.length<2){
+container.innerHTML=`<div style="font-size:11px;color:#A898B0;text-align:center;padding:4px 0">${history.length===0?"Log your weight to start tracking":"Need 2+ entries to show trend"}</div>`;
+return;
+}
+const weights=history.map(e=>e.weight);
+const min=Math.min(...weights);
+const max=Math.max(...weights);
+const range=max-min||0.5;
+const latest=weights[weights.length-1];
+const first=weights[0];
+const diff=Math.round((latest-first)*10)/10;
+const diffColor=diff<0?"#5B8A5E":diff>0?"#C4607A":"#6B5B8A";
+const diffSign=diff>0?"+":"";
+const avgWeight=Math.round(weights.reduce((s,w)=>s+w,0)/weights.length*10)/10;
+
+let sparkHtml=`<div class="weight-spark">`;
+history.forEach((e,i)=>{
+const pct=Math.max(Math.round(((e.weight-min)/range)*100),8);
+const isLatest=i===history.length-1;
+sparkHtml+=`<div class="weight-spark-bar" style="height:${pct}%;background:${isLatest?"#8B5CF6":"rgba(139,92,246,0.25)"}"></div>`;
+});
+sparkHtml+=`</div>`;
+sparkHtml+=`<div class="weight-change" style="display:flex;justify-content:space-between">
+<span style="color:#A898B0">Last ${history.length} days · avg ${avgWeight} kg</span>
+<span style="color:${diffColor};font-weight:700">${diffSign}${diff} kg</span>
+</div>`;
+container.innerHTML=sparkHtml;
 }
 
 // ── Exercise Weight Tracker ──
@@ -1742,102 +1710,66 @@ if(r&&log[i].r)r.value=log[i].r;
 });
 }
 
-// ── Move Session System ──
-function movedKey(d){return"tp-moved2-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
-function getMovedOut(d){try{return JSON.parse(localStorage.getItem(movedKey(d))||"[]").filter(x=>x.action==="removed").map(x=>x.type)}catch(e){return[]}}
-function getMovedIn(d){try{return JSON.parse(localStorage.getItem(movedKey(d))||"[]").filter(x=>x.action==="added")}catch(e){return[]}}
-
-// Small "move" button rendered inside each session card
-function moveBtn(type,label){
-return`<div style="margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(180,160,190,0.15)"><button onclick="showMoveModal('${type}','${label.replace(/'/g,"\\'")}')" style="background:none;border:1px solid rgba(180,160,190,0.35);border-radius:6px;padding:5px 12px;font-size:12px;color:#A898B0;cursor:pointer;width:100%">📅 Move to another day</button></div>`;
-}
-
-function renderMovedInCard(item){
-const originDate=new Date(item.originY,item.originM,item.originD,12,0,0);
-const originPlan=getPlan(originDate);
-const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const fromLabel=days[originDate.getDay()]+" "+originDate.getDate()+" "+mns[originDate.getMonth()];
-const badge=`<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">📅 Moved from ${fromLabel}</div>`;
-if(item.type==="run"&&originPlan.run)return`<div>${badge}${renderRun(originPlan.run)}</div>`;
-if(item.type==="str"&&originPlan.str)return`<div>${badge}${renderStrength(originPlan.str)}</div>`;
-if(item.type==="spin")return`<div>${badge}<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div>${moveBtn("spin","Spin Class")}</div></div>`;
-if(item.type==="pilates")return`<div>${badge}<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div><div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>${moveBtn("pilates","Pilates")}</div></div>`;
-return"";
-}
-
-// Capture source date at the moment the modal opens, not at moveSession call time
+// ── Move Session Modal ──
 let moveTarget=null;
-let moveSourceDate=null;
 function showMoveModal(sessionType,sessionLabel){
 moveTarget={type:sessionType,label:sessionLabel};
-moveSourceDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
-const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const today=new Date();
+const todayNorm=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12,0,0);
+const mon=new Date(todayNorm);
+const dw=mon.getDay();
+const df=dw===0?6:dw-1;
+mon.setDate(mon.getDate()-df);
+const dayNames=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const mns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-// Build 15 days: 7 before, today (skipped), 7 after
-let prevHtml="",nextHtml="";
-for(let i=-7;i<=7;i++){
-if(i===0)continue;
-const d=new Date(moveSourceDate);
+let optHtml="";
+for(let i=0;i<7;i++){
+const d=new Date(mon);
 d.setDate(d.getDate()+i);
-const dayName=dayNames[d.getDay()];
-const opt=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})"><div class="move-day-name">${dayName}</div><div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div></div>`;
-if(i<0)prevHtml+=opt;
-else nextHtml+=opt;
+const isCurrent=d.getDate()===currentDate.getDate()&&d.getMonth()===currentDate.getMonth();
+if(isCurrent)continue;
+optHtml+=`<div class="move-day-option" onclick="moveSession(${d.getFullYear()},${d.getMonth()},${d.getDate()})">
+<div class="move-day-name">${dayNames[i]}</div>
+<div class="move-day-date">${d.getDate()} ${mns[d.getMonth()]}</div>
+</div>`;
 }
 const overlay=document.createElement("div");
 overlay.className="move-overlay";
 overlay.id="moveOverlay";
-overlay.innerHTML=`<div class="move-modal" style="max-height:85vh;overflow-y:auto">
+overlay.innerHTML=`<div class="move-modal">
 <div class="move-modal-title">Move: ${sessionLabel}</div>
-<div class="move-modal-sub">Pick any day within the next or previous 7 days</div>
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin:8px 0 4px">Previous 7 days</div>
-${prevHtml}
-<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#B8A5C0;margin:8px 0 4px">Next 7 days</div>
-${nextHtml}
+<div class="move-modal-sub">Hold detected — pick a day to move this session to</div>
+${optHtml}
 <div class="move-cancel" onclick="closeMoveModal()">Cancel</div>
 </div>`;
 document.body.appendChild(overlay);
 overlay.onclick=function(e){if(e.target===overlay)closeMoveModal()};
 }
-function closeMoveModal(){const o=$("moveOverlay");if(o)o.remove();moveTarget=null;}
+function closeMoveModal(){const o=$("moveOverlay");if(o)o.remove();moveTarget=null}
 function moveSession(y,m,d){
-if(!moveTarget||!moveSourceDate)return;
-const src=moveSourceDate;
+const fromKey="tp-moved-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate();
+const toKey="tp-moved-"+y+"-"+(m+1)+"-"+d;
 try{
-const fromKey=movedKey(src);
 let fm=JSON.parse(localStorage.getItem(fromKey)||"[]");
-
-// Check if this session was itself moved IN to the source day — if so, find the true origin
-const existingMovedIn=fm.find(x=>x.type===moveTarget.type&&x.action==="added");
-let trueOriginY,trueOriginM,trueOriginD;
-if(existingMovedIn){
-// Session was moved in here — true origin is wherever it came from
-trueOriginY=existingMovedIn.originY;
-trueOriginM=existingMovedIn.originM;
-trueOriginD=existingMovedIn.originD;
-// Remove the "added" record from the current day (it's leaving)
-fm=fm.filter(x=>!(x.type===moveTarget.type&&x.action==="added"));
-localStorage.setItem(fromKey,JSON.stringify(fm));
-}else{
-// Session lives natively on this day — mark it as removed
-trueOriginY=src.getFullYear();
-trueOriginM=src.getMonth();
-trueOriginD=src.getDate();
-fm=fm.filter(x=>!(x.type===moveTarget.type&&x.action==="removed"));
 fm.push({type:moveTarget.type,label:moveTarget.label,action:"removed"});
 localStorage.setItem(fromKey,JSON.stringify(fm));
-}
-
-// Write "added" to target day, pointing back to true origin
-const toKey=movedKey(new Date(y,m,d,12,0,0));
 let tm=JSON.parse(localStorage.getItem(toKey)||"[]");
-tm=tm.filter(x=>!(x.type===moveTarget.type&&x.action==="added"));
-tm.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:trueOriginY,originM:trueOriginM,originD:trueOriginD});
+tm.push({type:moveTarget.type,label:moveTarget.label,action:"added"});
 localStorage.setItem(toKey,JSON.stringify(tm));
-}catch(e){console.error("moveSession error",e);}
+}catch(e){}
 closeMoveModal();
 render();
+}
+
+// Long press handler
+let longPressTimer=null;
+function addLongPress(el,type,label){
+if(!el)return;
+el.addEventListener("touchstart",function(e){
+longPressTimer=setTimeout(()=>{showMoveModal(type,label)},600);
+},{passive:true});
+el.addEventListener("touchend",function(){clearTimeout(longPressTimer)},{passive:true});
+el.addEventListener("touchmove",function(){clearTimeout(longPressTimer)},{passive:true});
 }
 
 render();
