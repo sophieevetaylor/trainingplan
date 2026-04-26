@@ -1333,7 +1333,7 @@ const plan=getPlan(currentDate);
 const bi=$("blockInfo");
 let html="";
 
-if(plan.block&&viewMode!=="home"){
+if(plan.block&&viewMode!=="home"&&viewMode!=="coach"){
 bi.style.display="block";
 bi.style.background=plan.block.color+"22";
 bi.style.border="1px solid "+plan.block.color+"44";
