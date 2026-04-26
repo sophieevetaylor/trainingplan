@@ -1239,15 +1239,26 @@ html+=`<div style="display:flex;gap:8px;margin-bottom:12px">
 </div>
 </div>`;
 
-// Bar chart
-html+=`<div style="display:flex;align-items:flex-end;gap:2px;height:60px;margin-bottom:6px">`;
+// Line chart
 const displayEntries=weightHistory.slice(-30);
-displayEntries.forEach((e,i)=>{
-const pct=Math.max(Math.round(((e.weight-min)/range)*100),8);
-const isLatest=i===displayEntries.length-1;
-html+=`<div style="flex:1;height:${pct}%;background:${isLatest?"#8B5CF6":"rgba(139,92,246,0.2)"};border-radius:2px 2px 0 0" title="${e.weight} kg"></div>`;
+const cw=300,ch=80,cpad=4;
+const cpts=displayEntries.map((e,i)=>{
+const x=cpad+i*((cw-cpad*2)/(displayEntries.length-1));
+const y=cpad+(1-(e.weight-min)/range)*(ch-cpad*2);
+return{x:Math.round(x),y:Math.round(y),w:e.weight};
 });
-html+=`</div>`;
+const polyline2=cpts.map(p=>p.x+","+p.y).join(" ");
+// Area fill
+const areaPoints=polyline2+` ${cpts[cpts.length-1].x},${ch} ${cpts[0].x},${ch}`;
+const lastP=cpts[cpts.length-1];
+
+html+=`<svg width="100%" height="${ch}" viewBox="0 0 ${cw} ${ch}" preserveAspectRatio="none" style="margin-bottom:6px">
+<polygon points="${areaPoints}" fill="rgba(139,92,246,0.08)"/>
+<polyline points="${polyline2}" fill="none" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/>
+<polyline points="${polyline2}" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="${lastP.x}" cy="${lastP.y}" r="4" fill="#8B5CF6"/>
+<text x="${lastP.x+8}" y="${lastP.y+4}" font-size="10" fill="#8B5CF6" font-weight="700">${lastP.w}</text>
+</svg>`;
 html+=`<div style="display:flex;justify-content:space-between;font-size:10px;color:#A898B0">
 <span>${Math.round(min*10)/10} kg</span>
 <span>Last ${displayEntries.length} entries</span>
@@ -1396,6 +1407,8 @@ renderProtein();
 restoreChecks();
 restoreExLogs();
 restoreWeight();
+// Load Strava for daily view
+if(stravaLoaded){renderStravaWidgets()}else{loadStrava()}
 
 // Add long-press to moveable cards
 const runCard=document.querySelector(".run-card.normal");
@@ -1725,13 +1738,21 @@ const diffColor=diff<0?"#5B8A5E":diff>0?"#C4607A":"#6B5B8A";
 const diffSign=diff>0?"+":"";
 const avgWeight=Math.round(weights.reduce((s,w)=>s+w,0)/weights.length*10)/10;
 
-let sparkHtml=`<div class="weight-spark">`;
-history.forEach((e,i)=>{
-const pct=Math.max(Math.round(((e.weight-min)/range)*100),8);
-const isLatest=i===history.length-1;
-sparkHtml+=`<div class="weight-spark-bar" style="height:${pct}%;background:${isLatest?"#8B5CF6":"rgba(139,92,246,0.25)"}"></div>`;
+// SVG line chart
+const w=280,h=50,pad=2;
+const pts=weights.map((v,i)=>{
+const x=pad+i*((w-pad*2)/(weights.length-1));
+const y=pad+(1-(v-min)/range)*(h-pad*2);
+return`${Math.round(x)},${Math.round(y)}`;
 });
-sparkHtml+=`</div>`;
+const polyline=pts.join(" ");
+const lastPt=pts[pts.length-1].split(",");
+
+let sparkHtml=`<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="margin-top:6px">
+<polyline points="${polyline}" fill="none" stroke="rgba(139,92,246,0.3)" stroke-width="2"/>
+<polyline points="${polyline}" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="3" fill="#8B5CF6"/>
+</svg>`;
 sparkHtml+=`<div class="weight-change" style="display:flex;justify-content:space-between">
 <span style="color:#A898B0">Last ${history.length} days · avg ${avgWeight} kg</span>
 <span style="color:${diffColor};font-weight:700">${diffSign}${diff} kg</span>
