@@ -748,9 +748,11 @@ weekHtml+=`</div>`;
 dashEl.innerHTML=weekHtml;
 }
 
-// Daily view: match Strava activities to today's date
+// Daily view: match Strava activities and inject into activity cards
 const dailyEl=$("strava-daily");
-if(dailyEl){
+if(dailyEl)dailyEl.innerHTML=""; // clear the placeholder
+
+if(true){
 const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
 const dayActivities=stravaData.filter(a=>a.date.startsWith(dateStr));
 
@@ -760,125 +762,108 @@ const weightMatch=dayActivities.find(a=>a.type==="WeightTraining"||a.sport_type=
 const pilatesMatch=dayActivities.find(a=>a.type==="Yoga"||a.sport_type==="Yoga"||a.sport_type==="Pilates"||(a.name&&(a.name.toLowerCase().includes("pilates")||a.name.toLowerCase().includes("yoga"))));
 const walkMatch=dayActivities.find(a=>a.type==="Walk"||a.sport_type==="Walk"||(a.name&&a.name.toLowerCase().includes("treadmill")));
 
-let stravaCards="";
-const stravaSvg=`<svg width="12" height="12" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:4px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>`;
+const stravaSvg=`<svg width="11" height="11" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:3px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>`;
 
-// ── Run match ──
+function injectStrava(cardSelector, html, autoTickCheck, autoTickLabel, autoTickSave){
+const card=document.querySelector(cardSelector);
+if(!card)return;
+// Inject before the check row
+const checkRow=card.querySelector(".run-check-row");
+const existing=card.querySelector(".strava-inline");
+if(existing)existing.remove();
+const div=document.createElement("div");
+div.className="strava-inline";
+div.innerHTML=html;
+if(checkRow)card.insertBefore(div,checkRow);
+else card.appendChild(div);
+// Auto-tick
+if(autoTickCheck){
+const ch=$(autoTickCheck);
+const lb=$(autoTickLabel);
+if(ch&&!ch.classList.contains("done")){
+ch.classList.add("done");
+if(lb){lb.classList.add("done");lb.textContent=lb.textContent.replace("Mark ","").replace("Hit ","")+" (auto)"}
+if(autoTickSave)autoTickSave();
+}
+}
+}
+
+// ── Run ──
 if(runMatch){
 const m=runMatch;
 const plan=getPlan(currentDate);
-// Auto-tick run checkbox
-const runCheck=$("run-check");
-const runLabel=$("run-label");
-if(runCheck&&!runCheck.classList.contains("done")){
-runCheck.classList.add("done");
-if(runLabel){runLabel.classList.add("done");runLabel.textContent="Run complete ✓ (auto-synced)"}
-saveRun(true);
-}
-// Build pace feedback
 let feedback="";
 if(plan.run&&plan.run.pace){
-const paceMatch2=plan.run.pace.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
-if(paceMatch2){
-const targetMin=parseInt(paceMatch2[1])*60+parseInt(paceMatch2[2]);
-const targetMax=parseInt(paceMatch2[3])*60+parseInt(paceMatch2[4]);
-const actualParts=m.pace_per_km.split(":");
-const actual=parseInt(actualParts[0])*60+parseInt(actualParts[1]);
-if(actual<targetMin-10){feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(220,38,38,0.08);border-radius:6px;border:0.5px solid rgba(220,38,38,0.15);font-size:11px"><span style="color:#DC2626;font-weight:700">⚡ ${targetMin-actual}s faster than planned.</span><span style="color:#7A6B8A"> Plan said ${plan.run.pace}. ${plan.run.type.toLowerCase().includes("easy")?"Easy days should feel genuinely easy.":"Watch the effort."}</span></div>`;}
-else if(actual>targetMax+15){feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,80,0.08);border-radius:6px;border:0.5px solid rgba(200,160,80,0.15);font-size:11px"><span style="color:#B8883E;font-weight:700">🐢 ${actual-targetMax}s slower than planned.</span><span style="color:#7A6B8A"> Plan said ${plan.run.pace}. ${plan.run.type.toLowerCase().includes("easy")?"That's fine for easy days.":"Consider if fatigue was a factor."}</span></div>`;}
-else{feedback=`<div style="margin-top:6px;padding:6px 10px;background:rgba(91,138,94,0.08);border-radius:6px;border:0.5px solid rgba(91,138,94,0.15);font-size:11px"><span style="color:#3D8A50;font-weight:700">✅ Right on target.</span><span style="color:#7A6B8A"> Plan said ${plan.run.pace}. Nailed it.</span></div>`;}
+const pm=plan.run.pace.match(/(\d):(\d\d)\s*[–-]\s*(\d):(\d\d)/);
+if(pm&&m.pace_per_km){
+const tMin=parseInt(pm[1])*60+parseInt(pm[2]);
+const tMax=parseInt(pm[3])*60+parseInt(pm[4]);
+const ap=m.pace_per_km.split(":");
+const actual=parseInt(ap[0])*60+parseInt(ap[1]);
+if(actual<tMin-10)feedback=`<span style="color:#DC2626;font-weight:600">⚡ ${tMin-actual}s fast</span>`;
+else if(actual>tMax+15)feedback=`<span style="color:#B8883E;font-weight:600">🐢 ${actual-tMax}s slow</span>`;
+else feedback=`<span style="color:#3D8A50;font-weight:600">✅ On target</span>`;
 }
 }
-let distFeedback="";
+let distNote="";
 if(plan.run&&plan.run.km){
-const plannedKm=parseFloat(plan.run.km)||0;
-if(plannedKm>0){
-const diff=m.distance_km-plannedKm;
-if(Math.abs(diff)<=0.5)distFeedback=`<span style="color:#3D8A50">✅ Distance spot on</span>`;
-else if(diff>0.5)distFeedback=`<span style="color:#6B5B8A">↑ ${Math.round(diff*10)/10} km extra</span>`;
-else distFeedback=`<span style="color:#B8883E">↓ ${Math.round(Math.abs(diff)*10)/10} km short</span>`;
+const pk=parseFloat(plan.run.km)||0;
+if(pk>0){
+const d2=m.distance_km-pk;
+if(Math.abs(d2)<=0.5)distNote="";
+else if(d2>0.5)distNote=` · <span style="color:#6B5B8A">+${Math.round(d2*10)/10} km</span>`;
+else distNote=` · <span style="color:#B8883E">${Math.round(d2*10)/10} km</span>`;
 }
 }
-stravaCards+=`<div class="strava-actual">
+const h=`<div style="margin-top:8px;padding:8px 10px;background:rgba(252,76,2,0.05);border-radius:8px;border:0.5px solid rgba(252,76,2,0.12);font-size:11px">
 <div style="display:flex;justify-content:space-between;align-items:center">
-<div class="strava-actual-header">${stravaSvg} ${m.name}</div>
-${distFeedback?`<div style="font-size:11px">${distFeedback}</div>`:""}
-</div>
-<div class="strava-actual-stats">
-<span style="font-weight:600">${m.distance_km} km</span> · 
-<span style="font-weight:600">${m.pace_per_km}/km</span> · ${m.moving_time_min} min
-${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}
-${m.elevation_gain>20?" · ⛰️ "+Math.round(m.elevation_gain)+"m":""}
-</div>
+<span style="color:#FC4C02;font-weight:600">${stravaSvg} ${m.name}</span>
 ${feedback}
+</div>
+<div style="color:#7A6B8A;margin-top:2px">${m.distance_km} km · ${m.pace_per_km}/km · ${m.moving_time_min} min${m.avg_hr?" · ❤️"+Math.round(m.avg_hr):""}${distNote}</div>
 </div>`;
+injectStrava(".run-card",h,"run-check","run-label",function(){saveRun(true)});
 }
 
-// ── Weight training match ──
+// ── Strength ──
 if(weightMatch){
 const m=weightMatch;
-const strCheck=$("str-check");
-const strLabel=$("str-label");
-if(strCheck&&!strCheck.classList.contains("done")){
-strCheck.classList.add("done");
-if(strLabel){strLabel.classList.add("done");strLabel.textContent="Session complete ✓ (auto-synced)"}
-saveStr(true);
-}
-stravaCards+=`<div class="strava-actual" style="background:rgba(107,91,138,0.06);border-color:rgba(107,91,138,0.15)">
-<div class="strava-actual-header" style="color:#6B5B8A">${stravaSvg} ${m.name}</div>
-<div class="strava-actual-stats">💪 ${m.moving_time_min} min${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}</div>
+const h=`<div style="margin-top:8px;padding:8px 10px;background:rgba(107,91,138,0.05);border-radius:8px;border:0.5px solid rgba(107,91,138,0.12);font-size:11px">
+<span style="color:#6B5B8A;font-weight:600">${stravaSvg} ${m.name}</span>
+<span style="color:#7A6B8A"> · ${m.moving_time_min} min${m.avg_hr?" · ❤️"+Math.round(m.avg_hr):""}</span>
 </div>`;
+injectStrava(".strength-card",h,"str-check","str-label",function(){saveStr(true)});
 }
 
-// ── Spin/Ride match ──
+// ── Spin ──
 if(rideMatch){
 const m=rideMatch;
-const spinCheck=$("spin-check");
-const spinLabel=$("spin-label");
-if(spinCheck&&!spinCheck.classList.contains("done")){
-spinCheck.classList.add("done");
-if(spinLabel){spinLabel.classList.add("done");spinLabel.textContent="Spin complete ✓ (auto-synced)"}
-const s=getState();s.spin=true;setState(s);
-}
-stravaCards+=`<div class="strava-actual" style="background:rgba(139,92,246,0.06);border-color:rgba(139,92,246,0.15)">
-<div class="strava-actual-header" style="color:#8B5CF6">${stravaSvg} ${m.name}</div>
-<div class="strava-actual-stats">🚴‍♀️ ${m.moving_time_min} min${m.distance_km>0?" · "+m.distance_km+" km":""}${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}</div>
+const h=`<div style="margin-top:8px;padding:8px 10px;background:rgba(139,92,246,0.05);border-radius:8px;border:0.5px solid rgba(139,92,246,0.12);font-size:11px">
+<span style="color:#8B5CF6;font-weight:600">${stravaSvg} ${m.name}</span>
+<span style="color:#7A6B8A"> · ${m.moving_time_min} min${m.distance_km>0?" · "+m.distance_km+" km":""}${m.avg_hr?" · ❤️"+Math.round(m.avg_hr):""}</span>
 </div>`;
+injectStrava(".spin-card",h,"spin-check","spin-label",function(){const s=getState();s.spin=true;setState(s)});
 }
 
-// ── Pilates/Yoga match ──
+// ── Pilates ──
 if(pilatesMatch){
 const m=pilatesMatch;
-const pilCheck=$("pil-check");
-const pilLabel=$("pil-label");
-if(pilCheck&&!pilCheck.classList.contains("done")){
-pilCheck.classList.add("done");
-if(pilLabel){pilLabel.classList.add("done");pilLabel.textContent="Pilates complete ✓ (auto-synced)"}
-savePil(true);
-}
-stravaCards+=`<div class="strava-actual" style="background:rgba(220,140,170,0.06);border-color:rgba(220,140,170,0.15)">
-<div class="strava-actual-header" style="color:#C4607A">${stravaSvg} ${m.name}</div>
-<div class="strava-actual-stats">🧘‍♀️ ${m.moving_time_min} min${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}</div>
+const h=`<div style="margin-top:8px;padding:8px 10px;background:rgba(220,140,170,0.05);border-radius:8px;border:0.5px solid rgba(220,140,170,0.12);font-size:11px">
+<span style="color:#C4607A;font-weight:600">${stravaSvg} ${m.name}</span>
+<span style="color:#7A6B8A"> · ${m.moving_time_min} min${m.avg_hr?" · ❤️"+Math.round(m.avg_hr):""}</span>
 </div>`;
+injectStrava(".other-card.pilates",h,"pil-check","pil-label",function(){savePil(true)});
 }
 
-// ── Treadmill/Walk match ──
+// ── Treadmill ──
 if(walkMatch){
 const m=walkMatch;
-const tmCheck=$("tm-check");
-const tmLabel=$("tm-label");
-if(tmCheck&&!tmCheck.classList.contains("done")){
-tmCheck.classList.add("done");
-if(tmLabel){tmLabel.classList.add("done");tmLabel.textContent="Treadmill complete ✓ (auto-synced)"}
-const s=getState();s.tm=true;setState(s);
-}
-stravaCards+=`<div class="strava-actual" style="background:rgba(200,160,80,0.06);border-color:rgba(200,160,80,0.15)">
-<div class="strava-actual-header" style="color:#B8883E">${stravaSvg} ${m.name}</div>
-<div class="strava-actual-stats">🚶‍♀️ ${m.moving_time_min} min${m.distance_km>0?" · "+m.distance_km+" km":""}${m.avg_hr?" · ❤️ "+Math.round(m.avg_hr)+" bpm":""}</div>
+const h=`<div style="margin-top:8px;padding:8px 10px;background:rgba(200,160,80,0.05);border-radius:8px;border:0.5px solid rgba(200,160,80,0.12);font-size:11px">
+<span style="color:#B8883E;font-weight:600">${stravaSvg} ${m.name}</span>
+<span style="color:#7A6B8A"> · ${m.moving_time_min} min${m.distance_km>0?" · "+m.distance_km+" km":""}${m.avg_hr?" · ❤️"+Math.round(m.avg_hr):""}</span>
 </div>`;
+injectStrava(".treadmill-card",h,"tm-check","tm-label",function(){const s=getState();s.tm=true;setState(s)});
 }
-
-dailyEl.innerHTML=stravaCards?`<div style="display:flex;flex-direction:column;gap:8px">${stravaCards}</div>`:"";
 }
 }
 
