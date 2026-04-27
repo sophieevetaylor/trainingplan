@@ -1354,17 +1354,26 @@ html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label
 }
 
 // Render sessions moved IN from other days
+const seenTypes={};
 movedIn.forEach(function(item){
+// Skip duplicates
+if(seenTypes[item.type])return;
+seenTypes[item.type]=true;
 const mns2=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const dys2=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+let fromLabel="another day";
+if(item.originY!==undefined&&item.originM!==undefined&&item.originD!==undefined){
 const orig=new Date(item.originY,item.originM,item.originD,12,0,0);
-const fromLabel=dys2[orig.getDay()]+" "+orig.getDate()+" "+mns2[orig.getMonth()];
+fromLabel=dys2[orig.getDay()]+" "+orig.getDate()+" "+mns2[orig.getMonth()];
+}
 const badge=`<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">📅 Moved from ${fromLabel}</div>`;
-const origPlan=getPlan(orig);
+if(item.originY!==undefined){
+const origPlan=getPlan(new Date(item.originY,item.originM,item.originD,12,0,0));
 if(item.type==="run"&&origPlan.run)html+=badge+renderRun(origPlan.run);
 else if(item.type==="str"&&origPlan.str)html+=badge+renderStrength(origPlan.str);
 else if(item.type==="spin")html+=badge+`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
 else if(item.type==="pilates")html+=badge+`<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div><div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div></div>`;
+}
 });
 
 if(plan.notes&&plan.notes.length){
@@ -1862,6 +1871,22 @@ longPressTimer=setTimeout(()=>{showMoveModal(type,label)},600);
 el.addEventListener("touchend",function(){clearTimeout(longPressTimer)},{passive:true});
 el.addEventListener("touchmove",function(){clearTimeout(longPressTimer)},{passive:true});
 }
+
+// One-time cleanup of corrupted move data
+try{
+for(var ci=localStorage.length-1;ci>=0;ci--){
+var ck=localStorage.key(ci);
+if(ck&&ck.startsWith("tp-moved-")){
+var cv2=JSON.parse(localStorage.getItem(ck)||"[]");
+var cleaned=cv2.filter(function(x){
+if(x.action==="added"&&(x.originY===undefined||x.originM===undefined||x.originD===undefined))return false;
+return true;
+});
+if(cleaned.length!==cv2.length)localStorage.setItem(ck,JSON.stringify(cleaned));
+if(cleaned.length===0)localStorage.removeItem(ck);
+}
+}
+}catch(e){}
 
 render();
 </script>
