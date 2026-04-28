@@ -124,6 +124,11 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .weight-spark{display:flex;align-items:flex-end;gap:2px;height:40px;margin-top:6px;padding:4px 0}
 .weight-spark-bar{flex:1;border-radius:2px 2px 0 0;min-width:0;transition:height 0.3s}
 .weight-change{font-size:11px;margin-top:4px}
+.add-session-btn{background:none;border:1.5px dashed rgba(107,91,138,0.3);border-radius:12px;padding:12px;font-size:13px;color:#6B5B8A;cursor:pointer;width:100%;text-align:center;font-weight:600;-webkit-appearance:none}
+.add-session-btn:active{background:rgba(107,91,138,0.08)}
+.add-option{padding:12px 14px;background:rgba(255,255,255,0.55);border-radius:10px;margin-bottom:6px;cursor:pointer;border:0.5px solid rgba(180,160,190,0.2);font-size:13px;color:#3D2E4A;font-weight:500}
+.add-option:active{background:rgba(107,91,138,0.1)}
+.add-option-sub{font-size:11px;color:#A898B0;margin-top:2px;font-weight:400}
 .move-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
 .move-modal{background:linear-gradient(135deg,#FDF2F5,#EDE6F2);border-radius:16px;padding:20px;width:100%;max-width:320px}
 .move-modal-title{font-size:14px;font-weight:700;color:#3D2E4A;margin-bottom:4px}
@@ -1390,6 +1395,19 @@ html+=`<div class="rest-card"><div class="rest-title">${plan.message||"No traini
 
 $("content").innerHTML=html;
 
+// Render added sessions
+const addedHtml=renderAddedSessions();
+if(addedHtml){
+const addedDiv=document.createElement("div");
+addedDiv.innerHTML=addedHtml;
+$("content").appendChild(addedDiv);
+}
+
+// Add Session button
+const addBtn=document.createElement("div");
+addBtn.innerHTML=`<button class="add-session-btn" onclick="showAddSessionModal()">＋ Add a session</button>`;
+$("content").appendChild(addBtn);
+
 // Daily tracker cards (every day)
 const dailyCards=`
 <div class="steps-card"><div class="steps-header">👟 Daily Steps</div><div class="steps-target">Target: 14,000 steps</div><div class="run-check-row" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Mark 14k steps complete</div></div></div>
@@ -1919,6 +1937,63 @@ localStorage.setItem(toKey,JSON.stringify(tm2));
 }catch(e){}
 closeMoveModal();
 render();
+}
+
+// ── Add Session ──
+function addedSessionsKey(d){return"tp-added-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function getAddedSessions(d){try{return JSON.parse(localStorage.getItem(addedSessionsKey(d))||"[]")}catch(e){return[]}}
+function saveAddedSession(type){
+try{
+const added=getAddedSessions(currentDate);
+added.push({type:type});
+localStorage.setItem(addedSessionsKey(currentDate),JSON.stringify(added));
+}catch(e){}
+render();
+}
+function removeAddedSession(i){
+try{
+const added=getAddedSessions(currentDate);
+added.splice(i,1);
+localStorage.setItem(addedSessionsKey(currentDate),JSON.stringify(added));
+}catch(e){}
+render();
+}
+function showAddSessionModal(){
+const overlay=document.createElement("div");
+overlay.className="move-overlay";
+overlay.id="moveOverlay";
+const p=phase(getBlock(currentDate)?getBlock(currentDate).id:"block1");
+overlay.innerHTML=`<div class="move-modal" style="max-height:85vh;overflow-y:auto">
+<div class="move-modal-title">Add a Session</div>
+<div class="move-modal-sub">Pick what you want to add to today</div>
+<div class="add-option" onclick="saveAddedSession('strA')">💪 Strength A — Push + Lower Body<div class="add-option-sub">Hip thrust, sumo squat, bench, shoulder press</div></div>
+<div class="add-option" onclick="saveAddedSession('strB')">💪 Strength B — Pull + Lower Body<div class="add-option-sub">RDL, kickback, lat pulldown, seated row</div></div>
+<div class="add-option" onclick="saveAddedSession('easyRun')">🏃‍♀️ Easy Run<div class="add-option-sub">5–6 km @ 5:50–6:10/km, Zone 2</div></div>
+<div class="add-option" onclick="saveAddedSession('longRun')">🏃‍♀️ Long Run<div class="add-option-sub">14+ km @ 5:50–6:15/km, Zone 2</div></div>
+<div class="add-option" onclick="saveAddedSession('spin')">🚴‍♀️ Spin Class<div class="add-option-sub">45 min, Zone 2 cardio</div></div>
+<div class="add-option" onclick="saveAddedSession('pilates')">🧘‍♀️ Pilates<div class="add-option-sub">Flexibility + core session</div></div>
+<div class="add-option" onclick="saveAddedSession('treadmill')">🚶‍♀️ Incline Treadmill<div class="add-option-sub">30 min, 10–12% incline</div></div>
+<div class="move-cancel" onclick="closeMoveModal()">Cancel</div>
+</div>`;
+document.body.appendChild(overlay);
+overlay.onclick=function(e){if(e.target===overlay)closeMoveModal()};
+}
+
+function renderAddedSessions(){
+const added=getAddedSessions(currentDate);
+const p=phase(getBlock(currentDate)?getBlock(currentDate).id:"block1");
+let html="";
+added.forEach(function(item,i){
+const badge='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-size:10px;color:#6B5B8A;font-weight:600;padding:3px 8px;background:rgba(107,91,138,0.1);border-radius:4px;display:inline-block">＋ Added session</div><button onclick="removeAddedSession('+i+')" style="background:none;border:none;font-size:11px;color:#C4607A;cursor:pointer;padding:4px 8px">Remove</button></div>';
+if(item.type==="strA")html+=badge+renderStrength(SA(p));
+else if(item.type==="strB")html+=badge+renderStrength(SB(p));
+else if(item.type==="easyRun")html+=badge+renderRun({type:"Easy run (added)",km:"5–6",pace:"5:50–6:10/km",int:"Zone 2",note:"Added session — keep it easy."});
+else if(item.type==="longRun")html+=badge+renderRun({type:"Long run (added)",km:"14",pace:"5:50–6:15/km",int:"Zone 2",note:"Added session."});
+else if(item.type==="spin")html+=badge+'<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio.</div></div>';
+else if(item.type==="pilates")html+=badge+'<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Added session</div></div>';
+else if(item.type==="treadmill")html+=badge+renderTreadmill();
+});
+return html;
 }
 
 // Move button for cards
