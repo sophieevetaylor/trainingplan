@@ -558,7 +558,7 @@ const fuel=getFuel(r);
 if(fuel){
 fuelHtml=`<div class="fuel-card"><div class="fuel-title">🍽️ Fuelling</div><div class="fuel-row"><span class="fuel-label">Before:</span> ${fuel.pre}</div><div class="fuel-row"><span class="fuel-label">During:</span> ${fuel.during}</div><div class="fuel-row"><span class="fuel-label">After:</span> ${fuel.after}</div></div>`;
 }
-return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div></div>`;
+return`<div class="run-card ${isRace?"race":"normal"}"><div class="run-header"><div class="run-type ${isRace?"race":"normal"}">${isRace?"🏁 ":"🏃‍♀️ "}${r.type}</div><div class="run-km">${r.km} km</div></div><div class="run-grid"><div><div class="run-label">Pace</div><div class="run-value">${r.pace}</div></div><div><div class="run-label">Intensity</div><div class="run-value">${r.int}</div></div></div>${r.note?`<div class="run-note">${r.note}</div>`:""}${fuelHtml}<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>${isRace?"":moveBtn("run",r.type)}</div>`;
 }
 
 function renderStrength(s){
@@ -1343,14 +1343,14 @@ html+=`<div id="strava-daily"></div>`;
 if(!movedOut.includes("str"))html+=renderStrength(plan.str);
 
 if(plan.spin&&!movedOut.includes("spin")){
-html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
+html+=`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio. Steady effort, conversational pace.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div>${moveBtn("spin","Spin Class")}</div>`;
 }
 
 if(plan.other&&!movedOut.includes("pilates")){
 const isPilates=plan.other.toLowerCase().includes("pilates");
 const emoji=isPilates?"🧘‍♀️ ":"";
 const label=isPilates?"Pilates":"Also today";
-html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>`:""}</div>`;
+html+=`<div class="other-card ${isPilates?"pilates":""}"><div class="other-label ${isPilates?"pilates":""}">${emoji}${label}</div><div class="other-text ${isPilates?"pilates":""}">${plan.other}</div>${isPilates?`<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>${moveBtn("pilates","Pilates")}`:""}</div>`;
 }
 
 // Render sessions moved IN from other days
@@ -1424,14 +1424,6 @@ restoreExLogs();
 restoreWeight();
 // Load Strava for daily view
 if(stravaLoaded){renderStravaWidgets()}else{loadStrava()}
-
-// Add long-press to moveable cards
-const runCard=document.querySelector(".run-card.normal");
-if(runCard)addLongPress(runCard,"run","Easy Run");
-const spinCard=document.querySelector(".spin-card");
-if(spinCard)addLongPress(spinCard,"spin","Spin Class");
-const pilCard=document.querySelector(".other-card.pilates");
-if(pilCard)addLongPress(pilCard,"pilates","Pilates");
 }
 
 function nav(days){const d=new Date(currentDate);d.setDate(d.getDate()+days);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
@@ -1929,15 +1921,9 @@ closeMoveModal();
 render();
 }
 
-// Long press handler
-let longPressTimer=null;
-function addLongPress(el,type,label){
-if(!el)return;
-el.addEventListener("touchstart",function(e){
-longPressTimer=setTimeout(()=>{showMoveModal(type,label)},600);
-},{passive:true});
-el.addEventListener("touchend",function(){clearTimeout(longPressTimer)},{passive:true});
-el.addEventListener("touchmove",function(){clearTimeout(longPressTimer)},{passive:true});
+// Move button for cards
+function moveBtn(type,label){
+return '<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid rgba(180,160,190,0.12)"><button onclick="event.stopPropagation();showMoveModal(\''+type+'\',\''+label.replace(/'/g,"\\'")+'\')" style="background:none;border:1px dashed rgba(180,160,190,0.35);border-radius:8px;padding:6px 12px;font-size:11px;color:#A898B0;cursor:pointer;width:100%;-webkit-appearance:none">📅 Move to another day</button></div>';
 }
 
 // One-time cleanup: remove ALL corrupted move data (v1 migration)
