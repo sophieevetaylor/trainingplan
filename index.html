@@ -235,7 +235,7 @@ function phase(id){if(id==="block6")return"hypertrophy";if(id==="block5"||id==="
 function getPlan(date){
 const b=getBlock(date);if(!b)return{block:null,message:"No training scheduled – navigate to a date within Mar 2026 – Aug 2027."};
 const w=getWeek(date,b),d=date.getDay(),p=phase(b.id);
-let run=null,str=null,other=null,notes=[],race=false,spin=false;
+let run=null,str=null,other=null,notes=[],race=false,spin=false,gabby=false;
 
 // Mon=1:GymA+Pilates, Tue=2:QualityRun+Pilates, Wed=3:GymB+EasyRun, Thu=4:Rest, Fri=5:GymC+EasyRun, Sat=6:Spin, Sun=0:LongRun
 function week(o){
@@ -244,15 +244,17 @@ const ek=o.ek||"5–6",ep=o.ep||"5:50–6:10/km";
 const lr=o.lr||{type:"Long run",km:"14",pace:"5:50–6:15/km",int:"Zone 2",note:""};
 const mr=o.mr;// optional Monday morning run for blocks 4+
 const W={
-1:{str:SA(p),other:"PM: Pilates",run:mr||null},
+1:{str:SA(p),other:"PM: Pilates",run:mr||null,gabby:true},
 2:{run:q,other:"PM: Pilates"},
-3:{str:SB(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."}},
+3:{str:SB(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."},gabby:true},
 4:{notes:["REST DAY. Recover, stretch, foam roll. Eat well."]},
 5:{str:SC(p),run:{type:"Easy run (lunch)",km:ek,pace:ep,int:"Zone 2",note:"After gym. Keep it easy."}},
 6:{spin:true,notes:["45 min spin class – Zone 2 cardio. Steady effort, don't smash it."]},
 0:lr.type?{run:lr}:{notes:lr.notes||["Easy day"]}
 };
-return W[d]||{notes:["Rest"]};
+const result=W[d]||{notes:["Rest"]};
+gabby=result.gabby||false;
+return result;
 }
 
 if(b.id==="preplan"){
@@ -424,7 +426,7 @@ run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
 }
 
-return{block:b,week:w,run,str,other,notes,race,spin};
+return{block:b,week:w,run,str,other,notes,race,spin,gabby};
 }
 
 // ─── RENDERING ──────────────────────────────────────────────────────
@@ -650,6 +652,7 @@ if(wp.str)items.push("💪 "+wp.str.name.replace("Strength ","").split("–")[0]
 if(wp.run)items.push("🏃‍♀️ "+wp.run.type+(wp.run.km?" · "+wp.run.km+" km":""));
 if(wp.spin)items.push("🚴‍♀️ Spin Class");
 if(wp.other&&wp.other.toLowerCase().includes("pilates"))items.push("🧘‍♀️ Pilates");
+if(wp.gabby)items.push("💪✨ Gabby George Arms");
 if(!items.length){
 if(wp.notes&&wp.notes.length)items.push("😴 Rest Day");
 else items.push("😴 Rest");
@@ -1232,31 +1235,54 @@ html+=`<div style="display:flex;gap:8px;margin-bottom:12px">
 </div>
 </div>`;
 
-// Line chart
+// Line chart with data points
 const displayEntries=weightHistory.slice(-30);
-const cw=300,ch=80,cpad=4;
+const cw=320,ch=120,cpX=25,cpY=18;
 const cpts=displayEntries.map((e,i)=>{
-const x=cpad+i*((cw-cpad*2)/(displayEntries.length-1));
-const y=cpad+(1-(e.weight-min)/range)*(ch-cpad*2);
-return{x:Math.round(x),y:Math.round(y),w:e.weight};
+const x=cpX+i*((cw-cpX*2)/(displayEntries.length-1));
+const y=cpY+(1-(e.weight-min)/range)*(ch-cpY*2);
+const d=e.date;
+return{x:Math.round(x*10)/10,y:Math.round(y*10)/10,w:e.weight,d:d};
 });
 const polyline2=cpts.map(p=>p.x+","+p.y).join(" ");
-// Area fill
-const areaPoints=polyline2+` ${cpts[cpts.length-1].x},${ch} ${cpts[0].x},${ch}`;
+const areaPoints=polyline2+` ${cpts[cpts.length-1].x},${ch-4} ${cpts[0].x},${ch-4}`;
 const lastP=cpts[cpts.length-1];
+const mns3=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-html+=`<svg width="100%" height="${ch}" viewBox="0 0 ${cw} ${ch}" preserveAspectRatio="none" style="margin-bottom:6px">
-<polygon points="${areaPoints}" fill="rgba(139,92,246,0.08)"/>
-<polyline points="${polyline2}" fill="none" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/>
-<polyline points="${polyline2}" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="${lastP.x}" cy="${lastP.y}" r="4" fill="#8B5CF6"/>
-<text x="${lastP.x+8}" y="${lastP.y+4}" font-size="10" fill="#8B5CF6" font-weight="700">${lastP.w}</text>
-</svg>`;
-html+=`<div style="display:flex;justify-content:space-between;font-size:10px;color:#A898B0">
-<span>${Math.round(min*10)/10} kg</span>
-<span>Last ${displayEntries.length} entries</span>
-<span>${Math.round(max*10)/10} kg</span>
-</div>`;
+// Gridlines
+const gridSteps=4;
+let gridHtml="";
+for(let g=0;g<=gridSteps;g++){
+const gy=cpY+g*((ch-cpY*2)/gridSteps);
+const gv=Math.round((max-g*(range/gridSteps))*10)/10;
+gridHtml+=`<line x1="${cpX}" y1="${gy}" x2="${cw-cpX}" y2="${gy}" stroke="rgba(180,160,190,0.12)" stroke-width="0.5"/>`;
+gridHtml+=`<text x="${cpX-4}" y="${gy+3}" font-size="8" fill="#B8A5C0" text-anchor="end" font-family="-apple-system,sans-serif">${gv}</text>`;
+}
+
+html+=`<svg width="100%" height="${ch+20}" viewBox="0 0 ${cw} ${ch+20}" style="margin-bottom:6px;overflow:visible">
+<defs><linearGradient id="wg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.18"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.02"/></linearGradient></defs>
+${gridHtml}
+<polygon points="${areaPoints}" fill="url(#wg2)"/>
+<polyline points="${polyline2}" fill="none" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+// Data points + selective labels
+cpts.forEach((p,i)=>{
+const isLast=i===cpts.length-1;
+const isFirst=i===0;
+const showLabel=isFirst||isLast||i%Math.max(1,Math.floor(cpts.length/5))===0;
+html+=`<circle cx="${p.x}" cy="${p.y}" r="${isLast?5:showLabel?3.5:2}" fill="${isLast?"#8B5CF6":"rgba(139,92,246,0.5)"}" stroke="white" stroke-width="${isLast?2:showLabel?1.5:0}"/>`;
+if(showLabel){
+html+=`<text x="${p.x}" y="${p.y-10}" font-size="${isLast?12:9}" font-weight="${isLast?700:500}" fill="${isLast?"#8B5CF6":"#A898B0"}" text-anchor="middle" font-family="-apple-system,sans-serif">${p.w}</text>`;
+}
+// Date labels at bottom for first, last, and middle
+if(isFirst||isLast||i===Math.floor(cpts.length/2)){
+const dd=p.d.getDate();
+const mm=mns3[p.d.getMonth()];
+html+=`<text x="${p.x}" y="${ch+14}" font-size="8" fill="#B8A5C0" text-anchor="middle" font-family="-apple-system,sans-serif">${dd} ${mm}</text>`;
+}
+});
+
+html+=`</svg>`;
 
 // Week-over-week
 if(weekDiff!==null){
@@ -1381,6 +1407,25 @@ else if(item.type==="pilates")html+=badge+`<div class="other-card pilates"><div 
 }
 });
 
+// Gabby George Arms (Mon + Wed)
+if(plan.gabby){
+html+=`<div style="background:rgba(236,72,153,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(236,72,153,0.15)">
+<div style="font-size:16px;font-weight:700;color:#DB2777;margin-bottom:6px">💪✨ Gabby George Arms</div>
+<div style="font-size:12px;color:#7A6B8A;margin-bottom:8px">5–7 min sculpt · Light weights (1–2 kg) or bodyweight</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="padding:5px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">1.</span> Arm circles — 30s forward, 30s back</div>
+<div style="padding:5px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">2.</span> Overhead tricep pulses — 45s</div>
+<div style="padding:5px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">3.</span> Lateral raises + hold — 30s up, 15s hold</div>
+<div style="padding:5px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">4.</span> Bicep curls to press — 45s</div>
+<div style="padding:5px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">5.</span> Back flyes + pulse — 45s</div>
+<div style="padding:5px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">6.</span> Arm holds at 90° — 30s hold, 15s pulse</div>
+</div>
+<div style="margin-top:8px;font-size:11px;color:#9E3060">💡 Follow Gabby's TikTok for daily variation — each day changes the exercises.</div>
+<a href="https://www.tiktok.com/@gabbylgeorge" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#DB2777;text-decoration:none;padding:4px 12px;background:rgba(236,72,153,0.08);border-radius:6px;border:0.5px solid rgba(236,72,153,0.2)">▶ Gabby George on TikTok</a>
+<div class="run-check-row" onclick="toggleGabby()"><div class="run-check-box" id="gabby-check"></div><div class="run-check-label" id="gabby-label">Mark arms complete</div></div>
+</div>`;
+}
+
 if(plan.notes&&plan.notes.length){
 html+=`<div class="notes-card"><div class="notes-title">📝 Notes</div>${plan.notes.map(n=>`<div class="notes-text">${n}</div>`).join("")}</div>`;
 }
@@ -1468,7 +1513,7 @@ function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDa
 function getState(){
 const k=dateKey(currentDate);
 try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}
-return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,protein:false,water:false};
+return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,protein:false,water:false,gabby:false};
 }
 function setState(s){
 const k=dateKey(currentDate);
@@ -1510,6 +1555,9 @@ if(prc&&s.protein){prc.classList.add("done");prl.classList.add("done");prl.textC
 // Restore water check
 const wc=$("water-check"),wl=$("water-label");
 if(wc&&s.water){wc.classList.add("done");wl.classList.add("done");wl.textContent="2L+ water hit ✓"}
+// Restore gabby arms check
+const gc=$("gabby-check"),gl=$("gabby-label");
+if(gc&&s.gabby){gc.classList.add("done");gl.classList.add("done");gl.textContent="Arms complete ✓"}
 // Check perfect day
 checkPerfectDay();
 }
@@ -1626,6 +1674,15 @@ const done=ch.classList.toggle("done");
 lb.classList.toggle("done",done);
 lb.textContent=done?"2L+ water hit ✓":"Hit 2L+ water";
 const s=getState();s.water=done;setState(s);checkPerfectDay();
+}
+function toggleGabby(){
+const ch=$("gabby-check");
+const lb=$("gabby-label");
+if(!ch)return;
+const done=ch.classList.toggle("done");
+lb.classList.toggle("done",done);
+lb.textContent=done?"Arms complete ✓":"Mark arms complete";
+const s=getState();s.gabby=done;setState(s);checkPerfectDay();
 }
 
 // ── Protein Tracker ──
@@ -1831,21 +1888,33 @@ const diffColor=diff<0?"#5B8A5E":diff>0?"#C4607A":"#6B5B8A";
 const diffSign=diff>0?"+":"";
 const avgWeight=Math.round(weights.reduce((s,w)=>s+w,0)/weights.length*10)/10;
 
-// SVG line chart
-const w=280,h=50,pad=2;
+// SVG line chart with data points
+const w=300,h=70,padX=20,padY=12;
 const pts=weights.map((v,i)=>{
-const x=pad+i*((w-pad*2)/(weights.length-1));
-const y=pad+(1-(v-min)/range)*(h-pad*2);
-return`${Math.round(x)},${Math.round(y)}`;
+const x=padX+i*((w-padX*2)/(weights.length-1));
+const y=padY+(1-(v-min)/range)*(h-padY*2);
+return{x:Math.round(x*10)/10,y:Math.round(y*10)/10,v:v};
 });
-const polyline=pts.join(" ");
-const lastPt=pts[pts.length-1].split(",");
+const line=pts.map(p=>p.x+","+p.y).join(" ");
+const area=line+` ${pts[pts.length-1].x},${h-2} ${pts[0].x},${h-2}`;
+const last=pts[pts.length-1];
 
-let sparkHtml=`<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="margin-top:6px">
-<polyline points="${polyline}" fill="none" stroke="rgba(139,92,246,0.3)" stroke-width="2"/>
-<polyline points="${polyline}" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="3" fill="#8B5CF6"/>
-</svg>`;
+let sparkHtml=`<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="margin-top:6px;overflow:visible">
+<defs><linearGradient id="wg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.15"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.02"/></linearGradient></defs>
+<polygon points="${area}" fill="url(#wg1)"/>
+<polyline points="${line}" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+// Data points
+pts.forEach((p,i)=>{
+const isLast=i===pts.length-1;
+const isFirst=i===0;
+sparkHtml+=`<circle cx="${p.x}" cy="${p.y}" r="${isLast?4:2.5}" fill="${isLast?"#8B5CF6":"rgba(139,92,246,0.5)"}" stroke="white" stroke-width="${isLast?2:1}"/>`;
+if(isLast){
+sparkHtml+=`<text x="${p.x}" y="${p.y-8}" font-size="11" font-weight="700" fill="#8B5CF6" text-anchor="middle" font-family="-apple-system,sans-serif">${p.v}</text>`;
+}else if(isFirst){
+sparkHtml+=`<text x="${p.x}" y="${p.y-8}" font-size="9" fill="#A898B0" text-anchor="middle" font-family="-apple-system,sans-serif">${p.v}</text>`;
+}
+});
+sparkHtml+=`</svg>`;
 sparkHtml+=`<div class="weight-change" style="display:flex;justify-content:space-between">
 <span style="color:#A898B0">Last ${history.length} days · avg ${avgWeight} kg</span>
 <span style="color:${diffColor};font-weight:700">${diffSign}${diff} kg</span>
@@ -1973,6 +2042,7 @@ overlay.innerHTML=`<div class="move-modal" style="max-height:85vh;overflow-y:aut
 <div class="add-option" onclick="saveAddedSession('spin')">🚴‍♀️ Spin Class<div class="add-option-sub">45 min, Zone 2 cardio</div></div>
 <div class="add-option" onclick="saveAddedSession('pilates')">🧘‍♀️ Pilates<div class="add-option-sub">Flexibility + core session</div></div>
 <div class="add-option" onclick="saveAddedSession('treadmill')">🚶‍♀️ Incline Treadmill<div class="add-option-sub">30 min, 10–12% incline</div></div>
+<div class="add-option" onclick="saveAddedSession('bridalArms')">💪✨ Gabby George Arms<div class="add-option-sub">5–7 min sculpt — arm circles, pulses, tricep work. Light weights or bodyweight.</div></div>
 <div class="move-cancel" onclick="closeMoveModal()">Cancel</div>
 </div>`;
 document.body.appendChild(overlay);
@@ -1992,6 +2062,20 @@ else if(item.type==="longRun")html+=badge+renderRun({type:"Long run (added)",km:
 else if(item.type==="spin")html+=badge+'<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio.</div></div>';
 else if(item.type==="pilates")html+=badge+'<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Added session</div></div>';
 else if(item.type==="treadmill")html+=badge+renderTreadmill();
+else if(item.type==="bridalArms")html+=badge+`<div style="background:rgba(236,72,153,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(236,72,153,0.15)">
+<div style="font-size:16px;font-weight:700;color:#DB2777;margin-bottom:6px">💪✨ Gabby George Arms</div>
+<div style="font-size:12px;color:#7A6B8A;margin-bottom:8px">5–7 min sculpt · Light weights (1–2 kg) or bodyweight</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="padding:6px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">1.</span> Arm circles — 30s forward, 30s backward</div>
+<div style="padding:6px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">2.</span> Overhead tricep pulses — 45s</div>
+<div style="padding:6px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">3.</span> Lateral raises + hold — 30s up, 15s hold</div>
+<div style="padding:6px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">4.</span> Bicep curls to press — 45s</div>
+<div style="padding:6px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">5.</span> Back flyes + pulse — 45s</div>
+<div style="padding:6px 10px;background:rgba(255,255,255,0.4);border-radius:6px;font-size:12px;color:#3D2E4A;border-left:2px solid rgba(236,72,153,0.3)"><span style="font-weight:600">6.</span> Arm holds at 90° — 30s hold, 15s pulse</div>
+</div>
+<div style="margin-top:8px;padding:8px 10px;background:rgba(236,72,153,0.05);border-radius:6px;font-size:11px;color:#9E3060">💡 Follow along with Gabby's TikTok series for the daily variation. This is a general structure — each day changes the exercises to keep it fresh.</div>
+<a href="https://www.tiktok.com/@gabbylgeorge" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:600;color:#DB2777;text-decoration:none;padding:4px 12px;background:rgba(236,72,153,0.08);border-radius:6px;border:0.5px solid rgba(236,72,153,0.2)">▶ Gabby George on TikTok</a>
+</div>`;
 });
 return html;
 }
