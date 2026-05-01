@@ -1398,12 +1398,13 @@ const orig=new Date(item.originY,item.originM,item.originD,12,0,0);
 fromLabel=dys2[orig.getDay()]+" "+orig.getDate()+" "+mns2[orig.getMonth()];
 }
 const badge=`<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">📅 Moved from ${fromLabel}</div>`;
+const mvBtn=moveBtn(item.type,item.label||item.type);
 if(item.originY!==undefined){
 const origPlan=getPlan(new Date(item.originY,item.originM,item.originD,12,0,0));
 if(item.type==="run"&&origPlan.run)html+=badge+renderRun(origPlan.run);
 else if(item.type==="str"&&origPlan.str)html+=badge+renderStrength(origPlan.str);
-else if(item.type==="spin")html+=badge+`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div></div>`;
-else if(item.type==="pilates")html+=badge+`<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div><div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div></div>`;
+else if(item.type==="spin")html+=badge+`<div class="spin-card"><div class="spin-header">🚴‍♀️ Spin Class</div><div class="spin-detail">45 min – Zone 2 cardio.</div><div class="run-check-row" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label">Mark spin complete</div></div>${mvBtn}</div>`;
+else if(item.type==="pilates")html+=badge+`<div class="other-card pilates"><div class="other-label pilates">🧘‍♀️ Pilates</div><div class="other-text pilates">Moved session</div><div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>${mvBtn}</div>`;
 }
 });
 
@@ -1992,16 +1993,35 @@ const src=moveSourceDate;
 try{
 const fromKey=movedKeyFor(src);
 let fm=JSON.parse(localStorage.getItem(fromKey)||"[]");
-// Remove any existing record for this type
+
+// Check if this session was moved IN to the source day (i.e. it's being re-moved)
+const existingAdded=fm.find(function(x){return x.type===moveTarget.type&&x.action==="added"});
+var trueOriginY,trueOriginM,trueOriginD;
+
+if(existingAdded&&existingAdded.originY!==undefined){
+// Session was moved here from somewhere else — keep the original origin
+trueOriginY=existingAdded.originY;
+trueOriginM=existingAdded.originM;
+trueOriginD=existingAdded.originD;
+// Remove the "added" record from this day
+fm=fm.filter(function(x){return!(x.type===moveTarget.type&&x.action==="added")});
+localStorage.setItem(fromKey,JSON.stringify(fm));
+}else{
+// Session lives natively on this day — mark as removed
+trueOriginY=src.getFullYear();
+trueOriginM=src.getMonth();
+trueOriginD=src.getDate();
 fm=fm.filter(function(x){return!(x.type===moveTarget.type&&x.action==="removed")});
 fm.push({type:moveTarget.type,label:moveTarget.label,action:"removed"});
 localStorage.setItem(fromKey,JSON.stringify(fm));
+}
 
+// Add to target day
 const toDate=new Date(y,m,d,12,0,0);
 const toKey=movedKeyFor(toDate);
-let tm2=JSON.parse(localStorage.getItem(toKey)||"[]");
+var tm2=JSON.parse(localStorage.getItem(toKey)||"[]");
 tm2=tm2.filter(function(x){return!(x.type===moveTarget.type&&x.action==="added")});
-tm2.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:src.getFullYear(),originM:src.getMonth(),originD:src.getDate()});
+tm2.push({type:moveTarget.type,label:moveTarget.label,action:"added",originY:trueOriginY,originM:trueOriginM,originD:trueOriginD});
 localStorage.setItem(toKey,JSON.stringify(tm2));
 }catch(e){}
 closeMoveModal();
