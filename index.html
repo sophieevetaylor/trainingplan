@@ -617,19 +617,34 @@ try{
 const s=localStorage.getItem(dk);
 if(s){
 const st=JSON.parse(s);
-// Count how many main items are done
 const protKey="tp-prot-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 let proteinHit=false;
-try{const pl=localStorage.getItem(protKey);if(pl){proteinHit=JSON.parse(pl).reduce((s,f)=>s+f.g,0)>=110}}catch(e){}
-const mainDone=[st.run,st.str,st.pil,st.tm,st.spin,st.steps,st.water,proteinHit].filter(Boolean).length;
-const mainTotal=[st.run!==undefined,st.str!==undefined,true,true,true,true,true,true].length;
-// Perfect = all ticked + protein
-if(st.steps&&st.water&&proteinHit&&(st.run||st.str||st.spin))status="perfect";
-// Partial = some things done
-else if(mainDone>=3)status="partial";
-// Concern = past day with very little done
-else if(isPast&&mainDone>=1)status="concern";
-else if(mainDone>=1)status="partial";
+try{const pl=localStorage.getItem(protKey);if(pl){proteinHit=JSON.parse(pl).reduce(function(s2,f){return s2+f.g},0)>=110}}catch(e2){}
+
+// Check what was planned for that day
+const dayPlan=getPlan(d);
+const dayMovedOut=getMovedOut(d);
+
+// Build list of what should be done
+let needed=[];
+if(dayPlan.run&&!dayMovedOut.includes("run"))needed.push(st.run);
+if(dayPlan.str&&!dayMovedOut.includes("str"))needed.push(st.str);
+if(dayPlan.spin&&!dayMovedOut.includes("spin"))needed.push(st.spin);
+if(dayPlan.other&&dayPlan.other.toLowerCase().includes("pilates")&&!dayMovedOut.includes("pilates"))needed.push(st.pil);
+if(dayPlan.str)needed.push(st.tm); // treadmill after every gym
+if(dayPlan.gabby)needed.push(st.gabby);
+needed.push(st.steps);
+needed.push(st.water);
+needed.push(proteinHit);
+
+const allDone=needed.every(function(v){return v===true});
+const doneCt=needed.filter(Boolean).length;
+const totalCt=needed.length;
+
+if(allDone&&totalCt>=3)status="perfect";
+else if(doneCt>=Math.floor(totalCt*0.6))status="partial";
+else if(isPast&&doneCt>=1)status="concern";
+else if(doneCt>=1)status="partial";
 }else if(isPast&&!isToday){
 status="missed";
 }
