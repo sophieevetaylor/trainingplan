@@ -124,6 +124,21 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .weight-spark{display:flex;align-items:flex-end;gap:2px;height:40px;margin-top:6px;padding:4px 0}
 .weight-spark-bar{flex:1;border-radius:2px 2px 0 0;min-width:0;transition:height 0.3s}
 .weight-change{font-size:11px;margin-top:4px}
+.sleep-card{background:rgba(99,102,241,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(99,102,241,0.15)}
+.sleep-header{font-size:16px;font-weight:700;color:#6366F1;margin-bottom:8px}
+.sleep-input-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sleep-input{width:70px;padding:6px 10px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);font-size:16px;font-weight:700;background:rgba(255,255,255,0.6);color:#3D2E4A;text-align:center;-webkit-appearance:none}
+.sleep-input:focus{outline:none;border-color:#6366F1}
+.sleep-score-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px}
+.sleep-saved{font-size:12px;color:#5B8A5E;font-weight:600}
+.sleep-card{background:rgba(99,102,241,0.06);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(99,102,241,0.15)}
+.sleep-header{font-size:16px;font-weight:700;color:#6366F1;margin-bottom:8px}
+.sleep-input-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sleep-input{width:60px;padding:6px 10px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);font-size:16px;font-weight:700;background:rgba(255,255,255,0.6);color:#3D2E4A;text-align:center;-webkit-appearance:none}
+.sleep-input:focus{outline:none;border-color:#6366F1}
+.sleep-quality{display:flex;gap:6px;margin-bottom:6px}
+.sleep-pill{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(180,160,190,0.2);background:rgba(255,255,255,0.4);color:#A898B0}
+.sleep-pill.active{border-color:#6366F1;background:rgba(99,102,241,0.12);color:#6366F1}
 .add-session-btn{background:none;border:1.5px dashed rgba(107,91,138,0.3);border-radius:12px;padding:12px;font-size:13px;color:#6B5B8A;cursor:pointer;width:100%;text-align:center;font-weight:600;-webkit-appearance:none}
 .add-session-btn:active{background:rgba(107,91,138,0.08)}
 .add-option{padding:12px 14px;background:rgba(255,255,255,0.55);border-radius:10px;margin-bottom:6px;cursor:pointer;border:0.5px solid rgba(180,160,190,0.2);font-size:13px;color:#3D2E4A;font-weight:500}
@@ -310,30 +325,43 @@ run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
 }
 
 else if(b.id==="block2"){
-const tk=w<=2?3:w<=4?4:5,tp=w<=4?"5:25–5:30/km":"5:15–5:25/km";
+const tk=w<=2?3:w<=3?4:w<=5?5:4;
+const tp=w<=2?"5:20–5:25/km":w<=4?"5:10–5:20/km":"5:05–5:15/km";
 const lk=Math.min(14+(w-1),18),sk=w===6?12:lk;
-const ln=w===2?"Last 3 km at tempo effort":w===4?"Middle 4 km at moderate effort":"All easy";
-const t=week({q:{type:"Tempo run",km:"~"+(tk+4)+" ("+tk+" km tempo)",pace:"Tempo: "+tp,int:"Zone 3",note:"2 km WU → "+tk+" km tempo → 2 km CD"},ek:"5–6",lr:{type:"Long run",km:""+sk,pace:"5:50–6:15/km",int:"Zone 2",note:ln}});
+const ln=w===2?"Last 3 km at tempo (5:20/km)":w===3?"Middle 4 km at 5:15/km":w===4?"Middle 5 km at 5:15/km — longest tempo yet":w===5?"8 km with 5 km at 5:10/km — C2S race pace rehearsal":"Easy — deload week";
+const t=week({q:{type:"Tempo run",km:"~"+(tk+4)+" ("+tk+" km tempo)",pace:"Tempo: "+tp,int:"Zone 3–4",note:"2 km WU → "+tk+" km tempo → 2 km CD. Push the pace — this builds your C2S engine."},ek:"5–6",lr:{type:"Long run",km:""+sk,pace:"5:45–6:05/km",int:"Zone 2",note:ln}});
 run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
-if(w===6)notes.push("Deload week");
+if(w===6)notes.push("Deload week — absorb the fitness before C2S block");
 }
 
 else if(b.id==="block3"){
-const rw=w===6;const hr=w<=2?"6×90 sec":w<=4?"8×90 sec":"5×2 min";
+const rw=w===6;
+// Progressive hill work: more volume and intensity each week
+const hillSessions={
+1:{type:"Hill repeats",km:"~7",desc:"6×90s uphill @ hard (jog down recovery)",note:"Find a steep hill (8–10% grade). Attack it. These simulate Heartbreak Hill."},
+2:{type:"Hill repeats",km:"~8",desc:"8×90s uphill @ hard (jog down recovery)",note:"Same hill. More reps. You should be dreading the last 2."},
+3:{type:"Hill tempo",km:"~8",desc:"3 km continuous uphill @ 5:20–5:30/km",note:"Find a long gradual incline. Sustained effort — this is Heartbreak Hill pace."},
+4:{type:"Hill repeats + tempo",km:"~9",desc:"5×2 min uphill @ hard + 2 km tempo on flat",note:"Mixed session. Hills first, then hold tempo pace when your legs are tired. Race simulation."},
+5:{type:"C2S dress rehearsal",km:"~10",desc:"5 km @ 5:10–5:15/km including hills",note:"If possible, run part of the actual C2S course. Practise your pacing strategy."},
+};
 if(rw){
 const P={
-1:{str:SA(p),notes:["Light gym. Last strength before C2S."]},
-2:{run:{type:"Strides",km:"4",pace:"Easy + 4×30s strides",int:"Easy",note:""}},
-3:{run:{type:"Easy run",km:"3",pace:"6:00/km",int:"Zone 1",note:""}},
-4:{notes:["REST"]},
-5:{run:{type:"Openers",km:"3",pace:"Easy + 4 strides",int:"Very easy",note:""}},
-6:{notes:["REST. Prep. Hydrate."]},
-0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target ~5:10–5:20/km for sub-75",int:"Strong effort",note:"Start 5:10–5:15. Maintain on Heartbreak Hill. Open up downhill."},race:true}
+1:{str:SA(p),notes:["Light gym — drop 1 set each. Keep treadmill. Last strength before C2S."]},
+2:{run:{type:"Strides + surges",km:"5",pace:"Easy + 6×20s surges at race pace",int:"Easy with bursts",note:"Wake the legs up. Short, sharp, controlled."},other:"PM: Pilates"},
+3:{run:{type:"Easy shakeout",km:"3",pace:"6:00–6:10/km",int:"Zone 1",note:"Genuinely jog. 3 km max."}},
+4:{notes:["FULL REST. Hydrate aggressively. Lay out race kit tonight."]},
+5:{run:{type:"Openers",km:"3",pace:"Easy + 4×100m strides",int:"Very easy",note:"Last run before race. 3 km jog with 4 strides. Lay out everything tonight."}},
+6:{notes:["FULL REST. Carb-load: pasta, rice, bread. Sleep early. Trust 12 weeks of work."]},
+0:{run:{type:"🏁 RACE: City2Surf",km:"14.4",pace:"Target 5:10–5:15/km for sub-75",int:"A-RACE",note:"km 1–3: 5:05–5:10 (downhill start — don't waste it, but don't sprint). km 4–6: 5:10–5:15 (settle in). km 7–9 HEARTBREAK HILL: 5:25–5:35 (DO NOT PANIC — everyone slows here. Maintain effort, not pace). km 10–12: 5:00–5:10 (downhill — let gravity work). km 13–14.4: everything you've got."},race:true,notes:["🍞 Oats + banana + honey 2.5 hrs before. Gel at km 5 and km 10. Water at every station from km 3."]}
 };
 const t=P[d];if(t){run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;race=t.race||false}
 }else{
-const t=week({q:{type:"Hill repeats",km:"~7 total",pace:hr+" uphill @ hard",int:"Zone 4",note:"2 km WU → hills → 2 km CD."},ek:"5–6",lr:{type:"Long run (hilly)",km:"14–16",pace:"5:45–6:00/km",int:"Zone 2",note:"Simulate C2S terrain"}});
+const hs=hillSessions[w]||hillSessions[1];
+const longKm=w<=2?14:w<=4?16:14;
+const longNote=w<=2?"Include 2–3 hills on your route":w===3?"Run a hilly route — practice Heartbreak Hill effort on every incline":w===4?"Middle 6 km at 5:15–5:25/km on a hilly route — C2S simulation":"Taper starts — keep it easy, include a couple of small hills";
+const t=week({q:{type:hs.type,km:hs.km,pace:hs.desc,int:"Zone 4",note:"2 km WU → "+hs.desc+" → 2 km CD. "+hs.note},ek:"5–6",lr:{type:"Long run (hilly)",km:""+longKm,pace:"5:40–5:55/km",int:"Zone 2",note:longNote}});
 run=t.run;str=t.str;other=t.other;spin=t.spin||false;if(t.notes)notes=t.notes;
+if(w===1)notes.push("C2S block begins — 6 weeks to race day. Time to get hill-hard.");
 }
 }
 
@@ -1325,6 +1353,87 @@ html+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">
 }
 html+=`</div>`;
 
+// ── Sleep Trend ──
+const sleepHistory=[];
+const shStart=new Date(todayNorm);
+for(var si=0;si<30;si++){
+const ss=getSleep(shStart);
+if(ss&&ss.score>0)sleepHistory.push({date:new Date(shStart),score:ss.score,hours:ss.hours||0,quality:ss.quality||""});
+shStart.setDate(shStart.getDate()-1);
+}
+sleepHistory.reverse();
+
+html+=`<div class="coach-card"><div class="coach-card-title">😴 Sleep Trend</div>`;
+if(sleepHistory.length>=3){
+const sleepScores=sleepHistory.map(function(e){return e.score});
+const sleepHours=sleepHistory.filter(function(e){return e.hours>0}).map(function(e){return e.hours});
+const avgScore=Math.round(sleepScores.reduce(function(s,v){return s+v},0)/sleepScores.length);
+const avgHours=sleepHours.length?Math.round(sleepHours.reduce(function(s,v){return s+v},0)/sleepHours.length*10)/10:0;
+const latestScore=sleepScores[sleepScores.length-1];
+const sMin=Math.min.apply(null,sleepScores);
+const sMax=Math.max.apply(null,sleepScores);
+const sRange=(sMax-sMin)||10;
+
+html+=`<div style="display:flex;gap:8px;margin-bottom:12px">
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Latest</div>
+<div style="font-size:20px;font-weight:800;color:${latestScore>=80?"#3D8A50":latestScore>=60?"#B8883E":"#DC2626"}">${latestScore}</div>
+<div style="font-size:10px;color:#A898B0">/100</div>
+</div>
+<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Average</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${avgScore}</div>
+<div style="font-size:10px;color:#A898B0">/100</div>
+</div>
+${avgHours?`<div style="flex:1;text-align:center;padding:8px;background:rgba(255,255,255,0.4);border-radius:8px">
+<div style="font-size:10px;text-transform:uppercase;color:#A898B0">Avg Hours</div>
+<div style="font-size:20px;font-weight:800;color:#3D2E4A">${avgHours}</div>
+<div style="font-size:10px;color:#A898B0">hrs</div>
+</div>`:""}
+</div>`;
+
+// Line chart
+var sw=320,sh=100,spX=25,spY=15;
+var spts=sleepHistory.map(function(e,i){
+var x=spX+i*((sw-spX*2)/(sleepHistory.length-1));
+var y=spY+(1-(e.score-sMin)/sRange)*(sh-spY*2);
+return{x:Math.round(x*10)/10,y:Math.round(y*10)/10,v:e.score,d:e.date};
+});
+var sline=spts.map(function(p){return p.x+","+p.y}).join(" ");
+var sarea=sline+" "+spts[spts.length-1].x+","+(sh-4)+" "+spts[0].x+","+(sh-4);
+var slast=spts[spts.length-1];
+var smns=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+html+=`<svg width="100%" height="${sh+20}" viewBox="0 0 ${sw} ${sh+20}" style="margin-bottom:6px;overflow:visible">
+<defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366F1" stop-opacity="0.18"/><stop offset="100%" stop-color="#6366F1" stop-opacity="0.02"/></linearGradient></defs>
+<polygon points="${sarea}" fill="url(#sg2)"/>
+<polyline points="${sline}" fill="none" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+spts.forEach(function(p,i){
+var isLast2=i===spts.length-1;
+var show=i===0||isLast2||i%Math.max(1,Math.floor(spts.length/5))===0;
+html+=`<circle cx="${p.x}" cy="${p.y}" r="${isLast2?5:show?3.5:2}" fill="${isLast2?"#6366F1":"rgba(99,102,241,0.5)"}" stroke="white" stroke-width="${isLast2?2:show?1.5:0}"/>`;
+if(show)html+=`<text x="${p.x}" y="${p.y-10}" font-size="${isLast2?12:9}" font-weight="${isLast2?700:500}" fill="${isLast2?"#6366F1":"#A898B0"}" text-anchor="middle" font-family="-apple-system,sans-serif">${p.v}</text>`;
+if(i===0||isLast2||i===Math.floor(spts.length/2)){
+html+=`<text x="${p.x}" y="${sh+14}" font-size="8" fill="#B8A5C0" text-anchor="middle" font-family="-apple-system,sans-serif">${p.d.getDate()} ${smns[p.d.getMonth()]}</text>`;
+}
+});
+html+=`</svg>`;
+
+// Coaching feedback
+if(avgScore>=80){
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">✅ Sleep is excellent</div><div class="coach-feedback-text">Averaging ${avgScore}/100${avgHours?" with "+avgHours+" hours":""}. This is elite-level recovery. Quality sleep is the single biggest performance multiplier — your body repairs muscle, consolidates fitness, and regulates hormones during deep sleep. Keep this up and you'll absorb training better than most.</div></div>`;
+}else if(avgScore>=65){
+html+=`<div class="coach-feedback coach-good"><div class="coach-feedback-title">👍 Sleep is decent</div><div class="coach-feedback-text">Averaging ${avgScore}/100. This is adequate for training but there's room to improve. Aim for 7.5–8.5 hours, keep your room cool and dark, and try to maintain a consistent bedtime. Even a 10-point improvement in sleep score would noticeably boost recovery.</div></div>`;
+}else{
+html+=`<div class="coach-feedback coach-warn"><div class="coach-feedback-title">⚠️ Sleep needs attention</div><div class="coach-feedback-text">Averaging ${avgScore}/100. Poor sleep undermines everything — your runs will feel harder, recovery slows, injury risk rises, and motivation drops. This is the lowest-hanging fruit in your training. Prioritise sleep hygiene: consistent bedtime, no screens 30 min before bed, cool dark room, no caffeine after 2 PM.</div></div>`;
+}
+}else if(sleepHistory.length>=1){
+html+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">${sleepHistory.length} sleep score${sleepHistory.length>1?"s":""} logged. Need 3+ to show trend.</div>`;
+}else{
+html+=`<div style="text-align:center;padding:12px;color:#A898B0;font-size:12px">No sleep data logged yet. Use the 😴 Sleep card in your daily view.</div>`;
+}
+html+=`</div>`;
+
 cv.innerHTML=html;
 }
 
@@ -1494,6 +1603,20 @@ const dailyCards=`
 </div>
 <div id="weight-spark-container"></div>
 </div>
+<div class="sleep-card">
+<div class="sleep-header">😴 Sleep</div>
+<div class="sleep-input-row">
+<input type="number" placeholder="0" min="0" max="100" id="sleep-score" class="sleep-input" onchange="saveSleep()">
+<span style="font-size:13px;color:#A898B0">/ 100 score</span>
+<span style="font-size:12px;font-weight:600;color:#5B8A5E" id="sleep-saved"></span>
+</div>
+<div class="sleep-input-row">
+<input type="number" step="0.5" placeholder="0" min="0" max="16" id="sleep-hours" class="sleep-input" onchange="saveSleep()">
+<span style="font-size:13px;color:#A898B0">hours slept</span>
+</div>
+<div class="sleep-quality" id="sleep-quality"></div>
+<div id="sleep-spark-container"></div>
+</div>
 `;
 $("content").innerHTML+=dailyCards;
 
@@ -1501,6 +1624,7 @@ renderProtein();
 restoreChecks();
 restoreExLogs();
 restoreWeight();
+restoreSleep();
 // Load Strava for daily view
 if(stravaLoaded){renderStravaWidgets()}else{loadStrava()}
 }
@@ -1851,6 +1975,101 @@ else if(remaining<=25){tipEl.innerHTML="💡 Almost there! A Chobani Fit (15g) o
 else if(remaining<=50){tipEl.innerHTML="💡 "+remaining+"g to go. A can of tuna + Chobani Fit, or a chicken/salmon portion would do it."}
 else if(total>0){tipEl.innerHTML="💡 "+remaining+"g remaining. 2–3 more protein-rich meals today."}
 else{tipEl.innerHTML="💡 Target: 100–126g daily (1.6–2.0g/kg at 63 kg). Tap your meals above."}
+}
+
+// ── Sleep Tracker ──
+function sleepKey(d){return"tp-sleep-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function getSleep(d){try{const v=localStorage.getItem(sleepKey(d));return v?JSON.parse(v):null}catch(e){return null}}
+function saveSleep(){
+const scoreEl=$("sleep-score");
+const hoursEl=$("sleep-hours");
+if(!scoreEl)return;
+const score=parseInt(scoreEl.value)||0;
+const hours=parseFloat(hoursEl.value)||0;
+const quality=document.querySelector(".sleep-pill.active");
+const qualityVal=quality?quality.dataset.val:"";
+try{localStorage.setItem(sleepKey(currentDate),JSON.stringify({score:score,hours:hours,quality:qualityVal}))}catch(e){}
+const saved=$("sleep-saved");
+if(saved)saved.textContent="✓";
+renderSleepSpark();
+}
+function setSleepQuality(val){
+document.querySelectorAll(".sleep-pill").forEach(function(p){p.classList.remove("active")});
+const el=document.querySelector('.sleep-pill[data-val="'+val+'"]');
+if(el)el.classList.add("active");
+saveSleep();
+}
+function restoreSleep(){
+const scoreEl=$("sleep-score");
+const hoursEl=$("sleep-hours");
+const qualityDiv=$("sleep-quality");
+if(!scoreEl)return;
+// Render quality pills
+qualityDiv.innerHTML=['😴 Poor','😐 OK','😊 Good','🌟 Great'].map(function(label,i){
+const vals=["poor","ok","good","great"];
+return'<div class="sleep-pill" data-val="'+vals[i]+'" onclick="setSleepQuality(\''+vals[i]+'\')">'+label+'</div>';
+}).join("");
+const data=getSleep(currentDate);
+if(data){
+if(data.score)scoreEl.value=data.score;
+if(data.hours)hoursEl.value=data.hours;
+if(data.quality){
+const el=document.querySelector('.sleep-pill[data-val="'+data.quality+'"]');
+if(el)el.classList.add("active");
+}
+$("sleep-saved").textContent="✓";
+}
+renderSleepSpark();
+}
+function getSleepHistory(numDays){
+const entries=[];
+const d=new Date(currentDate);
+for(var i=0;i<numDays;i++){
+const s=getSleep(d);
+if(s&&s.score>0)entries.push({date:new Date(d),score:s.score,hours:s.hours||0});
+d.setDate(d.getDate()-1);
+}
+return entries.reverse();
+}
+function renderSleepSpark(){
+const container=$("sleep-spark-container");
+if(!container)return;
+const history=getSleepHistory(30);
+if(history.length<2){
+container.innerHTML='<div style="font-size:11px;color:#A898B0;text-align:center;padding:4px 0">'+(history.length===0?"Log your sleep to start tracking":"Need 2+ entries to show trend")+'</div>';
+return;
+}
+const scores=history.map(function(e){return e.score});
+const min2=Math.min.apply(null,scores);
+const max2=Math.max.apply(null,scores);
+const range2=(max2-min2)||10;
+const latest2=scores[scores.length-1];
+const avg2=Math.round(scores.reduce(function(s,v){return s+v},0)/scores.length);
+
+var w2=300,h2=60,padX2=20,padY2=10;
+var pts2=scores.map(function(v,i){
+var x=padX2+i*((w2-padX2*2)/(scores.length-1));
+var y=padY2+(1-(v-min2)/range2)*(h2-padY2*2);
+return{x:Math.round(x*10)/10,y:Math.round(y*10)/10,v:v};
+});
+var line2=pts2.map(function(p){return p.x+","+p.y}).join(" ");
+var area2=line2+" "+pts2[pts2.length-1].x+","+(h2-2)+" "+pts2[0].x+","+(h2-2);
+var last2=pts2[pts2.length-1];
+
+var sparkHtml2='<svg width="100%" height="'+h2+'" viewBox="0 0 '+w2+' '+h2+'" style="margin-top:6px;overflow:visible">';
+sparkHtml2+='<defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366F1" stop-opacity="0.15"/><stop offset="100%" stop-color="#6366F1" stop-opacity="0.02"/></linearGradient></defs>';
+sparkHtml2+='<polygon points="'+area2+'" fill="url(#sg1)"/>';
+sparkHtml2+='<polyline points="'+line2+'" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+pts2.forEach(function(p,i){
+var isLast=i===pts2.length-1;
+var isFirst=i===0;
+sparkHtml2+='<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(isLast?4:2.5)+'" fill="'+(isLast?"#6366F1":"rgba(99,102,241,0.5)")+'" stroke="white" stroke-width="'+(isLast?2:1)+'"/>';
+if(isLast)sparkHtml2+='<text x="'+p.x+'" y="'+(p.y-8)+'" font-size="11" font-weight="700" fill="#6366F1" text-anchor="middle" font-family="-apple-system,sans-serif">'+p.v+'</text>';
+else if(isFirst)sparkHtml2+='<text x="'+p.x+'" y="'+(p.y-8)+'" font-size="9" fill="#A898B0" text-anchor="middle" font-family="-apple-system,sans-serif">'+p.v+'</text>';
+});
+sparkHtml2+='</svg>';
+sparkHtml2+='<div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:#A898B0">Last '+history.length+' days · avg '+avg2+'</span><span style="font-weight:700;color:'+(latest2>=80?"#5B8A5E":latest2>=60?"#B8883E":"#DC2626")+'">'+latest2+'/100</span></div>';
+container.innerHTML=sparkHtml2;
 }
 
 // ── Daily Weight Tracker ──
