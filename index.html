@@ -144,6 +144,8 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .add-option{padding:12px 14px;background:rgba(255,255,255,0.55);border-radius:10px;margin-bottom:6px;cursor:pointer;border:0.5px solid rgba(180,160,190,0.2);font-size:13px;color:#3D2E4A;font-weight:500}
 .add-option:active{background:rgba(107,91,138,0.1)}
 .add-option-sub{font-size:11px;color:#A898B0;margin-top:2px;font-weight:400}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#3D2E4A;color:white;padding:10px 24px;border-radius:20px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:all 0.3s ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .move-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
 .move-modal{background:linear-gradient(135deg,#FDF2F5,#EDE6F2);border-radius:16px;padding:20px;width:100%;max-width:320px}
 .move-modal-title{font-size:14px;font-weight:700;color:#3D2E4A;margin-bottom:4px}
@@ -2265,12 +2267,26 @@ render();
 // ── Add Session ──
 function addedSessionsKey(d){return"tp-added-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function getAddedSessions(d){try{return JSON.parse(localStorage.getItem(addedSessionsKey(d))||"[]")}catch(e){return[]}}
+function showToast(msg){
+var existing=document.querySelector(".toast");
+if(existing)existing.remove();
+var t=document.createElement("div");
+t.className="toast";
+t.textContent=msg;
+document.body.appendChild(t);
+setTimeout(function(){t.classList.add("show")},10);
+setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove()},300)},2000);
+}
+
 function saveAddedSession(type){
 try{
 const added=getAddedSessions(currentDate);
 added.push({type:type});
 localStorage.setItem(addedSessionsKey(currentDate),JSON.stringify(added));
 }catch(e){}
+closeMoveModal();
+var labels={strA:"💪 Strength A added",strB:"💪 Strength B added",easyRun:"🏃‍♀️ Easy Run added",longRun:"🏃‍♀️ Long Run added",spin:"🚴‍♀️ Spin added",pilates:"🧘‍♀️ Pilates added",treadmill:"🚶‍♀️ Treadmill added",bridalArms:"💪✨ Gabby George Arms added"};
+showToast(labels[type]||"✅ Session added");
 render();
 }
 function removeAddedSession(i){
