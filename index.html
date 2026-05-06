@@ -939,7 +939,12 @@ c.innerHTML=’<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style=
 // ─── CLEANUP & INIT ───────────────────────────────────────────────────
 try{if(!localStorage.getItem(“tp-move-cleanup-v3”)){for(let ci=localStorage.length-1;ci>=0;ci–){const ck=localStorage.key(ci);if(ck&&ck.startsWith(“tp-moved”))localStorage.removeItem(ck)}localStorage.setItem(“tp-move-cleanup-v3”,“done”)}}catch(e){}
 
-try{render();}catch(e){document.getElementById(‘dashboard’).innerHTML=’<div style="padding:20px;color:#C4607A;font-size:13px;font-family:monospace"><strong>JS Error:</strong><br>’+e.message+’<br><br>’+e.stack+’</div>’;document.getElementById(‘dashboard’).style.display=‘block’;}
+window.addEventListener(‘error’, function(e){
+var d = document.getElementById(‘dashboard’) || document.body;
+d.style.display = ‘block’;
+d.innerHTML = ‘<div style="padding:20px;background:white;color:red;font-size:13px;font-family:monospace;word-break:break-all"><b>ERROR:</b><br>’ + e.message + ’<br>Line: ’ + e.lineno + ’<br>Col: ’ + e.colno + ‘</div>’;
+});
+render();
 </script>
 
 </body>
