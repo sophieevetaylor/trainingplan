@@ -765,7 +765,7 @@ function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.ge
 $(“goRace”).onclick=()=>{const r=getNextRace();currentDate=new Date(r.date);viewMode=“day”;render();setActiveTab(“goRace”);window.scrollTo({top:0,behavior:“smooth”})};
 $(“goRace”).textContent=”\uD83C\uDFC1 “+getNextRace().name;
 setActiveTab(“goHome”);
-
+ 
 // ─── STATE ───────────────────────────────────────────────────────────
 function dateKey(d){return”tp-”+d.getFullYear()+”-”+(d.getMonth()+1)+”-”+d.getDate()}
 function getState(){const k=dateKey(currentDate);try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,protein:false,water:false,ba:false}}
