@@ -20,8 +20,6 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .quick-nav button{flex:1;padding:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.45);border:1px solid rgba(180,160,190,0.2);border-radius:6px;color:#8A7A9E;cursor:pointer;-webkit-appearance:none;transition:all 0.15s}
 .quick-nav button:active{background:rgba(255,255,255,0.65)}
 .quick-nav button.active{background:rgba(107,91,138,0.2);border-color:rgba(107,91,138,0.4);color:#3D2E4A}
-.quick-nav .race-btn{background:rgba(196,96,122,0.12);border-color:rgba(196,96,122,0.25);color:#C4607A}
-.quick-nav .race-btn.active{background:rgba(196,96,122,0.3);border-color:rgba(196,96,122,0.5);color:#9E3050}
 .block-info{margin-top:12px;padding:10px 12px;border-radius:8px}
 .block-name{font-size:14px;font-weight:700}
 .block-detail{font-size:12px;color:#A898B0;margin-top:2px}
@@ -270,9 +268,7 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
   <div class="quick-nav">
     <button id="goHome">🏠 Home</button>
     <button id="goToday">📍 Daily</button>
-    <button id="goCoach">📊 Coach</button>
-    <button id="goRace" class="race-btn">🏁 Race</button>
-  </div>
+    <button id="goCoach">📊 Coach</button>  </div>
   <div id="blockInfo" class="block-info" style="display:none"></div>
 </div>
 <div id="dashboard" class="dash"></div>
@@ -768,7 +764,7 @@ if(viewMode==="coach")renderCoachTab();
 function render(){
 const dash=$("dashboard"),coach=$("coachView"),content=$("content");
 if(viewMode==="home"){renderDashboard();dash.style.display="block";coach.style.display="none";content.style.display="none";const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83C\uDFE0 Home";return}
-if(viewMode==="coach"){dash.style.display="none";coach.style.display="block";content.style.display="none";$("headerLabel").textContent="\uD83D\uDCCA Coach";if(!stravaLoaded){coach.innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">Connecting to Strava...</div></div>';loadStrava();}else{renderCoachTab();}return}
+if(viewMode==="coach"){dash.style.display="none";coach.style.display="block";content.style.display="none";$("headerLabel").textContent="\uD83D\uDCCA Coach";if(!stravaLoaded){document.getElementById("coachView").innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">Connecting to Strava...</div></div>';loadStrava();}else{renderCoachTab();}return}
 dash.style.display="none";coach.style.display="none";content.style.display="flex";
 $("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83D\uDCCD Daily View";
 const plan=getPlan(currentDate);const bi=$("blockInfo");
@@ -809,15 +805,12 @@ setTimeout(function(){
 
 function nav(n){const d=new Date(currentDate);d.setDate(d.getDate()+n);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
 $("prev").onclick=()=>nav(-1);$("next").onclick=()=>nav(1);
-function setActiveTab(id){["goHome","goToday","goCoach","goRace"].forEach(b=>{$(b).classList.remove("active")});$(id).classList.add("active")}
+function setActiveTab(id){["goHome","goToday","goCoach"].forEach(b=>{$(b).classList.remove("active")});$(id).classList.add("active")}
 $("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday");window.scrollTo({top:0,behavior:"smooth"})};
 $("goHome").onclick=()=>{viewMode="home";render();setActiveTab("goHome");window.scrollTo({top:0,behavior:"smooth"})};
 $("goCoach").onclick=()=>{viewMode="coach";render();setActiveTab("goCoach");window.scrollTo({top:0,behavior:"smooth"})};
 const RACES2=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race HM",date:new Date(2026,9,25,12,0,0)},{name:"C2S 2027",date:new Date(2027,7,8,12,0,0)}];
-function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES2.find(r=>r.date>=nn)||RACES2[RACES2.length-1]}
-$("goRace").onclick=()=>{const r=getNextRace();currentDate=new Date(r.date);viewMode="day";render();setActiveTab("goRace");window.scrollTo({top:0,behavior:"smooth"})};
-$("goRace").textContent="\uD83C\uDFC1 "+getNextRace().name;
-setActiveTab("goHome");
+function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES2.find(r=>r.date>=nn)||RACES2[RACES2.length-1]}setActiveTab("goHome");
 
 // \u2500\u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
@@ -1307,7 +1300,7 @@ c.innerHTML='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="m
 // \u2500\u2500\u2500 CLEANUP & INIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function renderCoachTab(){
-  var coach=document.getElementById("coach");
+  var coach=document.getElementById("coachView");
   if(!coach)return;
   if(!stravaData||!stravaData.length){
     coach.innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">No Strava activities found yet.</div></div>';
