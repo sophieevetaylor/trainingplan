@@ -763,11 +763,12 @@ if(rideMatch){const m=rideMatch;injectStrava(".spin-card",'<div style="margin-to
 if(pilatesMatch){const m=pilatesMatch;injectStrava(".other-card.pilates",'<div style="margin-top:8px;padding:8px 10px;background:rgba(220,140,170,0.05);border-radius:8px;font-size:11px"><span style="color:#C4607A;font-weight:600">'+(svg)+' '+(m.name)+'</span><span style="color:#7A6B8A"> \u00B7 '+(m.moving_time_min)+' min</span></div>',"pil-check","pil-label",()=>savePil(true))}
 if(walkMatch){const m=walkMatch;injectStrava(".treadmill-card",'<div style="margin-top:8px;padding:8px 10px;background:rgba(200,160,80,0.05);border-radius:8px;font-size:11px"><span style="color:#B8883E;font-weight:600">'+(svg)+' '+(m.name)+'</span><span style="color:#7A6B8A"> \u00B7 '+(m.moving_time_min)+' min</span></div>',"tm-check","tm-label",()=>{const s=getState();s.tm=true;setState(s)})}
 }
+if(viewMode==="coach")renderCoachTab();
 
 function render(){
 const dash=$("dashboard"),coach=$("coachView"),content=$("content");
 if(viewMode==="home"){renderDashboard();dash.style.display="block";coach.style.display="none";content.style.display="none";const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83C\uDFE0 Home";return}
-if(viewMode==="coach"){dash.style.display="none";coach.style.display="block";content.style.display="none";$("headerLabel").textContent="\uD83D\uDCCA Coach";coach.innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">Coach view \u2014 deploy to Netlify to connect Strava data.</div></div>';return}
+if(viewMode==="coach"){dash.style.display="none";coach.style.display="block";content.style.display="none";$("headerLabel").textContent="\uD83D\uDCCA Coach";if(!stravaLoaded){coach.innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">Connecting to Strava...</div></div>';loadStrava();}else{renderCoachTab();}return}
 dash.style.display="none";coach.style.display="none";content.style.display="flex";
 $("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83D\uDCCD Daily View";
 const plan=getPlan(currentDate);const bi=$("blockInfo");
@@ -966,36 +967,40 @@ function pfSelect(i){
   if(re)re.style.display="none";
   if(si)si.value="";
   if(!pe)return;
-  var c100=p.cal100||0;
-  var pr100=p.prot100||0;
-  var ch100=p.carb100||0;
-  var f100=p.fat100||0;
-  var defG=p.defG||100;
-  var nm=p.name+(p.brand?" \u00B7 "+p.brand:"");
-  // Common serving presets based on default serving size
-  var half=Math.round(defG/2);
-  var dbl=Math.round(defG*2);
+  // Store selected food globally so pfAdd can access without inline string passing
+  window._pfSelected={
+    name:p.name+(p.brand?" \u00B7 "+p.brand:""),
+    c100:p.cal100||0,
+    pr100:p.prot100||0,
+    ch100:p.carb100||0,
+    f100:p.fat100||0,
+    defG:p.defG||100
+  };
+  var s=window._pfSelected;
+  var half=Math.round(s.defG/2);
+  var dbl=Math.round(s.defG*2);
   pe.style.display="block";
-  pe.innerHTML='<div class="pf-portion-name">'+nm+'</div>'
+  pe.innerHTML='<div class="pf-portion-name">'+s.name+'</div>'
     +'<div class="pf-portion-row">'
     +'<button onclick="pfAdjG(-5)" style="width:34px;height:34px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;flex-shrink:0">\u2212</button>'
-    +'<input type="number" class="pf-portion-input" id="pf-pg" value="'+defG+'" min="1" max="2000" oninput="pfPreview('+c100+','+pr100+','+ch100+','+f100+')">'
+    +'<input type="number" class="pf-portion-input" id="pf-pg" value="'+s.defG+'" min="1" max="2000" oninput="pfPreview()">'
     +'<button onclick="pfAdjG(5)" style="width:34px;height:34px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;flex-shrink:0">+</button>'
     +'<span class="pf-portion-unit">g</span>'
     +'</div>'
     +'<div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">'
     +'<button onclick="pfSetG('+half+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.5);font-size:11px;color:#6B5B8A;cursor:pointer">\u00BD serve ('+half+'g)</button>'
-    +'<button onclick="pfSetG('+defG+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(107,91,138,0.3);background:rgba(107,91,138,0.08);font-size:11px;color:#6B5B8A;font-weight:600;cursor:pointer">1 serve ('+defG+'g)</button>'
+    +'<button onclick="pfSetG('+s.defG+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(107,91,138,0.3);background:rgba(107,91,138,0.08);font-size:11px;color:#6B5B8A;font-weight:600;cursor:pointer">1 serve ('+s.defG+'g)</button>'
     +'<button onclick="pfSetG('+dbl+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.5);font-size:11px;color:#6B5B8A;cursor:pointer">2 serves ('+dbl+'g)</button>'
     +'<button onclick="pfSetG(100)" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.5);font-size:11px;color:#6B5B8A;cursor:pointer">100g</button>'
     +'</div>'
     +'<div class="pf-portion-preview" id="pf-prev"></div>'
     +'<div class="pf-portion-btns">'
     +'<button class="pf-portion-cancel" onclick="pfCancel()">Cancel</button>'
-    +'<button class="pf-portion-add" onclick="pfAdd('+JSON.stringify(nm)+','+c100+','+pr100+','+ch100+','+f100+')">Add to log</button>'
+    +'<button class="pf-portion-add" onclick="pfAddSelected()">Add to log</button>'
     +'</div>';
-  pfPreview(c100,pr100,ch100,f100);
+  pfPreview();
 }
+
 
 function pfAdjG(delta){
   var el=document.getElementById("pf-pg");
@@ -1013,10 +1018,11 @@ function pfSetG(g){
 
 
 
-function pfPreview(c100,pr100,ch100,f100){
+function pfPreview(){
+  var s=window._pfSelected;if(!s)return;
   var g=parseFloat((document.getElementById("pf-pg")||{}).value)||0;
   var el=document.getElementById("pf-prev");if(!el)return;
-  el.textContent=g+"g = "+Math.round(c100*g/100)+" kcal \u00B7 "+Math.round(pr100*g/100*10)/10+"g protein \u00B7 "+Math.round(ch100*g/100*10)/10+"g carbs \u00B7 "+Math.round(f100*g/100*10)/10+"g fat";
+  el.textContent=g+"g = "+Math.round(s.c100*g/100)+" kcal \u00B7 "+Math.round(s.pr100*g/100*10)/10+"g protein \u00B7 "+Math.round(s.ch100*g/100*10)/10+"g carbs \u00B7 "+Math.round(s.f100*g/100*10)/10+"g fat";
 }
 
 function guessFoodEmoji(n){
@@ -1049,12 +1055,18 @@ function guessFoodEmoji(n){
   return"\uD83C\uDF7D\uFE0F";
 }
 
-function pfAdd(name,c100,pr100,ch100,f100){
-  var g=parseFloat((document.getElementById("pf-pg")||{}).value)||100;
+function pfAdd(name,c100,pr100,ch100,f100,g){
+  if(g===undefined)g=parseFloat((document.getElementById("pf-pg")||{}).value)||100;
   var log=getProteinLog();
   var emoji=guessFoodEmoji(name);
   log.push({emoji:emoji,name:name+(g!==100?" ("+g+"g)":""),g:Math.round(pr100*g/100*10)/10,cal:Math.round(c100*g/100),carbs:Math.round(ch100*g/100*10)/10,fat:Math.round(f100*g/100*10)/10});
   saveProteinLog(log);pfCancel();renderProtein();
+}
+
+function pfAddSelected(){
+  var s=window._pfSelected;if(!s)return;
+  var g=parseFloat((document.getElementById("pf-pg")||{}).value)||s.defG||100;
+  pfAdd(s.name,s.c100,s.pr100,s.ch100,s.f100,g);
 }
 
 function pfCancel(){
@@ -1293,6 +1305,77 @@ c.innerHTML='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="m
 }
 
 // \u2500\u2500\u2500 CLEANUP & INIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function renderCoachTab(){
+  var coach=document.getElementById("coach");
+  if(!coach)return;
+  if(!stravaData||!stravaData.length){
+    coach.innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">No Strava activities found yet.</div></div>';
+    return;
+  }
+  var html='';
+  // Weekly volume
+  var weekStart=new Date(currentDate);
+  var dow=weekStart.getDay();
+  weekStart.setDate(weekStart.getDate()-(dow===0?6:dow-1));
+  weekStart=new Date(weekStart.getFullYear(),weekStart.getMonth(),weekStart.getDate(),0,0,0);
+  var weekRuns=stravaData.filter(function(a){
+    if(a.type!=="Run"&&a.sport_type!=="Run")return false;
+    var d=new Date(a.date);return d>=weekStart&&d<=currentDate;
+  });
+  var weekKm=Math.round(weekRuns.reduce(function(s,a){return s+(a.distance_km||0);},0)*10)/10;
+  var b=getBlock(currentDate);
+  var planRange=b?(b.kmRange||b.volume||"15\u201325 km"):"15\u201325 km";
+  var planMax=parseInt(planRange.split("\u2013")[1]||planRange.split("-")[1]||25)||25;
+  var planMin=parseInt(planRange)||15;
+  var volPct=Math.min(Math.round(weekKm/planMax*100),100);
+  var volColor=weekKm<planMin*0.7?"#DC2626":weekKm<planMin?"#B8883E":"#5B8A5E";
+  html+='<div class="dash-section"><div class="dash-title">This Week</div>'
+    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px;margin-bottom:8px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
+    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">\uD83C\uDFC3\u200D\u2640\uFE0F Running volume</div>'
+    +'<div style="font-size:13px;font-weight:700;color:'+volColor+'">'+weekKm+' km</div>'
+    +'</div>'
+    +'<div style="background:rgba(180,160,190,0.15);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px">'
+    +'<div style="height:100%;width:'+volPct+'%;background:'+volColor+';border-radius:4px"></div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:#A898B0">Plan: '+planRange+' \u00B7 '+weekRuns.length+' run'+(weekRuns.length!==1?'s':'')+' this week</div>'
+    +'</div></div>';
+  // Recent runs
+  var recentRuns=stravaData.filter(function(a){return a.type==="Run"||a.sport_type==="Run";}).slice(0,6);
+  if(recentRuns.length){
+    html+='<div class="dash-section"><div class="dash-title">Recent Runs</div>';
+    recentRuns.forEach(function(run){
+      var pace=run.pace_per_km||"";
+      var parts=pace.split(":");
+      var paceNum=parts.length>=2?parseFloat(parts[0])+(parseFloat(parts[1])/60):0;
+      var dot="\u26AA",fbColor="#A898B0",feedback="";
+      if(paceNum>0){
+        if(paceNum<5.5){dot="\uD83D\uDD34";fbColor="#DC2626";feedback="Very fast \u2014 watch effort on easy days";}
+        else if(paceNum<=6.0){dot="\uD83D\uDFE2";fbColor="#5B8A5E";feedback="Right in the zone";}
+        else if(paceNum<=6.4){dot="\uD83D\uDFE2";fbColor="#5B8A5E";feedback="Good easy effort";}
+        else{dot="\uD83D\uDFE1";fbColor="#B8883E";feedback="Recovery pace \u2014 perfect if intended";}
+      }
+      var d=new Date(run.date);
+      var dayStr=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1);
+      html+='<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:6px">'
+        +'<div style="display:flex;justify-content:space-between;margin-bottom:4px">'
+        +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">'+dot+' '+run.name+'</div>'
+        +'<div style="font-size:11px;color:#A898B0">'+dayStr+'</div>'
+        +'</div>'
+        +'<div style="display:flex;gap:12px;font-size:12px;color:#6B5B8A;font-weight:600;margin-bottom:3px">'
+        +'<span>'+run.distance_km+' km</span>'
+        +'<span>'+pace+'/km</span>'
+        +(run.avg_hr?'<span style="color:#C4607A">\u2764\uFE0F '+Math.round(run.avg_hr)+'</span>':"")
+        +'</div>'
+        +(feedback?'<div style="font-size:11px;color:'+fbColor+'">'+feedback+'</div>':"")
+        +'</div>';
+    });
+    html+='</div>';
+  }
+  coach.innerHTML=html;
+}
+
 try{if(!localStorage.getItem("tp-move-cleanup-v3")){for(let ci=localStorage.length-1;ci>=0;ci--){const ck=localStorage.key(ci);if(ck&&ck.startsWith("tp-moved"))localStorage.removeItem(ck)}localStorage.setItem("tp-move-cleanup-v3","done")}}catch(e){}
 
 window.addEventListener('error', function(e){
