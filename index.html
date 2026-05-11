@@ -1017,8 +1017,8 @@ function pfPreview(c100,pr100,ch100,f100){
   el.textContent=g+"g = "+Math.round(c100*g/100)+" kcal \u00B7 "+Math.round(pr100*g/100*10)/10+"g protein \u00B7 "+Math.round(ch100*g/100*10)/10+"g carbs \u00B7 "+Math.round(f100*g/100*10)/10+"g fat";
 }
 
-function guessFoodEmoji(name){
-  var n=name.toLowerCase();
+function guessFoodEmoji(n){
+  n=n.toLowerCase();
   if(/chicken|poultry|hen/.test(n))return"\uD83C\uDF57";
   if(/beef|steak|mince|burger|brisket|rump/.test(n))return"\uD83E\uDD69";
   if(/salmon|tuna|fish|cod|snapper|barramundi|trout|seafood|prawn|shrimp/.test(n))return"\uD83D\uDC1F";
@@ -1026,17 +1026,17 @@ function guessFoodEmoji(name){
   if(/milk|dairy|whey|casein/.test(n))return"\uD83E\uDD5B";
   if(/yogurt|yoghurt|chobani|yopro/.test(n))return"\uD83E\uDD44";
   if(/cheese|cottage/.test(n))return"\uD83E\uDDC0";
-  if(/protein|shake|powder|bar|quest|sn1pe/.test(n))return"\uD83D\uDCAA";
+  if(/protein|shake|powder|bar|quest/.test(n))return"\uD83D\uDCAA";
   if(/oat|porridge|granola|muesli/.test(n))return"\uD83E\uDD63";
   if(/bread|toast|wrap|tortilla|bagel/.test(n))return"\uD83C\uDF5E";
   if(/rice|pasta|noodle|spaghetti/.test(n))return"\uD83C\uDF5A";
   if(/banana|apple|berry|fruit|mango|orange/.test(n))return"\uD83C\uDF4C";
   if(/salad|spinach|lettuce|greens|kale/.test(n))return"\uD83E\uDD57";
-  if(/vegetable|veg|broccoli|carrot|potato|sweet potato|zucchini/.test(n))return"\uD83E\uDD66";
+  if(/vegetable|broccoli|carrot|potato|zucchini/.test(n))return"\uD83E\uDD66";
   if(/nut|almond|peanut|cashew|walnut/.test(n))return"\uD83E\uDD5C";
   if(/coffee|latte|flat white|espresso/.test(n))return"\u2615";
   if(/chocolate|choc/.test(n))return"\uD83C\uDF6B";
-  if(/soup|stew|chili|chilli|curry/.test(n))return"\uD83C\uDF72";
+  if(/soup|stew|chili|chilli|curry/.test(n))return"\uD83C\uDF2E";
   if(/pizza/.test(n))return"\uD83C\uDF55";
   if(/sandwich|sub/.test(n))return"\uD83E\uDD6A";
   if(/smoothie|juice/.test(n))return"\uD83E\uDD64";
@@ -1131,7 +1131,12 @@ function renderProtein(){
   if(!cb){
     cb=document.createElement("div");cb.id="cal-bar-section";
     cb.style.cssText="margin-top:10px;padding:10px 12px;background:rgba(107,91,138,0.05);border-radius:10px;border:0.5px solid rgba(107,91,138,0.12)";
-    if(se&&se.parentElement){var ns=se.nextSibling;if(ns)se.parentElement.insertBefore(cb,ns);else se.parentElement.appendChild(cb);}
+    var protCard=te?te.closest(".protein-card"):null;
+    if(protCard){
+      var logEl=document.getElementById("protein-log");
+      if(logEl&&logEl.parentElement)logEl.parentElement.insertBefore(cb,logEl.nextSibling);
+      else protCard.appendChild(cb);
+    }
   }
   var overMsg=calOver?"<span style=\"color:#DC2626;font-weight:600\">\u26A0\uFE0F "+(totalCal-calTarget)+" cal over</span>":calRemaining+" cal remaining";
   cb.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'
