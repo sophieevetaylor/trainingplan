@@ -908,40 +908,56 @@ function pfSearch(val){
 
 function pfFetch(query){
   var re=document.getElementById("pf-results");if(!re)return;
-  var key="mkz1vuOZoZUlNnU1KhBDX6rHqwbkX97TizE9I4b5";
-  var url="https://api.nal.usda.gov/fdc/v1/foods/search?query="+encodeURIComponent(query)+"&pageSize=12&dataType=Foundation,SR%20Legacy,Survey%20(FNDDS),Branded&api_key="+key;
+  var url="/.netlify/functions/food-search?q="+encodeURIComponent(query);
   fetch(url).then(function(r){return r.json();}).then(function(data){
     if(!re)return;
-    var foods=(data.foods||[]);
-    if(!foods.length){re.innerHTML='<div class="pf-no-results">No results. Try different search terms.</div>';return;}
-    window._pfProducts=foods;
-    re.innerHTML=foods.map(function(f,i){
-      var nuts=f.foodNutrients||[];
-      function getNut(name){var n=nuts.find(function(x){return x.nutrientName&&x.nutrientName.toLowerCase().indexOf(name)>=0;});return n?Math.round(n.value*10)/10:0;}
-      var cal=getNut("energy")||getNut("kcal");
-      // USDA returns energy in kJ sometimes \u2014 convert if suspiciously high
-      if(cal>900){cal=Math.round(cal/4.184);}
-      var prot=getNut("protein");
-      var carb=getNut("carbohydrate");
-      var fat=getNut("total lipid");
-      var brand=f.brandOwner||f.brandName||"";
-      var srv=f.servingSize?Math.round(f.servingSize)+"g":f.householdServingFullText||"per 100g";
+    var items=[];
+
+    if(data.source==="off"){
+      // Open Food Facts format
+      items=(data.products||[]).map(function(p){
+        var c100=Math.round(p.nutriments["energy-kcal_100g"]||0);
+        var pr100=Math.round((p.nutriments["proteins_100g"]||0)*10)/10;
+        var ch100=Math.round((p.nutriments["carbohydrates_100g"]||0)*10)/10;
+        var f100=Math.round((p.nutriments["fat_100g"]||0)*10)/10;
+        var brand=p.brands?(p.brands.split(",")[0].trim()):"";
+        var srv=p.serving_quantity?Math.round(p.serving_quantity)+"g serving":"per 100g";
+        return {name:p.product_name,brand:brand,cal100:c100,prot100:pr100,carb100:ch100,fat100:f100,srv:srv,defG:p.serving_quantity?Math.round(p.serving_quantity):100};
+      });
+    } else {
+      // USDA format
+      items=(data.foods||[]).map(function(f){
+        var nuts=f.foodNutrients||[];
+        function gn(name){var n=nuts.find(function(x){return x.nutrientName&&x.nutrientName.toLowerCase().indexOf(name)>=0;});return n?n.value:0;}
+        var cal=gn("energy")||gn("kcal");
+        if(cal>900)cal=Math.round(cal/4.184);
+        var srv=f.servingSize?Math.round(f.servingSize)+"g":f.householdServingFullText||"per 100g";
+        var defG=f.servingSize?Math.round(f.servingSize):100;
+        return {name:f.description,brand:f.brandOwner||f.brandName||"",cal100:Math.round(cal),prot100:Math.round(gn("protein")*10)/10,carb100:Math.round(gn("carbohydrate")*10)/10,fat100:Math.round(gn("total lipid")*10)/10,srv:srv,defG:defG};
+      });
+    }
+
+    if(!items.length){re.innerHTML='<div class="pf-no-results">No results. Try different search terms.</div>';return;}
+    window._pfProducts=items;
+    re.innerHTML=items.map(function(p,i){
       return '<div class="pf-result" onclick="pfSelect('+i+')">'
-        +'<div class="pf-result-name">'+f.description+'</div>'
-        +(brand?'<div class="pf-result-brand">'+brand+'</div>':"")
+        +'<div class="pf-result-name">'+p.name+'</div>'
+        +(p.brand?'<div class="pf-result-brand">'+p.brand+'</div>':"")
         +'<div class="pf-result-macros">'
-        +'<div class="pf-result-macro">'+cal+'<span> kcal</span></div>'
-        +'<div class="pf-result-macro">'+prot+'g<span> prot</span></div>'
-        +'<div class="pf-result-macro">'+carb+'g<span> carbs</span></div>'
-        +'<div class="pf-result-macro">'+fat+'g<span> fat</span></div>'
-        +'<div class="pf-result-macro" style="color:#B0A0B8;font-weight:400">'+srv+'</div>'
+        +'<div class="pf-result-macro">'+p.cal100+'<span> kcal</span></div>'
+        +'<div class="pf-result-macro">'+p.prot100+'g<span> prot</span></div>'
+        +'<div class="pf-result-macro">'+p.carb100+'g<span> carbs</span></div>'
+        +'<div class="pf-result-macro">'+p.fat100+'g<span> fat</span></div>'
+        +'<div class="pf-result-macro" style="color:#B0A0B8;font-weight:400">'+p.srv+'</div>'
         +'</div></div>';
     }).join("");
   }).catch(function(){if(re)re.innerHTML='<div class="pf-no-results">Search failed. Check your connection.</div>';});
 }
 
+
 function pfSelect(i){
   var p=window._pfProducts[i];if(!p)return;
+  // Normalise: both sources now use same {name,brand,cal100,prot100,carb100,fat100,defG} format
   var re=document.getElementById("pf-results");
   var pe=document.getElementById("pf-portion");
   var si=document.getElementById("pf-search-input");
@@ -1090,7 +1106,7 @@ function renderProtein(){
   if(!cb){
     cb=document.createElement("div");cb.id="cal-bar-section";
     cb.style.cssText="margin-top:10px;padding:10px 12px;background:rgba(107,91,138,0.05);border-radius:10px;border:0.5px solid rgba(107,91,138,0.12)";
-    if(se&&se.parentElement)se.parentElement.insertBefore(cb,se.nextSibling);
+    if(se&&se.parentElement){var ns=se.nextSibling;if(ns)se.parentElement.insertBefore(cb,ns);else se.parentElement.appendChild(cb);}
   }
   var overMsg=calOver?"<span style=\"color:#DC2626;font-weight:600\">\u26A0\uFE0F "+(totalCal-calTarget)+" cal over</span>":calRemaining+" cal remaining";
   cb.innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'
