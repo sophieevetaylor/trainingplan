@@ -93,7 +93,7 @@ body{background:linear-gradient(180deg,#FDF2F5 0%,#F0ECF8 40%,#EBE8F5 100%);colo
 .fuel-label{font-weight:600;color:#C49A4A}
 
 /* ── TREADMILL ── */
-.treadmill-card{background:rgba(200,160,80,0.06);border-radius:14px;padding:13px 16px;border:0.5px solid rgba(200,160,80,0.18);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.treadmill-card{background:rgba(200,160,80,0.06);border-radius:14px;padding:13px 16px;border:0.5px solid rgba(200,160,80,0.18);display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
 .treadmill-left{flex:1;min-width:0}
 .treadmill-header{font-size:14px;font-weight:700;color:#B8883E;display:flex;align-items:center;gap:6px;margin-bottom:3px}
 .treadmill-spec{font-size:11px;font-weight:600;color:rgba(184,136,62,0.7);background:rgba(184,136,62,0.09);padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:4px}
@@ -909,7 +909,8 @@ function pfSearch(val){
 function pfFetch(query){
   var re=document.getElementById("pf-results");if(!re)return;
   var url="/.netlify/functions/food-search?q="+encodeURIComponent(query);
-  fetch(url).then(function(r){return r.json();}).then(function(data){
+  fetch(url).then(function(r){return r.text();}).then(function(text){
+    var data;try{data=JSON.parse(text);}catch(e){if(re)re.innerHTML='<div class="pf-no-results">Search unavailable. Try again shortly.</div>';return;}
     if(!re)return;
     var items=[];
 
@@ -957,27 +958,35 @@ function pfFetch(query){
 
 function pfSelect(i){
   var p=window._pfProducts[i];if(!p)return;
-  // Normalise: both sources now use same {name,brand,cal100,prot100,carb100,fat100,defG} format
   var re=document.getElementById("pf-results");
   var pe=document.getElementById("pf-portion");
   var si=document.getElementById("pf-search-input");
   if(re)re.style.display="none";
   if(si)si.value="";
   if(!pe)return;
-  var nuts=p.foodNutrients||[];
-  function getNut(name){var n=nuts.find(function(x){return x.nutrientName&&x.nutrientName.toLowerCase().indexOf(name)>=0;});return n?n.value:0;}
-  var c100=getNut("energy")||getNut("kcal");
-  if(c100>900)c100=c100/4.184;
-  var pr100=getNut("protein");
-  var ch100=getNut("carbohydrate");
-  var f100=getNut("total lipid");
-  var defG=p.servingSize?Math.round(p.servingSize):100;
-  var brand=p.brandOwner||p.brandName||"";
-  var nm=p.description+(brand?" \u00B7 "+brand:"");
+  var c100=p.cal100||0;
+  var pr100=p.prot100||0;
+  var ch100=p.carb100||0;
+  var f100=p.fat100||0;
+  var defG=p.defG||100;
+  var nm=p.name+(p.brand?" \u00B7 "+p.brand:"");
+  // Common serving presets based on default serving size
+  var half=Math.round(defG/2);
+  var dbl=Math.round(defG*2);
   pe.style.display="block";
   pe.innerHTML='<div class="pf-portion-name">'+nm+'</div>'
-    +'<div class="pf-portion-row"><input type="number" class="pf-portion-input" id="pf-pg" value="'+defG+'" min="1" max="2000" oninput="pfPreview('+c100+','+pr100+','+ch100+','+f100+')">'
-    +'<span class="pf-portion-unit">grams</span></div>'
+    +'<div class="pf-portion-row">'
+    +'<button onclick="pfAdjG(-5)" style="width:34px;height:34px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;flex-shrink:0">\u2212</button>'
+    +'<input type="number" class="pf-portion-input" id="pf-pg" value="'+defG+'" min="1" max="2000" oninput="pfPreview('+c100+','+pr100+','+ch100+','+f100+')">'
+    +'<button onclick="pfAdjG(5)" style="width:34px;height:34px;border-radius:8px;border:1px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.6);font-size:18px;color:#6B5B8A;cursor:pointer;flex-shrink:0">+</button>'
+    +'<span class="pf-portion-unit">g</span>'
+    +'</div>'
+    +'<div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">'
+    +'<button onclick="pfSetG('+half+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.5);font-size:11px;color:#6B5B8A;cursor:pointer">\u00BD serve ('+half+'g)</button>'
+    +'<button onclick="pfSetG('+defG+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(107,91,138,0.3);background:rgba(107,91,138,0.08);font-size:11px;color:#6B5B8A;font-weight:600;cursor:pointer">1 serve ('+defG+'g)</button>'
+    +'<button onclick="pfSetG('+dbl+')" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.5);font-size:11px;color:#6B5B8A;cursor:pointer">2 serves ('+dbl+'g)</button>'
+    +'<button onclick="pfSetG(100)" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(180,160,190,0.3);background:rgba(255,255,255,0.5);font-size:11px;color:#6B5B8A;cursor:pointer">100g</button>'
+    +'</div>'
     +'<div class="pf-portion-preview" id="pf-prev"></div>'
     +'<div class="pf-portion-btns">'
     +'<button class="pf-portion-cancel" onclick="pfCancel()">Cancel</button>'
@@ -985,6 +994,22 @@ function pfSelect(i){
     +'</div>';
   pfPreview(c100,pr100,ch100,f100);
 }
+
+function pfAdjG(delta){
+  var el=document.getElementById("pf-pg");
+  if(!el)return;
+  var v=Math.max(1,Math.min(2000,(parseFloat(el.value)||100)+delta));
+  el.value=Math.round(v);
+  el.dispatchEvent(new Event("input"));
+}
+function pfSetG(g){
+  var el=document.getElementById("pf-pg");
+  if(!el)return;
+  el.value=g;
+  el.dispatchEvent(new Event("input"));
+}
+
+
 
 function pfPreview(c100,pr100,ch100,f100){
   var g=parseFloat((document.getElementById("pf-pg")||{}).value)||0;
