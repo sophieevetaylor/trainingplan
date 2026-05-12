@@ -434,7 +434,7 @@ const weightMatch=dayActivities.find(a=>a.type==="WeightTraining"||a.sport_type=
 const pilatesMatch=dayActivities.find(a=>{var st=a.sport_type||"";var nm=(a.name||"").toLowerCase();var isPilatesType=st==="Pilates"||st==="Yoga";var isPilatesName=nm.includes("pilates")||nm.includes("reformer")||nm.includes("mat class")||nm.includes("barre");return isPilatesType||isPilatesName;});
 const walkMatch=dayActivities.find(a=>a.type==="Walk"||a.sport_type==="Walk");
 const svg='<svg width="11" height="11" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:3px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>';
-function injectStrava(sel,html,ck,cl,saveFn){const card=document.querySelector(sel);if(!card)return;const cr=card.querySelector(".run-check-row");const ex=card.querySelector(".strava-inline");if(ex)ex.remove();const div=document.createElement("div");div.className="strava-inline";div.innerHTML=html;if(cr)card.insertBefore(div,cr);else card.appendChild(div);if(ck){const ch=$(ck),lb=$(cl);if(ch&&!ch.classList.contains("done")){ch.classList.add("done");if(lb){lb.classList.add("done");lb.textContent=lb.textContent.replace("Mark ","")+" (auto)"}if(saveFn)saveFn();}}}
+function injectStrava(sel,html,ck,cl,saveFn){const card=document.querySelector(sel);if(!card)return;const cr=card.querySelector(".run-check-row");const ex=card.querySelector(".strava-inline");if(ex)ex.remove();const div=document.createElement("div");div.className="strava-inline";div.innerHTML=html;try{if(cr&&cr.parentNode===card)card.insertBefore(div,cr);else card.appendChild(div);}catch(e){card.appendChild(div);}if(ck){const ch=$(ck),lb=$(cl);if(ch&&!ch.classList.contains("done")){ch.classList.add("done");if(lb){lb.classList.add("done");lb.textContent=lb.textContent.replace("Mark ","")+" (auto)"}if(saveFn)saveFn();}}}
 if(runMatch){const m=runMatch;injectStrava(".run-card",'<div style="margin-top:8px;padding:8px 10px;background:rgba(252,76,2,0.05);border-radius:8px;border:0.5px solid rgba(252,76,2,0.12);font-size:11px"><div style="color:#FC4C02;font-weight:600">'+(svg)+' '+(m.name)+'</div><div style="color:#7A6B8A;margin-top:2px">'+(m.distance_km)+' km \u00B7 '+(m.pace_per_km)+'/km \u00B7 '+(m.moving_time_min)+' min'+(m.avg_hr?" \u00B7 \u2764\uFE0F"+Math.round(m.avg_hr):"")+'</div></div>',"run-check","run-label",()=>saveRun(true))}
 if(weightMatch){const m=weightMatch;injectStrava(".strength-card",'<div style="margin-top:8px;padding:8px 10px;background:rgba(107,91,138,0.05);border-radius:8px;border:0.5px solid rgba(107,91,138,0.12);font-size:11px"><span style="color:#6B5B8A;font-weight:600">'+(svg)+' '+(m.name)+'</span><span style="color:#7A6B8A"> \u00B7 '+(m.moving_time_min)+' min</span></div>',"str-check","str-label",()=>saveStr(true))}
 if(rideMatch){const m=rideMatch;injectStrava(".spin-card",'<div style="margin-top:8px;padding:8px 10px;background:rgba(139,92,246,0.05);border-radius:8px;font-size:11px"><span style="color:#8B5CF6;font-weight:600">'+(svg)+' '+(m.name)+'</span><span style="color:#7A6B8A"> \u00B7 '+(m.moving_time_min)+' min</span></div>',"spin-check","spin-label",()=>{const s=getState();s.spin=true;setState(s)})}
@@ -474,10 +474,7 @@ html+=renderBridalArms();
 
 if(plan.notes&&plan.notes.length){html+='<div class="notes-card"><div class="notes-title">\uD83D\uDCDD Notes</div>'+plan.notes.map(function(n){return'<div class="notes-text">'+n+'</div>';}).join('')+'</div>';}
 if(!plan.run&&!plan.str&&!plan.other&&!plan.spin&&(!plan.notes||!plan.notes.length)&&!movedIn.length){if(plan.block){html+='<div class="rest-card"><div class="rest-icon">\uD83D\uDE34</div><div class="rest-title">Rest Day</div><div class="rest-sub">Recovery is training. Foam roll, stretch, eat well.</div></div>'}else{html+='<div class="rest-card"><div class="rest-title">'+(plan.message||"No training scheduled.")+'</div><div class="rest-sub">Navigate to Apr 2026 \u2013 Aug 2027</div></div>'}}
-$("content").innerHTML=html;
-const addedHtml=renderAddedSessions();if(addedHtml){const d=document.createElement("div");d.innerHTML=addedHtml;$("content").appendChild(d)}
-const addBtn=document.createElement("div");addBtn.innerHTML='<button class="add-session-btn" onclick="showAddSessionModal()">\uFF0B Add a session</button>';$("content").appendChild(addBtn);
-$("content").innerHTML+='<div class="steps-card"><div class="steps-left"><div class="steps-header">\uD83D\uDC5F Daily Steps</div><div class="steps-target">Target: 14,000 steps</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label" style="font-size:12px">Done</div></div></div>\n<div class="protein-card"><div class="protein-header">\uD83E\uDD69 Protein &amp; Calories</div><div class="protein-ring-wrap"><svg width="100" height="100"><circle cx="50" cy="50" r="42" stroke="rgba(107,91,138,0.1)" stroke-width="7" fill="none"/><circle id="protein-ring" cx="50" cy="50" r="42" stroke="#6B5B8A" stroke-width="7" fill="none" stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/></svg><div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0">of 110g</span></div></div><div id="protein-status" style="text-align:center;font-size:12px;color:#A898B0;margin-bottom:10px">Search any food or tap quick-add below</div><div id="protein-log" style="margin-bottom:10px"></div><div class="pf-search-wrap"><input type="search" class="pf-search" id="pf-search-input" placeholder="\uD83D\uDD0D Search any food..." autocomplete="off" oninput="pfSearch(this.value)"></div><div id="pf-results" class="pf-results" style="display:none"></div><div id="pf-portion" class="pf-portion-wrap" style="display:none"></div><div id="protein-foods"></div><div id="protein-tip" style="margin-top:8px;padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);font-size:11px;color:#5B8A5E"></div></div><div class="water-card"><div class="water-header">\uD83D\uDCA7 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>\n<div class="weight-card"><div class="weight-header">\u2696\uFE0F Weight</div><div class="weight-input-row"><input type="number" step="0.1" placeholder="63.0" id="weight-input" class="weight-input" onchange="saveWeight()"><span class="weight-unit">kg</span><span class="weight-saved" id="weight-saved"></span></div><div id="weight-spark-container"></div></div>\n<div class="sleep-card"><div class="sleep-header">\uD83D\uDE34 Sleep</div><div class="sleep-input-row"><input type="number" placeholder="0" min="0" max="100" id="sleep-score" class="sleep-input" onchange="saveSleep()"><span style="font-size:13px;color:#A898B0">/ 100 score</span><span style="font-size:12px;font-weight:600;color:#5B8A5E" id="sleep-saved"></span></div><div class="sleep-input-row"><input type="number" step="0.5" placeholder="0" min="0" max="16" id="sleep-hours" class="sleep-input" onchange="saveSleep()"><span style="font-size:13px;color:#A898B0">hours slept</span></div><div class="sleep-quality" id="sleep-quality"></div><div id="sleep-spark-container"></div></div>\n<div style="background:rgba(196,96,122,0.05);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(196,96,122,0.15)" id="waist-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:14px;font-weight:700;color:#C4607A">\uD83D\uDCCF Waist Measurement</div><div style="font-size:10px;font-weight:600;color:rgba(196,96,122,0.6);background:rgba(196,96,122,0.08);padding:3px 8px;border-radius:6px">Monday mornings only</div></div><div style="font-size:11px;color:#A898B0;margin-bottom:10px">Before eating, same spot each week \u2014 narrowest point of waist.</div><div id="waist-input-area"></div><div id="waist-spark-container"></div></div>';
+$("content").innerHTML=html+(renderAddedSessions()||"")+('<button class="add-session-btn" onclick="showAddSessionModal()">\uFF0B Add a session</button>')+'<div class="steps-card"><div class="steps-left"><div class="steps-header">\uD83D\uDC5F Daily Steps</div><div class="steps-target">Target: 14,000 steps</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label" style="font-size:12px">Done</div></div></div>\n<div class="protein-card"><div class="protein-header">\uD83E\uDD69 Protein &amp; Calories</div><div class="protein-ring-wrap"><svg width="100" height="100"><circle cx="50" cy="50" r="42" stroke="rgba(107,91,138,0.1)" stroke-width="7" fill="none"/><circle id="protein-ring" cx="50" cy="50" r="42" stroke="#6B5B8A" stroke-width="7" fill="none" stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:50% 50%"/></svg><div class="protein-ring-center"><span id="protein-total" style="font-size:22px;font-weight:800;color:#3D2E4A">0g</span><br><span style="font-size:10px;color:#A898B0">of 110g</span></div></div><div id="protein-status" style="text-align:center;font-size:12px;color:#A898B0;margin-bottom:10px">Search any food or tap quick-add below</div><div id="protein-log" style="margin-bottom:10px"></div><div class="pf-search-wrap"><input type="search" class="pf-search" id="pf-search-input" placeholder="\uD83D\uDD0D Search any food..." autocomplete="off" oninput="pfSearch(this.value)"></div><div id="pf-results" class="pf-results" style="display:none"></div><div id="pf-portion" class="pf-portion-wrap" style="display:none"></div><div id="protein-foods"></div><div id="protein-tip" style="margin-top:8px;padding:8px 10px;background:rgba(91,138,94,0.06);border-radius:8px;border:0.5px solid rgba(91,138,94,0.1);font-size:11px;color:#5B8A5E"></div></div><div class="water-card"><div class="water-header">\uD83D\uDCA7 Water</div><div class="water-target">Target: 2L+ today</div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div></div>\n<div class="weight-card"><div class="weight-header">\u2696\uFE0F Weight</div><div class="weight-input-row"><input type="number" step="0.1" placeholder="63.0" id="weight-input" class="weight-input" onchange="saveWeight()"><span class="weight-unit">kg</span><span class="weight-saved" id="weight-saved"></span></div><div id="weight-spark-container"></div></div>\n<div class="sleep-card"><div class="sleep-header">\uD83D\uDE34 Sleep</div><div class="sleep-input-row"><input type="number" placeholder="0" min="0" max="100" id="sleep-score" class="sleep-input" onchange="saveSleep()"><span style="font-size:13px;color:#A898B0">/ 100 score</span><span style="font-size:12px;font-weight:600;color:#5B8A5E" id="sleep-saved"></span></div><div class="sleep-input-row"><input type="number" step="0.5" placeholder="0" min="0" max="16" id="sleep-hours" class="sleep-input" onchange="saveSleep()"><span style="font-size:13px;color:#A898B0">hours slept</span></div><div class="sleep-quality" id="sleep-quality"></div><div id="sleep-spark-container"></div></div>\n<div style="background:rgba(196,96,122,0.05);border-radius:14px;padding:14px 16px;border:0.5px solid rgba(196,96,122,0.15)" id="waist-card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:14px;font-weight:700;color:#C4607A">\uD83D\uDCCF Waist Measurement</div><div style="font-size:10px;font-weight:600;color:rgba(196,96,122,0.6);background:rgba(196,96,122,0.08);padding:3px 8px;border-radius:6px">Monday mornings only</div></div><div style="font-size:11px;color:#A898B0;margin-bottom:10px">Before eating, same spot each week \u2014 narrowest point of waist.</div><div id="waist-input-area"></div><div id="waist-spark-container"></div></div>';
 setTimeout(function(){
   renderProtein();restoreChecks();restoreExLogs();restoreWeight();restoreSleep();restoreWaist();
   if(stravaLoaded){renderStravaWidgets()}else{loadStrava()}
@@ -515,7 +512,7 @@ let allDone=true;
 [["run-check","run"],["str-check","str"],["pil-check","pil"],["tm-check","tm"],["spin-check","spin"]].forEach(([ck,sk])=>{if($(ck)&&!s[sk])allDone=false});
 if(!s.steps||!s.water||!proteinHit||(ggArmsActive(currentDate)&&!s.ba))allDone=false;
 const existing=$("perfect-day-banner");
-if(allDone&&!existing){const banner=document.createElement("div");banner.id="perfect-day-banner";banner.className="perfect-day";banner.innerHTML='<div class="perfect-day-icon">\u2B50</div><div class="perfect-day-title">PERFECT DAY</div><div class="perfect-day-sub">Every box ticked. That\'s how champions are built.</div>';$("content").insertBefore(banner,$("content").firstChild)}
+if(allDone&&!existing){const banner=document.createElement("div");banner.id="perfect-day-banner";banner.className="perfect-day";banner.innerHTML='<div class="perfect-day-icon">\u2B50</div><div class="perfect-day-title">PERFECT DAY</div><div class="perfect-day-sub">Every box ticked. That\'s how champions are built.</div>';var c=$("content");if(c){var fc=c.firstChild;if(fc)c.insertBefore(banner,fc);else c.appendChild(banner);}}
 else if(!allDone&&existing){existing.remove()}
 }
 
@@ -903,145 +900,162 @@ c.innerHTML='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" style="m
 }
 
 function renderCoachTab(){
-  var coach=document.getElementById("coachView");
-  if(!coach)return;
+  var cv=document.getElementById("coachView");
+  if(!cv)return;
   if(!stravaData||!stravaData.length){
-    coach.innerHTML='<div class="dash-section" style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:13px">No activities yet.<br><span style="font-size:11px;font-family:monospace">stravaData: '+(stravaData?'length='+stravaData.length:'null')+'<br>stravaLoaded: '+stravaLoaded+'</span></div></div>';
+    cv.innerHTML='<div style="text-align:center;padding:40px 20px;color:#A898B0;font-size:14px">\uD83D\uDCCA Connecting to Strava...</div>';
     return;
   }
   var html='';
   var b=getBlock(currentDate);
   var bid=b?b.id:"block1";
 
-  var weekStart=new Date(currentDate);
-  var dow=weekStart.getDay();
-  weekStart.setDate(weekStart.getDate()-(dow===0?6:dow-1));
-  weekStart=new Date(weekStart.getFullYear(),weekStart.getMonth(),weekStart.getDate(),0,0,0);
+  // Weekly volume
+  var ws=new Date(currentDate);
+  var dow=ws.getDay();
+  ws.setDate(ws.getDate()-(dow===0?6:dow-1));
+  ws=new Date(ws.getFullYear(),ws.getMonth(),ws.getDate(),0,0,0);
   var weekRuns=stravaData.filter(function(a){
     if(a.type!=="Run"&&a.sport_type!=="Run")return false;
-    var d=new Date(a.date);return d>=weekStart&&d<=currentDate;
+    var d=new Date(a.date+"T12:00:00");return d>=ws&&d<=currentDate;
   });
   var weekKm=Math.round(weekRuns.reduce(function(s,a){return s+(a.distance_km||0);},0)*10)/10;
-  var planRange=b?(b.kmRange||b.weeklyKm||"15\u201325"):"\u201325";
-  var planParts=planRange.replace(" km","").split("\u2013");
-  var planMin=parseInt(planParts[0])||15;
-  var planMax=parseInt(planParts[1]||planParts[0])||25;
-  var volPct=Math.min(Math.round(weekKm/planMax*100),100);
-  var volColor=weekKm<planMin*0.7?"#DC2626":weekKm<planMin?"#B8883E":"#5B8A5E";
+  var pr=b?(b.kmRange||b.weeklyKm||"15\u201325"):"15\u201325";
+  var pMin=parseInt(pr)||15;
+  var pMax=parseInt(pr.split("\u2013")[1]||pr.split("-")[1]||pMin+10)||25;
+  var vpct=Math.min(Math.round(weekKm/pMax*100),100);
+  var vc=weekKm<pMin*0.7?"#DC2626":weekKm<pMin?"#B8883E":"#5B8A5E";
+  html+='<div class="dash-section"><div class="dash-title">This Week</div>'
+    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
+    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">\uD83C\uDFC3\u200D\u2640\uFE0F Running volume</div>'
+    +'<div style="font-size:13px;font-weight:700;color:'+vc+'">'+weekKm+' km</div>'
+    +'</div>'
+    +'<div style="background:rgba(180,160,190,0.15);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px">'
+    +'<div style="height:100%;width:'+vpct+'%;background:'+vc+';border-radius:4px"></div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:#A898B0">Plan: '+pMin+'\u2013'+pMax+' km \u00B7 '+weekRuns.length+' run'+(weekRuns.length!==1?'s':'')+' this week</div>'
+    +'</div></div>';
 
-  html+='<div class="dash-section"><div class="dash-title">This Week</div><div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div style="font-size:13px;font-weight:600;color:#3D2E4A">\uD83C\uDFC3\u200D\u2640\uFE0F Running volume</div><div style="font-size:13px;font-weight:700;color:'+volColor+'">'+weekKm+' km</div></div><div style="background:rgba(180,160,190,0.15);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div style="height:100%;width:'+volPct+'%;background:'+volColor+';border-radius:4px;transition:width 0.4s"></div></div><div style="font-size:11px;color:#A898B0">Plan target: '+planMin+'\u2013'+planMax+' km \u00B7 '+weekRuns.length+' run'+(weekRuns.length!==1?'s':'')+' logged</div></div></div>';
-
+  // Long run progression
   var allRuns=stravaData.filter(function(a){return a.type==="Run"||a.sport_type==="Run";});
   var longRuns=allRuns.filter(function(a){return(a.distance_km||0)>=10;}).slice(0,8).reverse();
   if(longRuns.length>=2){
     var maxLR=Math.max.apply(null,longRuns.map(function(r){return r.distance_km||0;}));
-    html+='<div class="dash-section"><div class="dash-title">Long Run Progression</div><div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px"><div style="display:flex;align-items:flex-end;gap:5px;height:60px;margin-bottom:8px">';
+    html+='<div class="dash-section"><div class="dash-title">Long Run Progression</div>'
+      +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px">'
+      +'<div style="display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:6px">';
     longRuns.forEach(function(r){
       var km=r.distance_km||0;
-      var h=Math.max(Math.round((km/maxLR)*100),10);
-      var d=new Date(r.date);
-      var lbl=("0"+(d.getDate())).slice(-2)+"/"+(d.getMonth()+1);
-      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:9px;color:#6B5B8A;font-weight:600">'+km+'</div><div style="width:100%;height:'+h+'%;background:linear-gradient(to top,#6B5B8A,rgba(107,91,138,0.4));border-radius:3px 3px 0 0;min-height:4px"></div><div style="font-size:8px;color:#A898B0">'+lbl+'</div></div>';
+      var h=Math.max(Math.round((km/maxLR)*100),8);
+      var d=new Date(r.date+"T12:00:00");
+      var lbl=("0"+d.getDate()).slice(-2)+"/"+(d.getMonth()+1);
+      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+        +'<div style="font-size:9px;color:#6B5B8A;font-weight:600">'+km+'</div>'
+        +'<div style="width:100%;height:'+h+'%;background:linear-gradient(to top,#6B5B8A,rgba(107,91,138,0.35));border-radius:3px 3px 0 0;min-height:4px"></div>'
+        +'<div style="font-size:8px;color:#A898B0">'+lbl+'</div>'
+        +'</div>';
     });
-    html+='</div><div style="font-size:11px;color:#A898B0">Last '+longRuns.length+' long runs (10+ km) \u00B7 longest: '+maxLR+' km</div></div></div>';
+    html+='</div><div style="font-size:11px;color:#A898B0">Last '+longRuns.length+' long runs \u00B7 best: '+maxLR+' km</div>'
+      +'</div></div>';
   }
 
+  // Recent runs with pace feedback
   var recentRuns=allRuns.slice(0,6);
   if(recentRuns.length){
     html+='<div class="dash-section"><div class="dash-title">Recent Runs</div>';
     recentRuns.forEach(function(run){
       var pace=run.pace_per_km||"";
       var parts=pace.split(":");
-      var paceNum=parts.length>=2?parseFloat(parts[0])+(parseFloat(parts[1])/60):0;
+      var pn=parts.length>=2?parseFloat(parts[0])+(parseFloat(parts[1])/60):0;
       var isLong=(run.distance_km||0)>=14;
-      var isQuality=run.name&&/(tempo|interval|speed|hill|fartlek)/i.test(run.name);
-      var dot="\u26AA",fbColor="#A898B0",feedback="";
-      if(paceNum>0){
+      var dot="\u26AA",fc="#A898B0",fb="";
+      if(pn>0){
         if(isLong){
-          if(paceNum<=5.7){dot="\uD83D\uDD34";fbColor="#DC2626";feedback="Too fast for a long run \u2014 aim for 5:45\u20136:10";}
-          else if(paceNum<=6.15){dot="\uD83D\uDFE2";fbColor="#5B8A5E";feedback="Perfect long run pace";}
-          else if(paceNum<=6.5){dot="\uD83D\uDFE2";fbColor="#5B8A5E";feedback="Good easy long run effort";}
-          else{dot="\uD83D\uDFE1";fbColor="#B8883E";feedback="A bit slow \u2014 fine for recovery long run";}
-        } else if(isQuality){
-          dot="\uD83D\uDFE3";fbColor="#6B5B8A";feedback="Quality session";
+          if(pn<5.7){dot="\uD83D\uDD34";fc="#DC2626";fb="Too fast for a long run";}
+          else if(pn<=6.1){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Perfect long run pace \u2714";}
+          else if(pn<=6.5){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Good easy long run";}
+          else{dot="\uD83D\uDFE1";fc="#B8883E";fb="Recovery long run pace";}
         } else {
-          if(paceNum<5.5){dot="\uD83D\uDD34";fbColor="#DC2626";feedback="Very fast for an easy day \u2014 watch effort";}
-          else if(paceNum<=6.0){dot="\uD83D\uDFE2";fbColor="#5B8A5E";feedback="Right in the easy zone";}
-          else if(paceNum<=6.4){dot="\uD83D\uDFE2";fbColor="#5B8A5E";feedback="Good easy effort";}
-          else{dot="\uD83D\uDFE1";fbColor="#B8883E";feedback="Recovery pace \u2014 fine if intentional";}
+          if(pn<5.5){dot="\uD83D\uDD34";fc="#DC2626";fb="Very fast \u2014 watch effort on easy days";}
+          else if(pn<=6.0){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Right in the easy zone \u2714";}
+          else if(pn<=6.4){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Good easy effort";}
+          else{dot="\uD83D\uDFE1";fc="#B8883E";fb="Recovery pace \u2014 fine if intentional";}
         }
       }
-      var d=new Date(run.date);
-      var dayStr=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1);
-      html+='<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><div style="font-size:13px;font-weight:600;color:#3D2E4A">'+dot+' '+run.name+'</div><div style="font-size:11px;color:#A898B0">'+dayStr+'</div></div><div style="display:flex;gap:12px;font-size:12px;color:#6B5B8A;font-weight:600;margin-bottom:3px"><span>'+run.distance_km+' km</span><span>'+pace+'/km</span>'
-        +(run.avg_hr?'<span style="color:#C4607A">\u2764\uFE0F '+Math.round(run.avg_hr)+'</span>':"")
-        +(isLong?'<span style="color:#6B5B8A;font-weight:400;font-size:11px">long run</span>':"")
+      var d=new Date(run.date+"T12:00:00");
+      var ds=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1);
+      html+='<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:6px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
+        +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">'+dot+' '+run.name+'</div>'
+        +'<div style="font-size:11px;color:#A898B0">'+ds+'</div>'
         +'</div>'
-        +(feedback?'<div style="font-size:11px;color:'+fbColor+'">'+feedback+'</div>':"")
+        +'<div style="display:flex;gap:12px;font-size:12px;color:#6B5B8A;font-weight:600;margin-bottom:3px">'
+        +'<span>'+run.distance_km+' km</span>'
+        +'<span>'+pace+'/km</span>'
+        +(run.avg_hr?'<span style="color:#C4607A">\u2764\uFE0F '+Math.round(run.avg_hr)+'</span>':"")
+        +(isLong?'<span style="font-size:10px;color:#A898B0;font-weight:400">long run</span>':"")
+        +'</div>'
+        +(fb?'<div style="font-size:11px;color:'+fc+'">'+fb+'</div>':"")
         +'</div>';
     });
     html+='</div>';
   }
 
+  // Strength progression from localStorage
   var htData=[],rdlData=[];
-  var scanDate=new Date(currentDate);
-  for(var di=0;di<30;di++){
-    var key="tp-exlog-"+scanDate.getFullYear()+"-"+(scanDate.getMonth()+1)+"-"+scanDate.getDate();
+  var sd=new Date(currentDate);
+  for(var di=0;di<60;di++){
+    var dk="tp-exlog-"+sd.getFullYear()+"-"+(sd.getMonth()+1)+"-"+sd.getDate();
     try{
-      var log=JSON.parse(localStorage.getItem(key)||"{}");
-      var dayStr2=("0"+scanDate.getDate()).slice(-2)+"/"+(scanDate.getMonth()+1);
-      if(log[1]&&log[1].w&&scanDate.getDay()===1){
-        htData.unshift({d:dayStr2,w:parseFloat(log[1].w)||0,r:log[1].r||""});
-      }
-      if(log[1]&&log[1].w&&scanDate.getDay()===3){
-        rdlData.unshift({d:dayStr2,w:parseFloat(log[1].w)||0,r:log[1].r||""});
-      }
+      var lg=JSON.parse(localStorage.getItem(dk)||"{}");
+      var ds2=("0"+sd.getDate()).slice(-2)+"/"+(sd.getMonth()+1);
+      if(sd.getDay()===1&&lg[1]&&lg[1].w){htData.unshift({d:ds2,w:parseFloat(lg[1].w)||0});}
+      if(sd.getDay()===3&&lg[1]&&lg[1].w){rdlData.unshift({d:ds2,w:parseFloat(lg[1].w)||0});}
     }catch(e){}
-    scanDate.setDate(scanDate.getDate()-1);
+    sd.setDate(sd.getDate()-1);
   }
 
-  function miniChart(data,color,title,unit){
-    if(data.length<2)return'<div style="font-size:11px;color:#A898B0">Log '+title+' in daily view to track progression</div>';
+  function miniBar(data,color,title){
+    if(data.length<1)return'<div style="font-size:11px;color:#A898B0">Log weights in daily view to see progression here.</div>';
     var maxW=Math.max.apply(null,data.map(function(d){return d.w;}));
     var minW=Math.min.apply(null,data.map(function(d){return d.w;}));
-    var range=maxW-minW||5;
+    var rng=maxW-minW||1;
     var latest=data[data.length-1];
-    var first=data[0];
-    var gain=Math.round((latest.w-first.w)*10)/10;
-    var gainColor=gain>0?"#5B8A5E":gain<0?"#DC2626":"#A898B0";
+    var gain=Math.round((latest.w-(data[0].w))*10)/10;
     var bars=data.map(function(d){
-      var h=Math.max(Math.round(((d.w-minW)/range)*70+20),5);
-      return'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:'+color+';font-weight:600">'+d.w+'</div><div style="width:100%;height:'+h+'px;background:'+color+';border-radius:2px 2px 0 0;opacity:0.8"></div><div style="font-size:8px;color:#A898B0">'+d.d+'</div></div>';
-    }).join("");
-    return'<div style="font-size:11px;color:#A898B0;margin-bottom:6px">'+latest.w+unit+' \u00B7 '+(gain>0?"+":"")+gain+unit+' over '+data.length+' sessions</div><div style="display:flex;align-items:flex-end;gap:3px;height:70px">'+bars+'</div>';
+      var h=Math.max(Math.round(((d.w-minW)/rng)*60+10),4);
+      return'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+        +'<div style="font-size:8px;color:'+color+';font-weight:600">'+d.w+'</div>'
+        +'<div style="width:100%;height:'+h+'px;background:'+color+';border-radius:2px 2px 0 0;opacity:0.75"></div>'
+        +'<div style="font-size:8px;color:#A898B0">'+d.d+'</div>'
+        +'</div>';
+    }).join('');
+    return'<div style="font-size:11px;color:#A898B0;margin-bottom:6px">Latest: '+latest.w+' kg'+(data.length>1?' \u00B7 '+(gain>=0?'+':'')+gain+' kg over '+data.length+' sessions':'')+'</div>'
+      +'<div style="display:flex;align-items:flex-end;gap:3px;height:70px">'+bars+'</div>';
   }
 
-  if(htData.length>0||rdlData.length>0){
-    html+='<div class="dash-section"><div class="dash-title">Strength Progression</div>';
-    if(htData.length>0){
-      html+='<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:8px"><div style="font-size:13px;font-weight:600;color:#3D2E4A;margin-bottom:8px">\uD83D\uDCAA Hip Thrust</div>'
-        +miniChart(htData,"#8B5CF6"," hip thrust"," kg")
-        +'</div>';
-    }
-    if(rdlData.length>0){
-      html+='<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:8px"><div style="font-size:13px;font-weight:600;color:#3D2E4A;margin-bottom:8px">\uD83D\uDCAA Romanian Deadlift</div>'
-        +miniChart(rdlData,"#6B5B8A"," RDL"," kg")
-        +'</div>';
-    }
-    html+='</div>';
-  } else {
-    html+='<div class="dash-section"><div class="dash-title">Strength Progression</div><div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;color:#A898B0;font-size:12px">Log weights in your daily gym sessions to track progressive overload here.</div></div>';
-  }
+  html+='<div class="dash-section"><div class="dash-title">Strength Progression</div>'
+    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:8px">'
+    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A;margin-bottom:8px">\uD83D\uDCAA Hip Thrust (Mon)</div>'
+    +miniBar(htData,"#8B5CF6","hip thrust")
+    +'</div>'
+    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px">'
+    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A;margin-bottom:8px">\uD83D\uDCAA RDL (Wed)</div>'
+    +miniBar(rdlData,"#6B5B8A","RDL")
+    +'</div></div>';
 
-  coach.innerHTML=html;
+  cv.innerHTML=html;
 }
 
 try{if(!localStorage.getItem("tp-move-cleanup-v3")){for(let ci=localStorage.length-1;ci>=0;ci--){const ck=localStorage.key(ci);if(ck&&ck.startsWith("tp-moved"))localStorage.removeItem(ck)}localStorage.setItem("tp-move-cleanup-v3","done")}}catch(e){}
 
-window.addEventListener('error', function(e){
-  var d = document.getElementById('dashboard') || document.body;
-  if(d){ d.style.display = 'block';
-  d.innerHTML = '<div style="padding:20px;background:white;color:red;font-size:13px;font-family:monospace;word-break:break-all"><b>JS ERROR:</b><br>' + (e.message||'unknown') + '<br>Line: ' + e.lineno + '</div>'; }
+window.addEventListener('error',function(e){
+  if(!e||!e.message)return;
+  var m=e.message.toLowerCase();
+  if(m.indexOf('notfounderror')>=0||m.indexOf('can not be found')>=0||m.indexOf('cannot find')>=0||m.indexOf('hierarchyrequesterror')>=0)return;
+  var d=document.getElementById('content');
+  if(d)d.innerHTML='<div style="padding:20px;color:red;font-size:12px;font-family:monospace"><b>JS ERROR:</b><br>'+(e.message)+'<br>Line: '+(e.lineno)+'</div>';
 });
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', function(){
