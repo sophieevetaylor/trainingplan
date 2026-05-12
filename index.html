@@ -824,7 +824,7 @@ const dayActivities=stravaData.filter(a=>a.date.startsWith(dateStr));
 const runMatch=dayActivities.find(a=>a.type==="Run"||a.sport_type==="Run");
 const rideMatch=dayActivities.find(a=>a.type==="Ride"||a.sport_type==="Ride"||a.sport_type==="Spinning");
 const weightMatch=dayActivities.find(a=>a.type==="WeightTraining"||a.sport_type==="WeightTraining");
-const pilatesMatch=dayActivities.find(a=>a.sport_type==="Pilates"||(a.name&&a.name.toLowerCase().includes("pilates")));
+const pilatesMatch=dayActivities.find(a=>{var st=a.sport_type||"";var nm=(a.name||"").toLowerCase();var isPilatesType=st==="Pilates"||st==="Yoga";var isPilatesName=nm.includes("pilates")||nm.includes("reformer")||nm.includes("mat class")||nm.includes("barre");return isPilatesType||isPilatesName;});
 const walkMatch=dayActivities.find(a=>a.type==="Walk"||a.sport_type==="Walk");
 const svg='<svg width="11" height="11" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:3px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>';
 function injectStrava(sel,html,ck,cl,saveFn){const card=document.querySelector(sel);if(!card)return;const cr=card.querySelector(".run-check-row");const ex=card.querySelector(".strava-inline");if(ex)ex.remove();const div=document.createElement("div");div.className="strava-inline";div.innerHTML=html;if(cr)card.insertBefore(div,cr);else card.appendChild(div);if(ck){const ch=$(ck),lb=$(cl);if(ch&&!ch.classList.contains("done")){ch.classList.add("done");if(lb){lb.classList.add("done");lb.textContent=lb.textContent.replace("Mark ","")+" (auto)"}if(saveFn)saveFn();}}}
