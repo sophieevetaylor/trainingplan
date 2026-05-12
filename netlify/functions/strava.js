@@ -4,6 +4,7 @@ exports.handler = async function(event) {
     "Access-Control-Allow-Origin": "*"
   };
 
+  
   // Step 1: Refresh the access token
   let accessToken;
   try {
