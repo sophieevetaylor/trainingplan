@@ -434,52 +434,127 @@ function renderBridalArms(){
 }
 
 // \u2500\u2500\u2500 STRENGTH FUNCTIONS (updated \u2014 no sumo squat, no abductor/adductor machine) \u2500\u2500
-function SA(p){const h=p==="hypertrophy",m=p==="maintenance";
-// Progressive hip thrust load by block
+function SA(p){
+// STRENGTH A: Glute + Push + Core | Monday | 50 min
+const h=p==="hypertrophy",m=p==="maintenance";
 const blk=getBlock(currentDate);const bid=blk?blk.id:"block1";const wk=blk?getWeek(currentDate,blk):1;
-const htLoad={preplan:"45\u201350 kg",block1:(48+wk*2)+'\u2013'+(52+wk*2)+' kg \u2192 add 2.5 kg when all reps hit',raceweek_hm1:"50 kg (drop 1 set)",recovery1:"48\u201352 kg (rebuilding)",block2:(54+(wk-1)*2)+'\u2013'+(58+(wk-1)*2)+' kg \u2192 progressive overload each session',block3:(62+(wk-1)*2)+'\u2013'+(66+(wk-1)*2)+' kg',block4:(68+(wk-1)*2)+'\u2013'+(72+(wk-1)*2)+' kg \u2192 chase 80 kg by end of block',block5:"70\u201375 kg (maintain for speed)",block6:"80\u201390 kg \u2192 true hypertrophy loads. When you hit all reps clean, add 2.5 kg.",block7:"72\u201378 kg",block8:"70\u201375 kg",block9:"68\u201372 kg (taper)"}[bid]||"55\u201360 kg \u2192 add 2.5 kg when you hit all reps";
-const benchLoad=h?"12.5\u201315 kg DBs \u2192 add 1.25 kg when you hit all reps":m?"10\u201312.5 kg (maintain)":bid==="block1"?"8\u201310 kg DBs":bid==="block2"||bid==="block3"?"10\u201312.5 kg DBs \u2192 add 1.25 kg each session you hit all reps":"10\u201312.5 kg DBs";
-const shldLoad=h?"10\u201312.5 kg DBs":m?"7.5\u201310 kg":bid==="block1"?"6\u20137.5 kg DBs":bid==="block2"||bid==="block3"?"7.5\u201310 kg DBs \u2192 add 1.25 kg when you hit 12 clean":"7.5\u201310 kg DBs";
-return{name:"Strength A \u2013 Glute + Push",duration:h?"55 min":m?"40 min":"45 min",exercises:[
-{name:"Banded glute bridge (warm-up)",sets:2,reps:"15",load:"Bodyweight + medium band",tempo:"2-sec hold at top",note:"Activation \u2013 squeeze hard"},
-{name:"Hip thrust (booty builder)",sets:h?4:m?3:4,reps:h?"8\u201310":m?"8":"10\u201312",load:htLoad,tempo:"2-sec pause at lockout",note:"KEY LIFT \u2013 when you hit every rep cleanly, add 2.5 kg next session"},
-{name:"Single-leg glute bridge",sets:3,reps:"12 each leg",load:"Bodyweight",tempo:"Squeeze at top 2 sec",note:"Zero quad load \u2014 pure glute isolation"},
-{name:"DB bench press",sets:h?4:m?3:3,reps:h?"6\u20138":"8\u201310",load:benchLoad,tempo:"Controlled",note:""},
-{name:"DB shoulder press",sets:3,reps:"10\u201312",load:shldLoad,tempo:"Controlled",note:""},
-{name:"Pallof press",sets:3,reps:"10 each side",load:h?"12\u201315 kg cable":"8\u201310 kg cable \u2192 build to 12 kg",tempo:"Slow, controlled",note:"Core \u2013 anti-rotation"},
-{name:"Dead bug",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Exhale as you extend",note:"Core \u2014 lower back glued to floor the whole time"}
+// Booty builder (hip thrust machine) \u2014 progressive by block
+const htLoad={
+  preplan:"45\u201350 kg",
+  block1:(48+wk*2)+"\u2013"+(52+wk*2)+" kg",
+  raceweek_hm1:"50 kg (1 drop set)",
+  recovery1:"48\u201352 kg (rebuilding)",
+  block2:(54+(wk-1)*2)+"\u2013"+(58+(wk-1)*2)+" kg",
+  block3:(60+(wk-1)*2)+"\u2013"+(64+(wk-1)*2)+" kg",
+  block4:(66+(wk-1)*2)+"\u2013"+(70+(wk-1)*2)+" kg",
+  block5:"70\u201375 kg (maintain for race block)",
+  block6:"78\u201388 kg \u2192 true hypertrophy",
+  block7:"72\u201378 kg",block8:"68\u201374 kg",block9:"65\u201370 kg"
+}[bid]||"55\u201360 kg";
+// DB bench press \u2014 progressive
+const benchLoad={
+  block1:"8\u201310 kg DBs",block2:"10\u201312 kg DBs",block3:"12\u201313 kg DBs",
+  block4:"12.5\u201314 kg DBs",block5:"13\u201315 kg DBs",block6:"14\u201316 kg DBs",
+  block7:"13\u201315 kg DBs",block8:"12\u201314 kg DBs",block9:"12 kg DBs"
+}[bid]||"10\u201312 kg DBs";
+// DB shoulder press
+const shldLoad={
+  block1:"6\u20137.5 kg DBs",block2:"7.5\u20139 kg DBs",block3:"9\u201310 kg DBs",
+  block4:"10\u201311 kg DBs",block5:"10\u201312 kg DBs",block6:"12\u201314 kg DBs",
+  block7:"11\u201312 kg DBs",block8:"10\u201311 kg DBs",block9:"10 kg DBs"
+}[bid]||"7.5\u201310 kg DBs";
+// Adductor machine \u2014 progressive (inner thigh support, not bulk)
+const addLoad={
+  block1:"30\u201340 kg",block2:"35\u201345 kg",block3:"40\u201350 kg",
+  block4:"45\u201355 kg",block5:"50\u201360 kg",block6:"55\u201365 kg",
+  block7:"50\u201360 kg",block8:"45\u201355 kg",block9:"40\u201350 kg"
+}[bid]||"35\u201345 kg";
+return{name:"Strength A \u2013 Glute + Push",duration:h?"55 min":m?"40 min":"50 min",exercises:[
+  {name:"Hip thrust (booty builder)",sets:h?5:m?3:4,reps:h?"8\u201310":m?"8":"10\u201312",load:htLoad+" \u2192 add 2.5 kg when every rep is clean",tempo:"2-sec pause at lockout, ribs down",note:"KEY LIFT \u2013 drive through heels, chin tucked, squeeze hard at top"},
+  {name:"DB sumo squat",sets:3,reps:"12\u201315",load:"20\u201328 kg single DB \u2192 add 2 kg when 15 reps feel easy",tempo:"Slow 3-sec lower, pause at bottom",note:"Wide stance, toes out 45\u00B0 \u2014 all glute and inner thigh, not quad"},
+  {name:"Adductor machine",sets:3,reps:"15\u201320",load:addLoad+" \u2192 add 5 kg when all reps smooth",tempo:"Slow and controlled, 2-sec squeeze at close",note:"Inner thigh and glute support \u2014 use full range of motion"},
+  {name:"Machine chest press (or DB bench)",sets:h?4:3,reps:h?"8\u201310":"10\u201312",load:benchLoad+" \u2192 add 1.25 kg when you hit all reps",tempo:"Controlled \u2014 feel the chest working",note:"Retract shoulder blades before pressing"},
+  {name:"DB shoulder press",sets:3,reps:"10\u201312",load:shldLoad+" \u2192 add 1.25 kg when 12 reps feel easy",tempo:"Press up, lower slowly (3 sec)",note:"Brace core \u2014 no back arch"},
+  {name:"Dead bug",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Exhale as you extend, lower back glued to floor",note:"Core anti-extension \u2014 the foundation of your running posture"}
 ]}}
 
-function SB(p){const h=p==="hypertrophy",m=p==="maintenance";
+function SB(p){
+// STRENGTH B: Posterior Chain + Pull | Wednesday | 50 min
+const h=p==="hypertrophy",m=p==="maintenance";
 const blk=getBlock(currentDate);const bid=blk?blk.id:"block1";const wk=blk?getWeek(currentDate,blk):1;
-const rdlLoad={preplan:"28\u201330 kg",block1:(28+wk*2)+'\u2013'+(32+wk*2)+' kg \u2192 add 2.5 kg when you hit all reps',raceweek_hm1:"32 kg (drop 1 set)",recovery1:"28\u201332 kg",block2:(36+(wk-1)*2)+'\u2013'+(40+(wk-1)*2)+' kg',block3:(42+(wk-1)*2)+'\u2013'+(46+(wk-1)*2)+' kg',block4:(48+(wk-1)*2)+'\u2013'+(52+(wk-1)*2)+' kg',block5:"48\u201352 kg (maintain)",block6:"52\u201358 kg \u2192 hypertrophy loads",block7:"46\u201350 kg",block8:"44\u201348 kg",block9:"42\u201346 kg"}[bid]||"32\u201336 kg";
-const kickLoad={block1:"4\u20136 kg cable",block2:"6\u20138 kg cable",block3:"8\u201310 kg cable",block4:"10\u201312 kg cable",block5:"10\u201312 kg cable",block6:"12\u201314 kg cable"}[bid]||"5\u20138 kg cable";
-const latLoad=h?"35\u201342 kg \u2192 build to 42 kg":m?"30\u201335 kg":{block1:"25\u201328 kg",block2:"28\u201332 kg",block3:"30\u201335 kg",block4:"33\u201338 kg",block5:"35\u201340 kg",block6:"38\u201342 kg"}[bid]||"28\u201332 kg";
-const rowLoad=h?"30\u201334 kg":{block1:"20\u201324 kg",block2:"24\u201328 kg",block3:"27\u201330 kg",block4:"28\u201332 kg",block5:"30\u201334 kg",block6:"32\u201336 kg"}[bid]||"22\u201326 kg";
-return{name:"Strength B \u2013 Posterior + Pull",duration:h?"55 min":m?"40 min":"45 min",exercises:[
-{name:"Banded clamshells (warm-up)",sets:2,reps:"15 each side",load:"Medium band",tempo:"Controlled",note:"Activation \u2014 feel it in the side of the glute"},
-{name:"Romanian deadlift",sets:h?4:3,reps:h?"8\u201310":"10\u201312",load:rdlLoad,tempo:"Slow eccentric (3 sec down), hip hinge",note:"Feel hamstrings stretch, drive hips forward to stand"},
-{name:"Cable kickback",sets:3,reps:"15 each leg",load:kickLoad+" \u2192 add 1 kg when you hit all reps cleanly",tempo:"Squeeze at top 1 sec",note:"Glute isolation \u2013 no swinging, no back arch"},
-{name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4\u20135":"6\u20138",load:"Bodyweight only",tempo:"Slow 5-sec lowering",note:"NON-NEGOTIABLE for hamstring health \u2014 do not skip"},
-{name:"Lat pulldown",sets:h?4:3,reps:"8\u201310",load:latLoad+" \u2192 add 2.5 kg when you hit all reps",tempo:"Squeeze shoulder blades at bottom",note:""},
-{name:"Seated cable row",sets:3,reps:"10\u201312",load:rowLoad+" \u2192 add 2.5 kg when you hit all reps",tempo:"Squeeze shoulder blades 1 sec",note:""},
-{name:"Bird dog",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Pause 2 sec extended, hips level",note:"Core + glute med \u2014 don't let hips rotate or drop"}
+// RDL \u2014 the signature posterior chain lift
+const rdlLoad={
+  preplan:"28\u201330 kg",
+  block1:(28+wk*2)+"\u2013"+(32+wk*2)+" kg",
+  raceweek_hm1:"30 kg (1 drop set)",
+  recovery1:"28\u201332 kg",
+  block2:(36+(wk-1)*2)+"\u2013"+(40+(wk-1)*2)+" kg",
+  block3:(42+(wk-1)*2)+"\u2013"+(46+(wk-1)*2)+" kg",
+  block4:(48+(wk-1)*2)+"\u2013"+(52+(wk-1)*2)+" kg",
+  block5:"48\u201352 kg (maintain)",
+  block6:"52\u201360 kg \u2192 hypertrophy phase",
+  block7:"46\u201352 kg",block8:"44\u201350 kg",block9:"42\u201346 kg"
+}[bid]||"32\u201336 kg";
+// Cable kickback
+const kickLoad={
+  block1:"4\u20136 kg",block2:"5\u20137 kg",block3:"6\u20138 kg",
+  block4:"8\u201310 kg",block5:"9\u201311 kg",block6:"10\u201312 kg",
+  block7:"8\u201310 kg",block8:"7\u20139 kg",block9:"6\u20138 kg"
+}[bid]||"5\u20137 kg";
+// Abductor machine
+const abdLoad={
+  block1:"30\u201340 kg",block2:"35\u201345 kg",block3:"40\u201350 kg",
+  block4:"45\u201355 kg",block5:"50\u201360 kg",block6:"55\u201365 kg",
+  block7:"50\u201360 kg",block8:"45\u201355 kg",block9:"40\u201350 kg"
+}[bid]||"35\u201345 kg";
+// Lat pulldown
+const latLoad={
+  block1:"24\u201328 kg",block2:"28\u201332 kg",block3:"30\u201335 kg",
+  block4:"33\u201338 kg",block5:"35\u201340 kg",block6:"38\u201344 kg",
+  block7:"35\u201340 kg",block8:"32\u201338 kg",block9:"30\u201335 kg"
+}[bid]||"28\u201332 kg";
+// Seated cable row / machine row
+const rowLoad={
+  block1:"20\u201324 kg",block2:"24\u201328 kg",block3:"27\u201332 kg",
+  block4:"30\u201335 kg",block5:"32\u201337 kg",block6:"35\u201340 kg",
+  block7:"32\u201337 kg",block8:"30\u201335 kg",block9:"27\u201332 kg"
+}[bid]||"24\u201328 kg";
+return{name:"Strength B \u2013 Posterior + Pull",duration:h?"55 min":m?"40 min":"50 min",exercises:[
+  {name:"Romanian deadlift (DBs or bar)",sets:h?4:3,reps:h?"8\u201310":"10\u201312",load:rdlLoad+" \u2192 add 2.5 kg when all reps clean",tempo:"3-sec lowering \u2014 feel the hamstring stretch",note:"Push hips back, bar slides down thighs, drive forward to stand"},
+  {name:"Cable kickback",sets:3,reps:"15 each leg",load:kickLoad+" \u2192 add 1 kg when all reps smooth",tempo:"Squeeze hard at top for 1 sec",note:"Slight forward lean, core braced \u2014 no swinging or back arch"},
+  {name:"Abductor machine",sets:3,reps:"15\u201320",load:abdLoad+" \u2192 add 5 kg when all reps smooth",tempo:"Full range \u2014 slow return, don't let weight drop",note:"Outer glute and hip \u2014 essential for running stability"},
+  {name:"Nordic curl eccentric",sets:3,reps:p==="base"?"4\u20135":"6\u20138",load:"Bodyweight only",tempo:"5-sec lowering \u2014 fight gravity the whole way",note:"NON-NEGOTIABLE for hamstring health \u2014 prevents injury at higher running volumes"},
+  {name:"Lat pulldown",sets:h?4:3,reps:"8\u201310",load:latLoad+" \u2192 add 2.5 kg when you hit all reps",tempo:"Pull to upper chest, squeeze shoulder blades at bottom",note:"Lead with elbows, lean back 15\u00B0"},
+  {name:"Machine row (or seated cable row)",sets:3,reps:"10\u201312",load:rowLoad+" \u2192 add 2.5 kg when you hit all reps",tempo:"Drive elbows straight back, squeeze 1 sec at end range",note:"Torso stays still \u2014 all back, no swinging"}
 ]}}
 
-function SC(p){const h=p==="hypertrophy",m=p==="maintenance";
+function SC(p){
+// STRENGTH C: Glute Activation + Core | Friday | 45 min
+const h=p==="hypertrophy",m=p==="maintenance";
 const blk=getBlock(currentDate);const bid=blk?blk.id:"block1";
-const slhtLoad={block1:"Bodyweight",block2:"Bodyweight \u2192 try 5 kg plate when all reps feel easy",block3:"5 kg plate",block4:"5\u20138 kg plate \u2192 add 2.5 kg when you hit all reps",block5:"8\u201310 kg plate (maintain)",block6:"10\u201315 kg plate \u2192 hypertrophy loads",block7:"8\u201310 kg plate",block8:"8 kg plate",block9:"6\u20138 kg plate"}[bid]||"Bodyweight";
-const stepLoad={block1:"Bodyweight",block2:"Bodyweight",block3:"5 kg DBs",block4:"5\u20138 kg DBs",block5:"8 kg DBs",block6:"8\u201310 kg DBs",block7:"8 kg DBs",block8:"6\u20138 kg DBs",block9:"6 kg DBs"}[bid]||"Bodyweight";
-const frogSets=["block4","block5","block6"].includes(bid)?4:3;
-const frogReps=["block6"].includes(bid)?"30":["block4","block5"].includes(bid)?"28":"25";
-return{name:"Strength C \u2013 Glute Activation + Core",duration:m?"35 min":h?"45 min":"40 min",exercises:[
-{name:"Banded lateral walks",sets:3,reps:"15 each direction",load:"Medium band (above knees)",tempo:"Stay low throughout",note:"Warm-up \u2014 feel the side of the glutes firing"},
-{name:h?"Single-leg hip thrust (weighted)":"Single-leg hip thrust",sets:3,reps:"12 each leg",load:h?"10\u201315 kg plate on hip":slhtLoad,tempo:"Squeeze at top, hold 1\u20132 sec",note:"Booty shaping \u2014 keep hips perfectly level"},
-{name:"Step-ups (low box)",sets:3,reps:"12 each leg",load:stepLoad,tempo:"Lean forward 20\u00B0, drive through heel",note:"Glute emphasis \u2014 do NOT push off the back foot at all"},
-{name:"Frog pumps",sets:frogSets,reps:frogReps,load:"Bodyweight",tempo:"Squeeze hard at top, constant tension",note:"All glute, zero quad \u2014 feet together, knees out wide"},
-{name:"Plank variations",sets:3,reps:"45\u201360 sec",load:"Bodyweight",tempo:"Pelvis tucked, brace hard",note:"Core \u2014 progress to shoulder taps or plank walks"},
-{name:"Dead bug",sets:3,reps:"10 each side",load:"Bodyweight",tempo:"Exhale as you extend",note:"Anti-extension core \u2014 lower back stays glued to floor"}
+const slhtLoad={
+  block1:"Bodyweight",block2:"Bodyweight \u2192 add 5 kg plate when all reps easy",
+  block3:"5 kg plate",block4:"5\u20138 kg plate",block5:"8\u201310 kg plate",
+  block6:"10\u201315 kg plate",block7:"8\u201310 kg plate",block8:"8 kg plate",block9:"6\u20138 kg plate"
+}[bid]||"Bodyweight";
+const stepLoad={
+  block1:"Bodyweight",block2:"Bodyweight",block3:"6 kg DBs",block4:"6\u20138 kg DBs",
+  block5:"8\u201310 kg DBs",block6:"10\u201312 kg DBs",block7:"8\u201310 kg DBs",block8:"8 kg DBs",block9:"6\u20138 kg DBs"
+}[bid]||"Bodyweight";
+const faceLoad={
+  block1:"8\u201312 kg cable",block2:"10\u201314 kg cable",block3:"12\u201316 kg cable",
+  block4:"14\u201318 kg cable",block5:"16\u201320 kg cable",block6:"18\u201322 kg cable",
+  block7:"15\u201318 kg cable",block8:"12\u201316 kg cable",block9:"10\u201314 kg cable"
+}[bid]||"10\u201314 kg cable";
+return{name:"Strength C \u2013 Glute Activation + Arms",duration:m?"35 min":h?"50 min":"45 min",exercises:[
+  {name:"Hip thrust (booty builder)",sets:3,reps:"15\u201318",load:"Lighter than Monday \u2014 "+{block1:"40\u201345 kg",block2:"45\u201350 kg",block3:"50\u201355 kg",block4:"55\u201360 kg",block5:"60\u201365 kg",block6:"65\u201370 kg",block7:"60\u201365 kg",block8:"55\u201360 kg",block9:"50\u201355 kg"}[bid]+"\u2192 higher rep pump work",tempo:"Constant tension, no full lockout",note:"Pump-focused \u2014 feel the glutes burning by rep 12"},
+  {name:"Single-leg hip thrust",sets:3,reps:"12 each leg",load:slhtLoad+" \u2192 add weight when all reps feel controlled",tempo:"Hold 2 sec at top, hips perfectly level",note:"Booty shaping \u2014 the unilateral version targets each glute directly"},
+  {name:"DB lateral lunge",sets:3,reps:"10 each leg",load:{block1:"8 kg DBs",block2:"10 kg DBs",block3:"12 kg DBs",block4:"12\u201314 kg DBs",block5:"14\u201316 kg DBs",block6:"14\u201316 kg DBs",block7:"12\u201314 kg DBs",block8:"12 kg DBs",block9:"10 kg DBs"}[bid]||"10 kg DBs",tempo:"Lower slowly, push through heel of working leg",note:"Glute-dominant lunge \u2014 keep chest up, knee tracks over toe"},
+  {name:"Face pulls (cable)",sets:3,reps:"15",load:faceLoad+" \u2192 add 2 kg when form stays perfect",tempo:"Pull to face height, elbows high, squeeze rear delts",note:"Shoulder health + posture \u2014 counteracts all the pressing"},
+  {name:"DB bicep curl + hammer curl superset",sets:3,reps:"12 each variation",load:{block1:"7\u20138 kg DBs",block2:"8\u20139 kg DBs",block3:"9\u201310 kg DBs",block4:"10\u201311 kg DBs",block5:"11\u201312 kg DBs",block6:"12\u201313 kg DBs",block7:"11\u201312 kg DBs",block8:"10\u201311 kg DBs",block9:"9\u201310 kg DBs"}[bid]||"8\u201310 kg DBs",tempo:"No swinging \u2014 elbows pinned, slow 3-sec lower",note:"12 standard curls then immediately 12 hammer curls \u2014 full bicep hit"},
+  {name:"Pallof press",sets:3,reps:"10 each side",load:"8\u201312 kg cable",tempo:"Press out slowly, hold 1 sec, resist rotation",note:"Core anti-rotation \u2014 the best core exercise for runners"}
 ]}}
+
 
 function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
 function getBlock(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);for(const b of BLOCKS){if(c>=parseLocal(b.startDate)&&c<=parseLocal(b.endDate))return b}return null}
@@ -1303,7 +1378,7 @@ function renderCoachTab(){
   var coach=document.getElementById("coachView");
   if(!coach)return;
   if(!stravaData||!stravaData.length){
-    coach.innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">No Strava activities found yet.</div></div>';
+    coach.innerHTML='<div class="dash-section" style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:13px">No activities yet.<br><span style="font-size:11px;font-family:monospace">stravaData: '+(stravaData?'length='+stravaData.length:'null')+'<br>stravaLoaded: '+stravaLoaded+'</span></div></div>';
     return;
   }
   var html='';
