@@ -1,80 +1,96 @@
-const https = require("https");
-
-function req(url, opts) {
-  return new Promise(function(resolve, reject) {
-    var parsed = new URL(url);
-    var o = {
-      hostname: parsed.hostname,
-      path: parsed.pathname + parsed.search,
-      method: opts.method || "GET",
-      headers: opts.headers || {}
-    };
-    var r = https.request(o, function(res) {
-      var d = "";
-      res.on("data", function(c) { d += c; });
-      res.on("end", function() {
-        try { resolve(JSON.parse(d)); }
-        catch(e) { resolve(d); }
-      });
-    });
-    r.on("error", reject);
-    if (opts.body) r.write(opts.body);
-    r.end();
-  });
-}
-
 exports.handler = async function(event) {
-  var headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Content-Type": "application/json"
+  const CORS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*"
   };
+
+  // Step 1: Refresh the access token
+  let accessToken;
   try {
-    var body = JSON.stringify({
-      client_id: process.env.STRAVA_CLIENT_ID,
-      client_secret: process.env.STRAVA_CLIENT_SECRET,
-      refresh_token: process.env.STRAVA_REFRESH_TOKEN,
-      grant_type: "refresh_token"
-    });
-    var token = await req("https://www.strava.com/oauth/token", {
+    const tokenRes = await fetch("https://www.strava.com/oauth/token", {
       method: "POST",
-      headers: {"Content-Type": "application/json", "Content-Length": "" + Buffer.byteLength(body)},
-      body: body
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: process.env.STRAVA_CLIENT_ID,
+        client_secret: process.env.STRAVA_CLIENT_SECRET,
+        refresh_token: process.env.STRAVA_REFRESH_TOKEN,
+        grant_type: "refresh_token"
+      })
     });
-    if (!token || !token.access_token) {
-      return {statusCode: 401, headers: headers, body: JSON.stringify({error: "token failed", detail: token})};
-    }
-    var acts = await req("https://www.strava.com/api/v3/athlete/activities?per_page=30&page=1", {
-      method: "GET",
-      headers: {Authorization: "Bearer " + token.access_token}
-    });
-    if (!Array.isArray(acts)) {
-      return {statusCode: 500, headers: headers, body: JSON.stringify({error: "bad response", detail: acts})};
-    }
-    var result = acts.map(function(a) {
-      var dist = (a.distance || 0) / 1000;
-      var mt = a.moving_time || 0;
-      var pace = null;
-      if (dist > 0.1) {
-        var s = mt / dist;
-        pace = Math.floor(s / 60) + ":" + String(Math.round(s % 60)).padStart(2, "0");
-      }
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
       return {
-        name: a.name || "Activity",
-        type: a.type || "Unknown",
-        sport_type: a.sport_type || a.type || "Unknown",
-        date: a.start_date_local || "",
-        distance_km: Math.round(dist * 100) / 100,
-        moving_time_min: Math.round(mt / 60),
-        elapsed_time_min: Math.round((a.elapsed_time || 0) / 60),
-        pace_per_km: pace,
-        avg_hr: a.average_heartrate || null,
-        max_hr: a.max_heartrate || null,
-        elevation_gain: a.total_elevation_gain || 0,
-        suffer_score: a.suffer_score || null
+        statusCode: 500,
+        headers: CORS,
+        body: JSON.stringify({ error: "Token refresh failed", detail: tokenData })
       };
-    });
-    return {statusCode: 200, headers: headers, body: JSON.stringify({activities: result})};
-  } catch(err) {
-    return {statusCode: 500, headers: headers, body: JSON.stringify({error: err.message})};
+    }
+    accessToken = tokenData.access_token;
+  } catch (err) {
+    return {
+      statusCode: 500,
+      headers: CORS,
+      body: JSON.stringify({ error: "Token request failed", detail: err.message })
+    };
   }
+
+  // Step 2: Fetch last 60 activities
+  let rawActivities;
+  try {
+    const activitiesRes = await fetch(
+      "https://www.strava.com/api/v3/athlete/activities?per_page=60",
+      { headers: { Authorization: "Bearer " + accessToken } }
+    );
+    rawActivities = await activitiesRes.json();
+    if (!Array.isArray(rawActivities)) {
+      return {
+        statusCode: 500,
+        headers: CORS,
+        body: JSON.stringify({ error: "Activities not array", detail: rawActivities })
+      };
+    }
+  } catch (err) {
+    return {
+      statusCode: 500,
+      headers: CORS,
+      body: JSON.stringify({ error: "Activities request failed", detail: err.message })
+    };
+  }
+
+  // Step 3: Normalise to what the app expects
+  const activities = rawActivities.map(a => {
+    // Normalise date to noon local time to avoid DST off-by-one
+    const raw = new Date(a.start_date_local || a.start_date);
+    const dateStr = raw.getFullYear() + "-" +
+      String(raw.getMonth() + 1).padStart(2, "0") + "-" +
+      String(raw.getDate()).padStart(2, "0");
+
+    // Pace: seconds per metre → min:sec per km
+    let pace_per_km = "";
+    if (a.moving_time && a.distance && a.distance > 0) {
+      const secPerKm = (a.moving_time / a.distance) * 1000;
+      const mins = Math.floor(secPerKm / 60);
+      const secs = Math.round(secPerKm % 60);
+      pace_per_km = mins + ":" + String(secs).padStart(2, "0");
+    }
+
+    return {
+      id: a.id,
+      name: a.name,
+      type: a.type,
+      sport_type: a.sport_type || a.type,
+      date: dateStr,
+      distance_km: a.distance ? Math.round(a.distance / 100) / 10 : 0,
+      moving_time_min: a.moving_time ? Math.round(a.moving_time / 60) : 0,
+      pace_per_km: pace_per_km,
+      avg_hr: a.average_heartrate || null,
+      total_elevation_gain: a.total_elevation_gain || 0
+    };
+  });
+
+  return {
+    statusCode: 200,
+    headers: CORS,
+    body: JSON.stringify({ activities })
+  };
 };
