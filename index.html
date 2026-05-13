@@ -407,7 +407,7 @@ let stravaData=null,stravaLoaded=false;
 async function loadStrava(){
   if(stravaLoaded)return renderStravaWidgets();
   try{
-    const res=await fetch("/.netlify/functions/strava");
+    const res=await fetch("https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/strava");
     const text=await res.text();
     let data;
     try{data=JSON.parse(text);}catch(e){
@@ -579,7 +579,7 @@ function pfSearch(val){
 
 function pfFetch(query){
   var re=document.getElementById("pf-results");if(!re)return;
-  var url="/.netlify/functions/food-search?q="+encodeURIComponent(query);
+  var url="https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/food-search?q="+encodeURIComponent(query);
   fetch(url).then(function(r){return r.text();}).then(function(text){
     var data;try{data=JSON.parse(text);}catch(e){if(re)re.innerHTML='<div class="pf-no-results">Search unavailable. Try again shortly.</div>';return;}
     if(!re)return;
@@ -906,145 +906,210 @@ function renderCoachTab(){
     cv.innerHTML='<div style="text-align:center;padding:40px 20px;color:#A898B0;font-size:14px">\uD83D\uDCCA Connecting to Strava...</div>';
     return;
   }
-  var html='';
+
   var b=getBlock(currentDate);
   var bid=b?b.id:"block1";
+  var pr=b?(b.kmRange||b.weeklyKm||"15\u201325"):"15\u201325";
+  var pMin=parseInt(pr)||15;
+  var pMax=parseInt(pr.split("\u2013")[1]||pr.split("-")[1]||pMin+10)||25;
 
-  // Weekly volume
+  // Week start (Monday)
   var ws=new Date(currentDate);
   var dow=ws.getDay();
   ws.setDate(ws.getDate()-(dow===0?6:dow-1));
   ws=new Date(ws.getFullYear(),ws.getMonth(),ws.getDate(),0,0,0);
-  var weekRuns=stravaData.filter(function(a){
-    if(a.type!=="Run"&&a.sport_type!=="Run")return false;
+
+  var allRuns=stravaData.filter(function(a){return a.type==="Run"||a.sport_type==="Run";});
+  var weekRuns=allRuns.filter(function(a){
     var d=new Date(a.date+"T12:00:00");return d>=ws&&d<=currentDate;
   });
   var weekKm=Math.round(weekRuns.reduce(function(s,a){return s+(a.distance_km||0);},0)*10)/10;
-  var pr=b?(b.kmRange||b.weeklyKm||"15\u201325"):"15\u201325";
-  var pMin=parseInt(pr)||15;
-  var pMax=parseInt(pr.split("\u2013")[1]||pr.split("-")[1]||pMin+10)||25;
   var vpct=Math.min(Math.round(weekKm/pMax*100),100);
-  var vc=weekKm<pMin*0.7?"#DC2626":weekKm<pMin?"#B8883E":"#5B8A5E";
-  html+='<div class="dash-section"><div class="dash-title">This Week</div>'
-    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px">'
-    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
-    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">\uD83C\uDFC3\u200D\u2640\uFE0F Running volume</div>'
-    +'<div style="font-size:13px;font-weight:700;color:'+vc+'">'+weekKm+' km</div>'
-    +'</div>'
-    +'<div style="background:rgba(180,160,190,0.15);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px">'
-    +'<div style="height:100%;width:'+vpct+'%;background:'+vc+';border-radius:4px"></div>'
-    +'</div>'
-    +'<div style="font-size:11px;color:#A898B0">Plan: '+pMin+'\u2013'+pMax+' km \u00B7 '+weekRuns.length+' run'+(weekRuns.length!==1?'s':'')+' this week</div>'
-    +'</div></div>';
+  var vc=weekKm<pMin*0.7?"#DC2626":weekKm<pMin?"#B8883E":"#2D6A4F";
 
-  // Long run progression
-  var allRuns=stravaData.filter(function(a){return a.type==="Run"||a.sport_type==="Run";});
+  function parsePace(p){if(!p)return 0;var parts=p.split(":");return parts.length>=2?parseFloat(parts[0])+(parseFloat(parts[1])/60):0;}
+  function fmtDate(dateStr){var d=new Date(dateStr+"T12:00:00");var days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];return days[d.getDay()]+" "+d.getDate()+" "+months[d.getMonth()];}
+  function inZone(pn){return pn>=5.83&&pn<=6.17;}
+
+  var easyRuns=allRuns.filter(function(a){return(a.distance_km||0)<14&&(a.distance_km||0)>2;}).slice(0,5);
   var longRuns=allRuns.filter(function(a){return(a.distance_km||0)>=10;}).slice(0,8).reverse();
+
+  var html='<div style="padding:2px 0">';
+  html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin-bottom:14px">COACHING ANALYSIS</div>';
+
+  // \u2500\u2500 Weekly Volume \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+    +'<div style="font-size:15px;font-weight:700;color:#3D2E4A;margin-bottom:10px">Weekly Volume</div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:#7A6B8A">Actual this week</span><span style="font-size:13px;font-weight:700;color:#3D2E4A">'+weekKm+' km</span></div>'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:13px;color:#7A6B8A">Plan target</span><span style="font-size:13px;font-weight:700;color:#3D2E4A">'+pMin+'\u2013'+pMax+' km</span></div>'
+    +'<div style="background:rgba(180,160,190,0.15);border-radius:4px;height:6px;overflow:hidden;margin-bottom:5px"><div style="height:100%;width:'+vpct+'%;background:'+vc+';border-radius:4px"></div></div>'
+    +'<div style="text-align:right;font-size:11px;color:#A898B0">'+vpct+'%</div></div>';
+
+  // Volume insight
+  var volMsg="",volColor="#B8883E",volIcon="\u26A0\uFE0F";
+  if(weekKm===0){volMsg="No runs logged yet this week. If it\u2019s early in the week, you\u2019re on track. If it\u2019s Thursday or later, try to get at least one run in before Sunday.";}
+  else if(weekKm<pMin*0.5){volMsg="Volume well under plan. You\u2019re significantly under the planned km. If you missed runs due to illness or fatigue, that\u2019s fine \u2014 don\u2019t try to cram them in. Just resume the plan next week. If it\u2019s motivation, remember: consistency beats perfection.";}
+  else if(weekKm<pMin){volMsg="You\u2019re behind where you\u2019d expect to be by today. If runs were missed due to fatigue or illness, that\u2019s fine \u2014 don\u2019t try to cram them in. Just get back on track and prioritise the long run if you can only do one more this week.";}
+  else{volMsg="On track for the week. Keep it consistent \u2014 the long run on Sunday is the most important session.";volColor="#2D6A4F";volIcon="\u2705";}
+  html+='<div style="background:'+(weekKm<pMin?"rgba(251,191,36,0.1)":"rgba(45,106,79,0.08)")+';border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid '+(weekKm<pMin?"rgba(251,191,36,0.3)":"rgba(45,106,79,0.2)")+'">'
+    +'<div style="font-size:13px;font-weight:700;color:'+volColor+';margin-bottom:6px">'+volIcon+' '+(weekKm<pMin*0.5?"Volume well under plan":weekKm<pMin?"Running behind this week":"Weekly volume on track")+'</div>'
+    +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+volMsg+'</div></div>';
+
+  // \u2500\u2500 Easy Run Analysis \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  if(easyRuns.length>0){
+    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+      +'<div style="font-size:15px;font-weight:700;color:#3D2E4A;margin-bottom:12px">Easy Run Analysis</div>';
+    var paceNums=[];
+    easyRuns.forEach(function(run){
+      var pn=parsePace(run.pace_per_km);
+      if(pn>0)paceNums.push(pn);
+      var inZ=pn>0&&inZone(pn);
+      var dot=inZ?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2D6A4F;margin-left:6px;vertical-align:middle"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#DC2626;margin-left:6px;vertical-align:middle"></span>';
+      html+='<div style="display:flex;align-items:center;padding:7px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)">'
+        +'<div style="flex:2;font-size:12px;color:#7A6B8A">'+fmtDate(run.date)+'</div>'
+        +'<div style="flex:1.5;font-size:12px;color:#3D2E4A;text-align:center">'+run.distance_km+' km</div>'
+        +'<div style="flex:1.5;display:flex;align-items:center;justify-content:flex-end;font-size:13px;font-weight:700;color:'+(inZ?"#2D6A4F":"#DC2626")+'">'+run.pace_per_km+'/km'+dot+'</div></div>';
+    });
+    if(paceNums.length>0){
+      var avg=paceNums.reduce(function(a,b){return a+b;},0)/paceNums.length;
+      var fastest=Math.min.apply(null,paceNums);
+      var slowest=Math.max.apply(null,paceNums);
+      function toStr(n){var m=Math.floor(n);var s=Math.round((n-m)*60);return m+":"+(s<10?"0":"")+s;}
+      var inZoneCount=paceNums.filter(inZone).length;
+      html+='<div style="display:flex;justify-content:space-around;padding:12px 0;border-bottom:0.5px solid rgba(180,160,190,0.1);margin-top:4px">'
+        +'<div style="text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">AVERAGE</div><div style="font-size:22px;font-weight:700;color:#3D2E4A">'+toStr(avg)+'</div><div style="font-size:10px;color:#A898B0">/km</div></div>'
+        +'<div style="text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">FASTEST</div><div style="font-size:22px;font-weight:700;color:#DC2626">'+toStr(fastest)+'</div><div style="font-size:10px;color:#A898B0">/km</div></div>'
+        +'<div style="text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">SLOWEST</div><div style="font-size:22px;font-weight:700;color:#2D6A4F">'+toStr(slowest)+'</div><div style="font-size:10px;color:#A898B0">/km</div></div>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-bottom:4px">'
+        +'<div style="font-size:11px;color:#A898B0">Target zone: 5:50\u20136:10/km</div>'
+        +'<div style="font-size:11px;font-weight:600;color:'+(inZoneCount>=paceNums.length*0.6?"#2D6A4F":"#B8883E")+'">'+inZoneCount+'/'+paceNums.length+' in zone</div></div>'
+        +'<div style="display:flex;gap:3px">';
+      paceNums.forEach(function(p){html+='<div style="flex:1;height:5px;border-radius:3px;background:'+(inZone(p)?"#2D6A4F":"#DC2626")+'"></div>';});
+      html+='</div>';
+    }
+    html+='</div>';
+    var tooFast=paceNums.filter(function(p){return p<5.83;}).length;
+    if(tooFast>=Math.ceil(paceNums.length*0.5)){
+      html+='<div style="background:rgba(251,191,36,0.1);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(251,191,36,0.3)">'
+        +'<div style="font-size:13px;font-weight:700;color:#B8883E;margin-bottom:6px">\u26A0\uFE0F Most easy runs are too fast</div>'
+        +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+tooFast+' of your last '+paceNums.length+' easy runs were faster than 5:50/km. This is the #1 mistake distance runners make \u2014 running easy days too hard. It feels productive but it accumulates fatigue and blunts your quality sessions. Your Tuesday speedwork and Sunday long run suffer when Wednesday and Friday aren\u2019t genuinely easy. Aim for 5:50\u20136:10/km even if it feels embarrassingly slow. You should be able to hold a full conversation.</div></div>';
+    } else if(inZoneCount>=Math.ceil(paceNums.length*0.6)){
+      html+='<div style="background:rgba(45,106,79,0.08);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(45,106,79,0.2)">'
+        +'<div style="font-size:13px;font-weight:700;color:#2D6A4F;margin-bottom:6px">\u2705 Easy paces are on point</div>'
+        +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">Most of your easy runs are hitting the 5:50\u20136:10/km target zone. This is exactly right \u2014 the aerobic base you\u2019re building now is what will carry you to sub-2:00. Keep doing this.</div></div>';
+    }
+  }
+
+  // \u2500\u2500 Long Run Progression \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   if(longRuns.length>=2){
     var maxLR=Math.max.apply(null,longRuns.map(function(r){return r.distance_km||0;}));
-    html+='<div class="dash-section"><div class="dash-title">Long Run Progression</div>'
-      +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:14px 16px">'
-      +'<div style="display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:6px">';
-    longRuns.forEach(function(r){
-      var km=r.distance_km||0;
-      var h=Math.max(Math.round((km/maxLR)*100),8);
-      var d=new Date(r.date+"T12:00:00");
-      var lbl=("0"+d.getDate()).slice(-2)+"/"+(d.getMonth()+1);
-      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
-        +'<div style="font-size:9px;color:#6B5B8A;font-weight:600">'+km+'</div>'
-        +'<div style="width:100%;height:'+h+'%;background:linear-gradient(to top,#6B5B8A,rgba(107,91,138,0.35));border-radius:3px 3px 0 0;min-height:4px"></div>'
-        +'<div style="font-size:8px;color:#A898B0">'+lbl+'</div>'
-        +'</div>';
+    var latestLR=longRuns[longRuns.length-1];
+    var prevKm=longRuns.length>1?(longRuns[longRuns.length-2].distance_km||0):0;
+    var trend=latestLR.distance_km>prevKm?"\u2191 building":latestLR.distance_km<prevKm?"\u2193 down":"= steady";
+    var totalLRkm=Math.round(longRuns.reduce(function(s,r){return s+(r.distance_km||0);},0)*10)/10;
+    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">'
+      +'<div style="font-size:15px;font-weight:700;color:#3D2E4A">Long run progression</div>'
+      +'<div style="font-size:11px;background:rgba(107,91,138,0.1);color:#6B5B8A;padding:3px 10px;border-radius:10px;font-weight:600">'+longRuns.length+' long runs logged</div></div>'
+      +'<div style="display:flex;gap:8px;margin-bottom:12px">'
+      +'<div style="flex:1;background:rgba(45,106,79,0.06);border-radius:10px;padding:10px;text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">LATEST</div><div style="font-size:24px;font-weight:700;color:#2D6A4F">'+(latestLR.distance_km||0)+'</div><div style="font-size:10px;color:#A898B0">km</div>'+(latestLR.pace_per_km?'<div style="font-size:11px;color:#7A6B8A;margin-top:2px">'+latestLR.pace_per_km+'/km</div>':"")+'</div>'
+      +'<div style="flex:1;background:rgba(107,91,138,0.06);border-radius:10px;padding:10px;text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">LONGEST EVER</div><div style="font-size:24px;font-weight:700;color:#6B5B8A">'+maxLR+'</div><div style="font-size:10px;color:#A898B0">km</div><div style="font-size:11px;color:#7A6B8A;margin-top:2px">'+trend+'</div></div>'
+      +'<div style="flex:1;background:rgba(180,160,190,0.08);border-radius:10px;padding:10px;text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">TOTAL</div><div style="font-size:24px;font-weight:700;color:#3D2E4A">'+totalLRkm+'</div><div style="font-size:10px;color:#A898B0">km</div><div style="font-size:11px;color:#7A6B8A;margin-top:2px">long run km</div></div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:flex-end;gap:4px;height:50px;margin-bottom:4px">';
+    longRuns.forEach(function(r,i){
+      var km=r.distance_km||0;var h=Math.max(Math.round((km/maxLR)*100),8);var isLatest=(i===longRuns.length-1);
+      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px"><div style="font-size:8px;color:'+(isLatest?"#2D6A4F":"#A898B0")+';font-weight:'+(isLatest?"700":"400")+'">'+km+'</div><div style="width:100%;height:'+h+'%;background:'+(isLatest?"#2D6A4F":"rgba(107,91,138,0.3)")+';border-radius:2px 2px 0 0;min-height:3px"></div></div>';
     });
-    html+='</div><div style="font-size:11px;color:#A898B0">Last '+longRuns.length+' long runs \u00B7 best: '+maxLR+' km</div>'
-      +'</div></div>';
+    html+='</div></div>';
   }
 
-  // Recent runs with pace feedback
-  var recentRuns=allRuns.slice(0,6);
-  if(recentRuns.length){
-    html+='<div class="dash-section"><div class="dash-title">Recent Runs</div>';
-    recentRuns.forEach(function(run){
-      var pace=run.pace_per_km||"";
-      var parts=pace.split(":");
-      var pn=parts.length>=2?parseFloat(parts[0])+(parseFloat(parts[1])/60):0;
-      var isLong=(run.distance_km||0)>=14;
-      var dot="\u26AA",fc="#A898B0",fb="";
-      if(pn>0){
-        if(isLong){
-          if(pn<5.7){dot="\uD83D\uDD34";fc="#DC2626";fb="Too fast for a long run";}
-          else if(pn<=6.1){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Perfect long run pace \u2714";}
-          else if(pn<=6.5){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Good easy long run";}
-          else{dot="\uD83D\uDFE1";fc="#B8883E";fb="Recovery long run pace";}
-        } else {
-          if(pn<5.5){dot="\uD83D\uDD34";fc="#DC2626";fb="Very fast \u2014 watch effort on easy days";}
-          else if(pn<=6.0){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Right in the easy zone \u2714";}
-          else if(pn<=6.4){dot="\uD83D\uDFE2";fc="#5B8A5E";fb="Good easy effort";}
-          else{dot="\uD83D\uDFE1";fc="#B8883E";fb="Recovery pace \u2014 fine if intentional";}
-        }
-      }
-      var d=new Date(run.date+"T12:00:00");
-      var ds=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1);
-      html+='<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:6px">'
-        +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
-        +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">'+dot+' '+run.name+'</div>'
-        +'<div style="font-size:11px;color:#A898B0">'+ds+'</div>'
-        +'</div>'
-        +'<div style="display:flex;gap:12px;font-size:12px;color:#6B5B8A;font-weight:600;margin-bottom:3px">'
-        +'<span>'+run.distance_km+' km</span>'
-        +'<span>'+pace+'/km</span>'
-        +(run.avg_hr?'<span style="color:#C4607A">\u2764\uFE0F '+Math.round(run.avg_hr)+'</span>':"")
-        +(isLong?'<span style="font-size:10px;color:#A898B0;font-weight:400">long run</span>':"")
-        +'</div>'
-        +(fb?'<div style="font-size:11px;color:'+fc+'">'+fb+'</div>':"")
-        +'</div>';
-    });
-    html+='</div>';
-  }
+  // \u2500\u2500 Strength Progression \u2014 ALL exercises from last 8 weeks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // Map: {day: 1=Mon, 3=Wed, 5=Fri} \u2192 exercise index \u2192 name
+  var exMap={
+    1:{1:"Hip Thrust",2:"DB Sumo Squat",3:"Adductor Machine",4:"Chest Press",5:"Shoulder Press"},
+    3:{1:"Romanian Deadlift",2:"Cable Kickback",3:"Abductor Machine",5:"Lat Pulldown",6:"Machine Row"},
+    5:{1:"Hip Thrust (Fri)",2:"Single-leg Hip Thrust",3:"DB Lateral Lunge",4:"Face Pulls",5:"Bicep Curl"}
+  };
 
-  // Strength progression from localStorage
-  var htData=[],rdlData=[];
+  // Scan last 56 days
+  var exData={};
   var sd=new Date(currentDate);
-  for(var di=0;di<60;di++){
+  for(var di=0;di<56;di++){
     var dk="tp-exlog-"+sd.getFullYear()+"-"+(sd.getMonth()+1)+"-"+sd.getDate();
-    try{
-      var lg=JSON.parse(localStorage.getItem(dk)||"{}");
-      var ds2=("0"+sd.getDate()).slice(-2)+"/"+(sd.getMonth()+1);
-      if(sd.getDay()===1&&lg[1]&&lg[1].w){htData.unshift({d:ds2,w:parseFloat(lg[1].w)||0});}
-      if(sd.getDay()===3&&lg[1]&&lg[1].w){rdlData.unshift({d:ds2,w:parseFloat(lg[1].w)||0});}
-    }catch(e){}
+    var sdow=sd.getDay();
+    var dayMap=exMap[sdow];
+    if(dayMap){
+      try{
+        var lg=JSON.parse(localStorage.getItem(dk)||"{}");
+        var ds2=("0"+sd.getDate()).slice(-2)+"/"+(sd.getMonth()+1);
+        Object.keys(dayMap).forEach(function(idx){
+          var exName=dayMap[idx];
+          if(lg[idx]&&lg[idx].w&&parseFloat(lg[idx].w)>0){
+            if(!exData[exName])exData[exName]=[];
+            exData[exName].unshift({d:ds2,w:parseFloat(lg[idx].w)||0,r:lg[idx].r||""});
+          }
+        });
+      }catch(e){}
+    }
     sd.setDate(sd.getDate()-1);
   }
 
-  function miniBar(data,color,title){
-    if(data.length<1)return'<div style="font-size:11px;color:#A898B0">Log weights in daily view to see progression here.</div>';
-    var maxW=Math.max.apply(null,data.map(function(d){return d.w;}));
-    var minW=Math.min.apply(null,data.map(function(d){return d.w;}));
-    var rng=maxW-minW||1;
-    var latest=data[data.length-1];
-    var gain=Math.round((latest.w-(data[0].w))*10)/10;
-    var bars=data.map(function(d){
-      var h=Math.max(Math.round(((d.w-minW)/rng)*60+10),4);
-      return'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
-        +'<div style="font-size:8px;color:'+color+';font-weight:600">'+d.w+'</div>'
-        +'<div style="width:100%;height:'+h+'px;background:'+color+';border-radius:2px 2px 0 0;opacity:0.75"></div>'
-        +'<div style="font-size:8px;color:#A898B0">'+d.d+'</div>'
-        +'</div>';
-    }).join('');
-    return'<div style="font-size:11px;color:#A898B0;margin-bottom:6px">Latest: '+latest.w+' kg'+(data.length>1?' \u00B7 '+(gain>=0?'+':'')+gain+' kg over '+data.length+' sessions':'')+'</div>'
-      +'<div style="display:flex;align-items:flex-end;gap:3px;height:70px">'+bars+'</div>';
+  var exNames=Object.keys(exData).filter(function(n){return exData[n].length>0;});
+
+  if(exNames.length>0){
+    // Group by session
+    var saEx=["Hip Thrust","DB Sumo Squat","Adductor Machine","Chest Press","Shoulder Press"];
+    var sbEx=["Romanian Deadlift","Cable Kickback","Abductor Machine","Lat Pulldown","Machine Row"];
+    var scEx=["Hip Thrust (Fri)","Single-leg Hip Thrust","DB Lateral Lunge","Face Pulls","Bicep Curl"];
+
+    function renderExSection(sessionName,exList,color){
+      var hasData=exList.filter(function(n){return exData[n]&&exData[n].length>0;});
+      if(!hasData.length)return'';
+      var h='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+        +'<div style="font-size:15px;font-weight:700;color:#3D2E4A;margin-bottom:12px">'+sessionName+'</div>';
+      hasData.forEach(function(exName){
+        var data=exData[exName];
+        if(data.length<1)return;
+        var maxW=Math.max.apply(null,data.map(function(d){return d.w;}));
+        var minW=Math.min.apply(null,data.map(function(d){return d.w;}));
+        var rng=maxW-minW||1;
+        var latest=data[data.length-1];
+        var gain=data.length>1?Math.round((latest.w-data[0].w)*10)/10:0;
+        h+='<div style="margin-bottom:12px">'
+          +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'
+          +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">\uD83D\uDCAA '+exName+'</div>'
+          +'<div style="font-size:12px;color:'+(gain>0?color:gain<0?"#DC2626":"#A898B0")+'">'+latest.w+' kg'+(data.length>1?' ('+(gain>0?"+":"")+gain+' kg)':'')+'</div>'
+          +'</div>'
+          +'<div style="display:flex;align-items:flex-end;gap:3px;height:50px">';
+        data.forEach(function(d,i){
+          var barH=Math.max(Math.round(((d.w-minW)/rng)*60+15),5);
+          var isLatest=(i===data.length-1);
+          h+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px">'
+            +'<div style="font-size:7px;color:'+(isLatest?color:"#C0B0CC")+';font-weight:'+(isLatest?"700":"400")+'">'+d.w+'</div>'
+            +'<div style="width:100%;height:'+barH+'px;background:'+(isLatest?color:"rgba(107,91,138,0.2)")+';border-radius:2px 2px 0 0"></div>'
+            +'<div style="font-size:7px;color:#C0B0CC">'+d.d+'</div>'
+            +'</div>';
+        });
+        h+='</div>'+(data.length>1?'<div style="font-size:10px;color:#A898B0;margin-top:3px">'+data.length+' sessions logged</div>':"")+'</div>';
+      });
+      h+='</div>';
+      return h;
+    }
+
+    html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:14px 0 8px">STRENGTH PROGRESSION</div>';
+    html+=renderExSection("\uD83D\uDCAA Strength A \u2014 Mon (Glute + Push)",saEx,"#8B5CF6");
+    html+=renderExSection("\uD83D\uDCAA Strength B \u2014 Wed (Posterior + Pull)",sbEx,"#2D6A4F");
+    html+=renderExSection("\uD83D\uDCAA Strength C \u2014 Fri (Glute + Arms)",scEx,"#6B5B8A");
+  } else {
+    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+      +'<div style="font-size:15px;font-weight:700;color:#3D2E4A;margin-bottom:8px">Strength Progression</div>'
+      +'<div style="font-size:13px;color:#A898B0;line-height:1.6">Log weights in your daily gym sessions to track progressive overload here. Each exercise you log will show a bar chart of your progress over the last 8 weeks.</div>'
+      +'</div>';
   }
 
-  html+='<div class="dash-section"><div class="dash-title">Strength Progression</div>'
-    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px;margin-bottom:8px">'
-    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A;margin-bottom:8px">\uD83D\uDCAA Hip Thrust (Mon)</div>'
-    +miniBar(htData,"#8B5CF6","hip thrust")
-    +'</div>'
-    +'<div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:12px 14px">'
-    +'<div style="font-size:13px;font-weight:600;color:#3D2E4A;margin-bottom:8px">\uD83D\uDCAA RDL (Wed)</div>'
-    +miniBar(rdlData,"#6B5B8A","RDL")
-    +'</div></div>';
-
+  html+='</div>';
   cv.innerHTML=html;
 }
 
