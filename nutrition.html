@@ -602,7 +602,7 @@ function renderHome(){
   var log=getProteinLog();
   var totalProt=Math.round(log.reduce(function(s,e){return s+(e.g||0);},0)*10)/10;
   var totalCal=log.reduce(function(s,e){return s+(e.cal||0);},0);
-  var protTarget=160;var calTarget=getCalTarget();
+  var protTarget=130;var calTarget=getCalTarget();
   var protPct=totalProt/protTarget;var calPct=totalCal/calTarget;
   var wt=getWeight();var ws=getWaist();var sl=getSleep();
   var isMonday=currentDate.getDay()===1;
@@ -657,8 +657,9 @@ function renderHome(){
   if(log.length){
     html+='<div class="card"><div class="card-label">Food log</div>';
     log.slice(-4).reverse().forEach(function(e){
+      var em=e.emoji||'\uD83C\uDF7D\uFE0F';
       html+='<div class="food-log-item">'
-        +'<span class="food-emoji">'+e.emoji+'</span>'
+        +'<span class="food-emoji">'+em+'</span>'
         +'<span class="food-name">'+e.name+'</span>'
         +'<div class="food-macros">'
         +'<span class="food-prot">'+e.g+'g</span>'
@@ -680,7 +681,7 @@ function renderProteinSection(){
   var log=getProteinLog();
   var totalProt=Math.round(log.reduce(function(s,e){return s+(e.g||0);},0)*10)/10;
   var totalCal=log.reduce(function(s,e){return s+(e.cal||0);},0);
-  var protTarget=160;var calTarget=getCalTarget();
+  var protTarget=130;var calTarget=getCalTarget();
   var protPct=totalProt/protTarget;
   var ringColor=protPct>=1?'#4A7C6F':protPct>=0.7?'#6B4F7A':'#E8607A';
 
@@ -709,8 +710,9 @@ function renderProteinSection(){
     html+='<div class="log-empty">Nothing logged yet \u2014 add your first meal below</div>';
   } else {
     log.forEach(function(e,i){
+      var em=e.emoji||'\uD83C\uDF7D\uFE0F';
       html+='<div class="food-log-item">'
-        +'<span class="food-emoji">'+e.emoji+'</span>'
+        +'<span class="food-emoji">'+em+'</span>'
         +'<span class="food-name">'+e.name+'</span>'
         +'<div class="food-macros">'
         +'<span class="food-prot">'+e.g+'g</span>'
@@ -744,7 +746,9 @@ function renderProteinSection(){
 
 function pfQuickAdd(name,g,cal,carbs,fat){
   var log=getProteinLog();
-  log.push({emoji:guessFoodEmoji(name),name:name,g:g,cal:cal,carbs:carbs,fat:fat});
+  var pf=PFOODS.find(function(f){return f.name===name;});
+  var emoji=pf?pf.emoji:guessFoodEmoji(name);
+  log.push({emoji:emoji,name:name,g:g,cal:cal,carbs:carbs,fat:fat});
   saveProteinLog(log);
   renderProteinSection();
   // Flash feedback
@@ -816,7 +820,7 @@ function renderCoach(){
     try{
       var log=JSON.parse(localStorage.getItem('tp-plog-'+k)||'[]');
       var total=Math.round(log.reduce(function(s,e){return s+(e.g||0);},0)*10)/10;
-      weekProt.unshift({d:DAYS[d.getDay()].slice(0,3),v:total,hit:total>=160});
+      weekProt.unshift({d:DAYS[d.getDay()].slice(0,3),v:total,hit:total>=130});
     }catch(e){weekProt.unshift({d:DAYS[d.getDay()].slice(0,3),v:0,hit:false});}
     d.setDate(d.getDate()-1);
   }
@@ -824,7 +828,7 @@ function renderCoach(){
   html+='<div class="card"><div class="card-label">Protein \u2014 last 7 days</div>'
     +'<div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:8px">';
   weekProt.forEach(function(d){
-    var h=Math.max(Math.round((d.v/160)*100),4);
+    var h=Math.max(Math.round((d.v/130)*100),4);
     html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
       +'<div style="font-size:8px;color:'+(d.hit?'var(--sage)':'var(--rose)')+';font-weight:600">'+d.v+'</div>'
       +'<div style="width:100%;height:'+h+'%;background:'+(d.hit?'var(--sage)':'rgba(232,96,122,0.3)')+';border-radius:3px 3px 0 0;min-height:3px"></div>'
@@ -835,9 +839,9 @@ function renderCoach(){
     +'<div class="coach-insight '+(hitDays>=5?'good':hitDays>=3?'info':'warn')+'">'
     +'<div class="coach-insight-title">'+(hitDays>=5?'\u2705 Strong consistency':hitDays>=3?'\uD83D\uDCA1 Building the habit':'\u26A0\uFE0F Protein needs attention')+'</div>'
     +'<div class="coach-insight-body">'
-    +(hitDays>=5?hitDays+'/7 days hitting 160g. This is exactly what drives recovery and muscle retention. Keep it up.'
+    +(hitDays>=5?hitDays+'/7 days hitting 130g. This is exactly what drives recovery and muscle retention. Keep it up.'
       :hitDays>=3?hitDays+'/7 days hitting your target. Getting there \u2014 try prepping a high-protein meal the night before on days you miss.'
-      :'Only '+hitDays+'/7 days hitting 160g. Protein is the most important nutrition lever for your training. Prioritise Chobani, tuna, or chicken at every meal.')
+      :'Only '+hitDays+'/7 days hitting 130g. Protein is the most important nutrition lever for your training. Prioritise Chobani, tuna, or chicken at every meal.')
     +'</div></div>';
   html+='</div>';
 
