@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Body">
+<title>Body & Nutrition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root{
+  --rose:#E8607A;--rose-soft:rgba(232,96,122,0.12);--rose-mid:rgba(232,96,122,0.25);
+  --plum:#6B4F7A;--plum-soft:rgba(107,79,122,0.1);--plum-mid:rgba(107,79,122,0.2);
+  --sage:#4A7C6F;--sage-soft:rgba(74,124,111,0.1);
+  --sand:#F5EFE8;--ink:#2D1F33;--mist:#A090AC;--ghost:#F0E8F5;
+  --card:rgba(255,255,255,0.72);--border:rgba(107,79,122,0.12);
+  --radius:20px;--radius-sm:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:#F5EEF8;
+  color:var(--ink);
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));
+}
+
+/* Ambient background */
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 20%,rgba(232,96,122,0.18) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 70%,rgba(107,79,122,0.15) 0%,transparent 70%),
+    radial-gradient(ellipse 70% 60% at 50% 50%,rgba(245,238,248,1) 0%,#EEE4F5 100%);
+}
+
+.app{max-width:430px;margin:0 auto;padding:0 18px}
+
+/* Header */
+.page-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:20px 0 8px;
+}
+.page-header-left{}
+.page-eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;color:var(--mist);text-transform:uppercase;margin-bottom:3px}
+.page-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--ink);line-height:1.1}
+.train-link{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;color:var(--plum);
+  background:var(--plum-soft);border-radius:20px;
+  padding:6px 12px;text-decoration:none;margin-top:4px;
+  border:0.5px solid var(--border);
+}
+
+/* Date strip */
+.date-strip{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;gap:10px;
+}
+.date-arrow{
+  width:38px;height:38px;border-radius:50%;border:0.5px solid var(--border);
+  background:var(--card);color:var(--plum);font-size:16px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;box-shadow:0 1px 6px rgba(107,79,122,0.08);
+}
+.date-info{text-align:center;flex:1}
+.date-main{font-size:14px;font-weight:600;color:var(--ink)}
+.date-today-badge{
+  display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.5px;
+  color:var(--rose);background:var(--rose-soft);border-radius:6px;
+  padding:2px 7px;margin-top:3px;cursor:pointer;border:none;
+}
+
+/* Section visibility */
+.tab-section{display:none}
+.tab-section.active{display:block}
+
+/* === CARDS === */
+.card{
+  background:var(--card);border-radius:var(--radius);
+  padding:18px;margin-bottom:14px;
+  border:0.5px solid var(--border);
+  box-shadow:0 2px 16px rgba(107,79,122,0.06);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.card-label{
+  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--mist);margin-bottom:10px;
+}
+.card-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink);margin-bottom:12px;line-height:1.2}
+
+/* Hero stats (home) */
+.hero-stat{text-align:center;padding:6px 0}
+.hero-num{font-family:'DM Serif Display',serif;font-size:52px;color:var(--ink);line-height:1}
+.hero-unit{font-size:13px;color:var(--mist);margin-top:4px;font-weight:400}
+.hero-sub{font-size:11px;color:var(--mist);margin-top:2px}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-tile{
+  background:rgba(255,255,255,0.6);border-radius:var(--radius-sm);
+  padding:14px;border:0.5px solid var(--border);text-align:center;
+}
+.stat-tile-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink)}
+.stat-tile-label{font-size:10px;color:var(--mist);font-weight:500;margin-top:2px;letter-spacing:0.3px}
+
+/* Progress bar */
+.prog-bar-wrap{background:rgba(107,79,122,0.08);border-radius:6px;height:6px;overflow:hidden;margin:8px 0 4px}
+.prog-bar-fill{height:100%;border-radius:6px;transition:width 0.5s cubic-bezier(.4,0,.2,1)}
+.prog-label{display:flex;justify-content:space-between;font-size:10px;color:var(--mist)}
+
+/* Protein ring */
+.ring-section{display:flex;align-items:center;gap:18px;margin-bottom:16px}
+.ring-wrap{position:relative;width:110px;height:110px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-g{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink);line-height:1}
+.ring-label{font-size:9px;color:var(--mist);font-weight:600;letter-spacing:0.5px;margin-top:2px}
+.ring-info{}
+.ring-info-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink)}
+.ring-info-sub{font-size:11px;color:var(--mist)}
+.ring-tip{
+  font-size:12px;line-height:1.5;color:var(--plum);
+  background:var(--plum-soft);border-radius:10px;
+  padding:10px 12px;margin-top:10px;
+  border-left:2px solid var(--plum);
+}
+
+/* Food log */
+.food-log-item{
+  display:flex;align-items:center;
+  padding:9px 0;border-bottom:0.5px solid rgba(107,79,122,0.07);
+}
+.food-log-item:last-child{border-bottom:none}
+.food-emoji{font-size:18px;margin-right:10px;flex-shrink:0}
+.food-name{font-size:13px;font-weight:500;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.food-macros{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.food-prot{font-size:13px;font-weight:700;color:var(--plum)}
+.food-cal{font-size:11px;color:var(--mist)}
+.food-del{font-size:16px;color:var(--mist);cursor:pointer;margin-left:8px;padding:2px 4px}
+.log-empty{font-size:13px;color:var(--mist);text-align:center;padding:16px 0;font-style:italic}
+
+/* Food search */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-input{
+  width:100%;padding:12px 16px;border-radius:var(--radius-sm);
+  border:0.5px solid var(--border);
+  background:rgba(255,255,255,0.8);
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);
+  outline:none;-webkit-appearance:none;
+  box-shadow:0 1px 8px rgba(107,79,122,0.06);
+}
+.search-results{
+  background:white;border-radius:var(--radius-sm);
+  border:0.5px solid var(--border);
+  overflow:hidden;margin-bottom:10px;
+  max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  box-shadow:0 8px 30px rgba(107,79,122,0.12);
+}
+.search-result{padding:11px 14px;cursor:pointer;border-bottom:0.5px solid rgba(107,79,122,0.07)}
+.search-result:last-child{border-bottom:none}
+.sr-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.sr-brand{font-size:11px;color:var(--mist);margin-bottom:4px}
+.sr-macros{display:flex;gap:10px;font-size:11px}
+.sr-macro{color:var(--plum);font-weight:600}
+.sr-mac-lbl{color:var(--mist);font-weight:400}
+.no-results{padding:14px;font-size:13px;color:var(--mist);text-align:center}
+
+/* Portion picker */
+.portion-card{
+  background:var(--ghost);border-radius:var(--radius-sm);
+  padding:14px;margin-bottom:10px;
+  border:0.5px solid var(--border);
+}
+.portion-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px;line-height:1.4}
+.portion-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.portion-btn{
+  width:36px;height:36px;border-radius:10px;border:0.5px solid var(--border);
+  background:white;color:var(--plum);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.portion-input{
+  width:80px;padding:7px;border-radius:10px;border:0.5px solid var(--border);
+  font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;
+  background:white;color:var(--ink);text-align:center;
+  -webkit-appearance:none;outline:none;
+}
+.portion-input::-webkit-inner-spin-button,.portion-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.portion-unit{font-size:13px;color:var(--mist)}
+.portion-presets{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.preset-pill{
+  padding:4px 10px;border-radius:20px;border:0.5px solid var(--border);
+  background:white;font-size:11px;color:var(--plum);cursor:pointer;font-weight:500;
+}
+.preset-pill.active{background:var(--plum);color:white;border-color:var(--plum)}
+.portion-preview{font-size:12px;color:var(--plum);margin-bottom:10px;min-height:18px;font-weight:500}
+.portion-actions{display:flex;gap:8px}
+.btn-cancel{
+  flex:1;padding:10px;border-radius:var(--radius-sm);
+  border:0.5px solid var(--border);background:white;
+  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--mist);cursor:pointer;
+}
+.btn-add{
+  flex:2;padding:10px;border-radius:var(--radius-sm);border:none;
+  background:var(--plum);color:white;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+}
+
+/* Quick add */
+.qa-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mist);margin-bottom:10px}
+.qa-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;background:rgba(255,255,255,0.55);border-radius:10px;
+  margin-bottom:6px;cursor:pointer;border:0.5px solid var(--border);
+}
+.qa-left{display:flex;align-items:center;gap:9px}
+.qa-emoji{font-size:18px}
+.qa-name{font-size:12px;font-weight:500;color:var(--ink)}
+.qa-right{display:flex;gap:8px;align-items:center}
+.qa-prot{font-size:12px;font-weight:700;color:var(--plum)}
+.qa-cal{font-size:11px;color:var(--mist)}
+
+/* Cal bar */
+.cal-bar-card{
+  background:rgba(74,124,111,0.06);border-radius:var(--radius-sm);
+  padding:14px;margin-bottom:14px;border:0.5px solid rgba(74,124,111,0.15);
+}
+.cal-bar-title{font-size:12px;font-weight:600;color:var(--sage);margin-bottom:8px}
+.cal-bar-nums{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.cal-bar-current{font-weight:700;color:var(--ink)}
+.cal-bar-target{color:var(--mist)}
+.cal-bar-bg{background:rgba(74,124,111,0.12);border-radius:4px;height:6px;overflow:hidden}
+.cal-bar-fill{height:100%;border-radius:4px;background:var(--sage);transition:width 0.5s}
+.cal-bar-sub{display:flex;justify-content:space-between;font-size:10px;color:var(--mist);margin-top:4px}
+
+/* Body section inputs */
+.body-input-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:0.5px solid rgba(107,79,122,0.07);
+}
+.body-input-row:last-child{border-bottom:none}
+.body-input-label{font-size:13px;color:var(--mist);font-weight:400}
+.body-input-right{display:flex;align-items:center;gap:6px}
+.body-num{
+  width:72px;padding:7px 8px;border-radius:10px;
+  border:0.5px solid var(--border);background:rgba(255,255,255,0.8);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  color:var(--ink);text-align:center;-moz-appearance:textfield;
+  outline:none;
+}
+.body-num::-webkit-inner-spin-button,.body-num::-webkit-outer-spin-button{-webkit-appearance:none}
+.body-unit{font-size:12px;color:var(--mist)}
+
+/* Spark charts */
+.spark-wrap{margin-top:12px}
+
+/* Coach section */
+.coach-insight{
+  border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;
+}
+.coach-insight.warn{background:rgba(232,96,122,0.08);border:0.5px solid rgba(232,96,122,0.2)}
+.coach-insight.good{background:rgba(74,124,111,0.08);border:0.5px solid rgba(74,124,111,0.2)}
+.coach-insight.info{background:var(--plum-soft);border:0.5px solid var(--border)}
+.coach-insight-title{font-size:13px;font-weight:700;margin-bottom:5px}
+.coach-insight.warn .coach-insight-title{color:var(--rose)}
+.coach-insight.good .coach-insight-title{color:var(--sage)}
+.coach-insight.info .coach-insight-title{color:var(--plum)}
+.coach-insight-body{font-size:12px;line-height:1.6;color:var(--ink)}
+
+/* Bottom nav */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(245,238,248,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:0.5px solid var(--border);
+  padding:6px 24px;padding-bottom:calc(6px + env(safe-area-inset-bottom));
+  display:flex;gap:4px;
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 4px;border:none;background:none;cursor:pointer;
+  border-radius:var(--radius-sm);transition:background 0.15s;
+}
+.tab-btn .ti{font-size:22px;line-height:1}
+.tab-btn .tl{font-size:10px;font-weight:500;color:var(--mist);letter-spacing:0.2px}
+.tab-btn.active{background:rgba(107,79,122,0.1)}
+.tab-btn.active .tl{color:var(--plum);font-weight:700}
+
+/* Perfect day banner */
+.perfect-banner{
+  background:linear-gradient(135deg,var(--rose) 0%,#C4607A 100%);
+  border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 4px 20px rgba(232,96,122,0.25);
+}
+.perfect-star{font-size:28px}
+.perfect-text{color:white}
+.perfect-title{font-family:'DM Serif Display',serif;font-size:17px;line-height:1.2}
+.perfect-sub{font-size:11px;opacity:0.85;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-eyebrow">Body & Nutrition</div>
+      <div class="page-title" id="pageTitle">Today</div>
+    </div>
+    <a href="/" class="train-link">&#127939; Training</a>
+  </div>
+
+  <div class="date-strip">
+    <button class="date-arrow" onclick="navDay(-1)">&#8592;</button>
+    <div class="date-info">
+      <div class="date-main" id="dateMain"></div>
+      <button class="date-today-badge" onclick="goToday()" id="todayBadge" style="display:none">Today</button>
+    </div>
+    <button class="date-arrow" onclick="navDay(1)">&#8594;</button>
+  </div>
+
+  <div id="secHome" class="tab-section active"></div>
+  <div id="secProtein" class="tab-section"></div>
+  <div id="secCoach" class="tab-section"></div>
+</div>
+
+<nav class="nav-bar">
+  <button class="tab-btn active" id="tabHome" onclick="setTab('Home')">
+    <span class="ti">&#127968;</span><span class="tl">Home</span>
+  </button>
+  <button class="tab-btn" id="tabProtein" onclick="setTab('Protein')">
+    <span class="ti">&#129385;</span><span class="tl">Protein</span>
+  </button>
+  <button class="tab-btn" id="tabCoach" onclick="setTab('Coach')">
+    <span class="ti">&#128200;</span><span class="tl">Trends</span>
+  </button>
+</nav>
+
+<script>
+// ── localStorage shim ─────────────────────────────────────────────
+var _store={};
+try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}
+catch(e){
+  var _ls={getItem:function(k){return _store[k]||null;},setItem:function(k,v){_store[k]=String(v);},removeItem:function(k){delete _store[k];}};
+  Object.defineProperty(window,'localStorage',{value:_ls});
+}
+
+// ── State ─────────────────────────────────────────────────────────
+var currentDate=new Date();
+currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
+var currentTab='Home';
+var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function $(id){return document.getElementById(id);}
+function dk(d){return(d||currentDate).getFullYear()+'-'+((d||currentDate).getMonth()+1)+'-'+(d||currentDate).getDate();}
+function isToday(d){var t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();}
+function fmtDate(d){return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];}
+
+// ── Date nav ──────────────────────────────────────────────────────
+function updateDateDisplay(){
+  $('dateMain').textContent=fmtDate(currentDate)+(isToday(currentDate)?' \u2014 Today':'');
+  $('pageTitle').textContent=isToday(currentDate)?'Today':fmtDate(currentDate);
+  $('todayBadge').style.display=isToday(currentDate)?'none':'inline-block';
+}
+function navDay(n){
+  currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate()+n,12,0,0);
+  updateDateDisplay();render();
+}
+function goToday(){
+  var t=new Date();
+  currentDate=new Date(t.getFullYear(),t.getMonth(),t.getDate(),12,0,0);
+  updateDateDisplay();render();
+}
+
+// ── Tab switching ─────────────────────────────────────────────────
+function setTab(name){
+  currentTab=name;
+  ['Home','Protein','Coach'].forEach(function(t){
+    $('sec'+t).className='tab-section'+(t===name?' active':'');
+    $('tab'+t).className='tab-btn'+(t===name?' active':'');
+  });
+  render();
+}
+
+// ── Storage helpers ───────────────────────────────────────────────
+function getProteinLog(){try{return JSON.parse(localStorage.getItem('tp-plog-'+dk())||'[]');}catch(e){return[];}}
+function saveProteinLog(log){localStorage.setItem('tp-plog-'+dk(),JSON.stringify(log));}
+function getWeight(key){return localStorage.getItem('tp-weight-'+(key||dk()));}
+function saveWeight(key,v){if(v)localStorage.setItem('tp-weight-'+(key||dk()),v);else localStorage.removeItem('tp-weight-'+(key||dk()));}
+function getWaist(key){return localStorage.getItem('tp-waist-'+(key||dk()));}
+function saveWaist(key,v){if(v)localStorage.setItem('tp-waist-'+(key||dk()),v);else localStorage.removeItem('tp-waist-'+(key||dk()));}
+function getSleep(key){return localStorage.getItem('tp-sleep-'+(key||dk()));}
+function saveSleep(key,v){if(v)localStorage.setItem('tp-sleep-'+(key||dk()),v);else localStorage.removeItem('tp-sleep-'+(key||dk()));}
+
+function getCalTarget(){
+  // Training days ~1900, rest days ~1700, default 1800
+  return 1800;
+}
+
+// ── PFOODS quick-add ──────────────────────────────────────────────
+var PFOODS=[
+  {emoji:'\uD83E\uDD44',name:'Chobani Fit passionfruit 170g',g:16,cal:97,carbs:7,fat:0},
+  {emoji:'\u2615',name:'Oat flat white',g:2,cal:120,carbs:14,fat:4},
+  {emoji:'\uD83D\uDC1F',name:'Can of tuna 185g drained',g:25,cal:110,carbs:0,fat:1},
+  {emoji:'\uD83C\uDF36',name:'ST chili con carne (1 serve)',g:38,cal:380,carbs:28,fat:7},
+  {emoji:'\uD83D\uDC1F',name:'Salmon fillet with veg',g:44,cal:380,carbs:8,fat:14},
+  {emoji:'\uD83E\uDD69',name:'200g lean mince beef',g:42,cal:280,carbs:0,fat:10},
+  {emoji:'\uD83E\uDD69',name:'Steak 150g',g:42,cal:270,carbs:0,fat:9},
+  {emoji:'\uD83D\uDCAA',name:'Cali Press Arnold',g:36,cal:581,carbs:72,fat:16},
+  {emoji:'\uD83D\uDC14',name:'200g minced chicken',g:34,cal:220,carbs:0,fat:5},
+  {emoji:'\uD83E\uDDC0',name:'Cottage cheese 200g',g:14,cal:140,carbs:6,fat:4}
+];
+
+// ── Food search ───────────────────────────────────────────────────
+function guessFoodEmoji(n){
+  n=n.toLowerCase();
+  if(/chicken|poultry/.test(n))return'\uD83D\uDC14';
+  if(/beef|steak|mince|burger/.test(n))return'\uD83E\uDD69';
+  if(/salmon|tuna|fish|seafood/.test(n))return'\uD83D\uDC1F';
+  if(/egg/.test(n))return'\uD83E\uDD5A';
+  if(/yogurt|yoghurt|chobani/.test(n))return'\uD83E\uDD44';
+  if(/cheese|cottage/.test(n))return'\uD83E\uDDC0';
+  if(/protein|shake|powder|bar/.test(n))return'\uD83D\uDCAA';
+  if(/oat|porridge|granola/.test(n))return'\uD83E\uDD63';
+  if(/bread|toast|wrap/.test(n))return'\uD83C\uDF5E';
+  if(/rice|pasta|noodle/.test(n))return'\uD83C\uDF5A';
+  if(/banana|apple|berry|fruit/.test(n))return'\uD83C\uDF4C';
+  if(/salad|spinach|greens/.test(n))return'\uD83E\uDD57';
+  if(/coffee|latte|flat white/.test(n))return'\u2615';
+  if(/chocolate|choc/.test(n))return'\uD83C\uDF6B';
+  return'\uD83C\uDF7D\uFE0F';
+}
+
+function pfFetch(query){
+  var re=$('pf-results');if(!re)return;
+  if(!query.trim()){re.style.display='none';return;}
+  re.style.display='block';
+  re.innerHTML='<div class="no-results">Searching...</div>';
+  var url='https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/food-search?q='+encodeURIComponent(query);
+  fetch(url).then(function(r){return r.text();}).then(function(text){
+    var data;try{data=JSON.parse(text);}catch(e){re.innerHTML='<div class="no-results">Search unavailable</div>';return;}
+    var items=[];
+    if(data.source==='off'){
+      items=(data.products||[]).map(function(p){
+        return{name:p.product_name,brand:(p.brands||'').split(',')[0].trim(),
+          cal100:Math.round(p.nutriments['energy-kcal_100g']||0),
+          prot100:Math.round((p.nutriments['proteins_100g']||0)*10)/10,
+          carb100:Math.round((p.nutriments['carbohydrates_100g']||0)*10)/10,
+          fat100:Math.round((p.nutriments['fat_100g']||0)*10)/10,
+          defG:p.serving_quantity?Math.round(p.serving_quantity):100};
+      });
+    } else {
+      items=(data.foods||[]).map(function(f){
+        var nuts=f.foodNutrients||[];
+        function gn(nm){var n=nuts.find(function(x){return x.nutrientName&&x.nutrientName.toLowerCase().indexOf(nm)>=0;});return n?n.value:0;}
+        var cal=gn('energy')||gn('kcal');if(cal>900)cal=Math.round(cal/4.184);
+        return{name:f.description,brand:f.brandOwner||'',cal100:Math.round(cal),
+          prot100:Math.round(gn('protein')*10)/10,carb100:Math.round(gn('carbohydrate')*10)/10,
+          fat100:Math.round(gn('total lipid')*10)/10,defG:f.servingSize?Math.round(f.servingSize):100};
+      });
+    }
+    if(!items.length){re.innerHTML='<div class="no-results">No results</div>';return;}
+    window._pfProducts=items;
+    re.innerHTML=items.map(function(p,i){
+      return'<div class="search-result" onclick="pfSelect('+i+')">'
+        +'<div class="sr-name">'+p.name+'</div>'
+        +(p.brand?'<div class="sr-brand">'+p.brand+'</div>':"")
+        +'<div class="sr-macros">'
+        +'<span class="sr-macro">'+p.cal100+'<span class="sr-mac-lbl"> kcal</span></span>'
+        +'<span class="sr-macro">'+p.prot100+'g<span class="sr-mac-lbl"> prot</span></span>'
+        +'<span class="sr-macro">'+p.carb100+'g<span class="sr-mac-lbl"> carbs</span></span>'
+        +'</div></div>';
+    }).join('');
+  }).catch(function(){if(re)re.innerHTML='<div class="no-results">Search unavailable</div>';});
+}
+
+function pfSelect(i){
+  var p=window._pfProducts[i];if(!p)return;
+  var re=$('pf-results');var pe=$('pf-portion');var si=$('pf-search-input');
+  if(re){re.style.display='none';}
+  if(si)si.value='';
+  if(!pe)return;
+  window._pfSelected={name:p.name+(p.brand?' \u00B7 '+p.brand:''),
+    c100:p.cal100||0,pr100:p.prot100||0,ch100:p.carb100||0,f100:p.fat100||0,defG:p.defG||100};
+  var s=window._pfSelected;
+  var half=Math.round(s.defG/2);var dbl=Math.round(s.defG*2);
+  pe.style.display='block';
+  pe.innerHTML='<div class="portion-card">'
+    +'<div class="portion-name">'+s.name+'</div>'
+    +'<div class="portion-row">'
+    +'<button class="portion-btn" onclick="pfAdjG(-5)">\u2212</button>'
+    +'<input class="portion-input" type="number" id="pf-pg" value="'+s.defG+'" min="1" max="2000" oninput="pfPreview()">'
+    +'<span class="portion-unit">g</span>'
+    +'<button class="portion-btn" onclick="pfAdjG(5)">+</button>'
+    +'</div>'
+    +'<div class="portion-presets">'
+    +'<button class="preset-pill" onclick="pfSetG('+half+')">\u00BD serve ('+half+'g)</button>'
+    +'<button class="preset-pill active" onclick="pfSetG('+s.defG+')">1 serve ('+s.defG+'g)</button>'
+    +'<button class="preset-pill" onclick="pfSetG('+dbl+')">2 serves ('+dbl+'g)</button>'
+    +'<button class="preset-pill" onclick="pfSetG(100)">100g</button>'
+    +'</div>'
+    +'<div class="portion-preview" id="pf-prev"></div>'
+    +'<div class="portion-actions">'
+    +'<button class="btn-cancel" onclick="pfCancel()">Cancel</button>'
+    +'<button class="btn-add" onclick="pfAddSelected()">Add to log</button>'
+    +'</div></div>';
+  pfPreview();
+}
+function pfAdjG(d){var el=$('pf-pg');if(!el)return;el.value=Math.max(1,Math.min(2000,(parseFloat(el.value)||100)+d));el.dispatchEvent(new Event('input'));}
+function pfSetG(g){var el=$('pf-pg');if(!el)return;el.value=g;el.dispatchEvent(new Event('input'));}
+function pfPreview(){
+  var s=window._pfSelected;if(!s)return;
+  var g=parseFloat(($('pf-pg')||{}).value)||0;
+  var el=$('pf-prev');if(!el)return;
+  el.textContent=g+'g = '+Math.round(s.c100*g/100)+' kcal \u00B7 '+Math.round(s.pr100*g/100*10)/10+'g protein';
+}
+function pfCancel(){var pe=$('pf-portion');if(pe)pe.style.display='none';window._pfSelected=null;}
+function pfAdd(name,c100,pr100,ch100,f100,g){
+  if(g===undefined)g=parseFloat(($('pf-pg')||{}).value)||100;
+  var log=getProteinLog();
+  var emoji=guessFoodEmoji(name);
+  log.push({emoji:emoji,name:name+(g!==100?' ('+g+'g)':''),
+    g:Math.round(pr100*g/100*10)/10,cal:Math.round(c100*g/100),
+    carbs:Math.round(ch100*g/100*10)/10,fat:Math.round(f100*g/100*10)/10});
+  saveProteinLog(log);pfCancel();renderProteinSection();
+}
+function pfAddSelected(){
+  var s=window._pfSelected;if(!s)return;
+  var g=parseFloat(($('pf-pg')||{}).value)||s.defG||100;
+  pfAdd(s.name,s.c100,s.pr100,s.ch100,s.f100,g);
+}
+
+// ── Sparkline helper ──────────────────────────────────────────────
+function sparkLine(entries,color,unit){
+  if(entries.length<2)return'<div style="font-size:11px;color:var(--mist);text-align:center;padding:8px 0">Log more '+unit+' data to see your trend</div>';
+  var vals=entries.map(function(e){return e.v;});
+  var minV=Math.min.apply(null,vals);var maxV=Math.max.apply(null,vals);var rng=maxV-minV||0.1;
+  var W=300,H=60,pad=6;
+  var pts=entries.map(function(e,i){
+    var x=pad+i*(W-pad*2)/(entries.length-1);
+    var y=H-pad-14-(H-pad*2-14)*((e.v-minV)/rng);
+    return[Math.round(x),Math.round(y)];
+  });
+  var poly=pts.map(function(p){return p[0]+','+p[1];}).join(' ');
+  var area=poly+' '+pts[pts.length-1][0]+','+(H-14)+' '+pts[0][0]+','+(H-14);
+  var last=entries[entries.length-1];var first=entries[0];
+  var diff=Math.round((last.v-first.v)*10)/10;
+  var dc=diff<0?'var(--sage)':diff>0?'var(--rose)':'var(--mist)';
+  return'<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="overflow:visible">'
+    +'<defs><linearGradient id="sg'+color.replace(/[^a-z]/gi,'')+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="'+color+'" stop-opacity="0.15"/>'
+    +'<stop offset="100%" stop-color="'+color+'" stop-opacity="0.01"/>'
+    +'</linearGradient></defs>'
+    +'<polygon points="'+area+'" fill="url(#sg'+color.replace(/[^a-z]/gi,'')+')"/>'
+    +'<polyline points="'+poly+'" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<circle cx="'+pts[pts.length-1][0]+'" cy="'+pts[pts.length-1][1]+'" r="5" fill="'+color+'" stroke="white" stroke-width="2"/>'
+    +'<text x="'+pts[pts.length-1][0]+'" y="'+(pts[pts.length-1][1]-8)+'" text-anchor="middle" font-size="10" fill="'+color+'" font-family="DM Serif Display,serif" font-weight="700">'+last.v+'</text>'
+    +'<text x="'+pad+'" y="'+(H-1)+'" font-size="8" fill="var(--mist)" font-family="DM Sans,sans-serif">'+first.d+'</text>'
+    +'<text x="'+(W-pad)+'" y="'+(H-1)+'" text-anchor="end" font-size="8" fill="var(--mist)" font-family="DM Sans,sans-serif" font-weight="600">'+last.d+'</text>'
+    +'</svg>'
+    +'<div style="text-align:right;font-size:10px;color:'+dc+';margin-top:2px;font-weight:600">'+(diff<0?'\u2193 ':diff>0?'\u2191 +':'=')+Math.abs(diff)+' '+unit+'</div>';
+}
+
+function getEntries(getter,nDays){
+  var entries=[];var d=new Date(currentDate);
+  for(var i=0;i<nDays;i++){
+    var k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    var v=getter(k);
+    if(v)entries.unshift({d:('0'+d.getDate()).slice(-2)+'/'+(d.getMonth()+1),v:parseFloat(v)});
+    d.setDate(d.getDate()-1);
+  }
+  return entries;
+}
+function getMondayEntries(getter){
+  var entries=[];var d=new Date(currentDate);
+  for(var i=0;i<90;i++){
+    if(d.getDay()===1){
+      var k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+      var v=getter(k);
+      if(v)entries.unshift({d:('0'+d.getDate()).slice(-2)+'/'+(d.getMonth()+1),v:parseFloat(v)});
+    }
+    d.setDate(d.getDate()-1);
+  }
+  return entries;
+}
+
+// ── Protein ring SVG ──────────────────────────────────────────────
+function drawRing(pct,color){
+  var r=48;var circ=2*Math.PI*r;var fill=circ*(1-Math.min(pct,1));
+  return'<svg viewBox="0 0 120 120" width="110" height="110">'
+    +'<circle cx="60" cy="60" r="'+r+'" fill="none" stroke="rgba(107,79,122,0.1)" stroke-width="10"/>'
+    +'<circle cx="60" cy="60" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="10"'
+    +' stroke-dasharray="'+circ+'" stroke-dashoffset="'+fill+'"'
+    +' stroke-linecap="round" transform="rotate(-90 60 60)"/>'
+    +'</svg>';
+}
+
+// ── HOME section ──────────────────────────────────────────────────
+function renderHome(){
+  var sec=$('secHome');if(!sec)return;
+  var log=getProteinLog();
+  var totalProt=Math.round(log.reduce(function(s,e){return s+(e.g||0);},0)*10)/10;
+  var totalCal=log.reduce(function(s,e){return s+(e.cal||0);},0);
+  var protTarget=160;var calTarget=getCalTarget();
+  var protPct=totalProt/protTarget;var calPct=totalCal/calTarget;
+  var wt=getWeight();var ws=getWaist();var sl=getSleep();
+  var isMonday=currentDate.getDay()===1;
+  var allDone=totalProt>=protTarget&&totalCal<=calTarget;
+
+  var html='';
+
+  // Perfect day banner
+  if(allDone&&totalProt>0){
+    html+='<div class="perfect-banner">'
+      +'<div class="perfect-star">\u2B50</div>'
+      +'<div class="perfect-text">'
+      +'<div class="perfect-title">Perfect Day</div>'
+      +'<div class="perfect-sub">Protein hit \u00B7 Calories on track</div>'
+      +'</div></div>';
+  }
+
+  // Protein ring hero
+  var ringColor=protPct>=1?'#4A7C6F':protPct>=0.7?'#6B4F7A':'#E8607A';
+  html+='<div class="card">'
+    +'<div class="card-label">Protein today</div>'
+    +'<div class="ring-section">'
+    +'<div class="ring-wrap">'+drawRing(protPct,ringColor)
+    +'<div class="ring-center"><div class="ring-g">'+totalProt+'g</div><div class="ring-label">of '+protTarget+'g</div></div>'
+    +'</div>'
+    +'<div class="ring-info">'
+    +'<div class="ring-info-num">'+(protTarget-totalProt>0?Math.round(protTarget-totalProt)+'g':'Done!')+'</div>'
+    +'<div class="ring-info-sub">'+(protTarget-totalProt>0?'to go':'protein target hit \u2714')+'</div>'
+    +'</div></div>'
+    // Calorie bar
+    +'<div class="cal-bar-card">'
+    +'<div class="cal-bar-title">\uD83D\uDD25 Calories \u2014 '+(isToday(currentDate)?'today':'this day')+'</div>'
+    +'<div class="cal-bar-nums"><span class="cal-bar-current">'+totalCal+' cal</span><span class="cal-bar-target">of '+calTarget+' cal</span></div>'
+    +'<div class="cal-bar-bg"><div class="cal-bar-fill" style="width:'+Math.min(calPct*100,100)+'%;background:'+(calPct>1?'var(--rose)':'var(--sage)')+'"></div></div>'
+    +'<div class="cal-bar-sub"><span>'+(calTarget-totalCal>0?calTarget-totalCal+' cal remaining':Math.abs(calTarget-totalCal)+' cal over')+'</span><span>500 cal deficit target</span></div>'
+    +'</div>'
+    +'</div>';
+
+  // Body stats grid
+  html+='<div class="card"><div class="card-label">Body today</div>'
+    +'<div class="stat-grid">';
+  if(wt){html+='<div class="stat-tile"><div class="stat-tile-num">'+wt+'</div><div class="stat-tile-label">kg weight</div></div>';}
+  else{html+='<div class="stat-tile" onclick="setTab(\'Coach\')" style="cursor:pointer"><div class="stat-tile-num" style="font-size:20px;color:var(--mist)">+</div><div class="stat-tile-label">Log weight</div></div>';}
+  if(sl){html+='<div class="stat-tile"><div class="stat-tile-num">'+sl+'</div><div class="stat-tile-label">hrs sleep</div></div>';}
+  else{html+='<div class="stat-tile" onclick="setTab(\'Coach\')" style="cursor:pointer"><div class="stat-tile-num" style="font-size:20px;color:var(--mist)">+</div><div class="stat-tile-label">Log sleep</div></div>';}
+  if(ws&&isMonday){html+='<div class="stat-tile"><div class="stat-tile-num">'+ws+'</div><div class="stat-tile-label">cm waist</div></div>';}
+  html+='</div>'
+    +'<div style="text-align:center;margin-top:4px"><button onclick="setTab(\'Coach\')" style="font-size:11px;color:var(--plum);background:var(--plum-soft);border:none;border-radius:20px;padding:6px 14px;cursor:pointer;font-weight:500">Update body stats</button></div>'
+    +'</div>';
+
+  // Recent log preview
+  if(log.length){
+    html+='<div class="card"><div class="card-label">Food log</div>';
+    log.slice(-4).reverse().forEach(function(e){
+      html+='<div class="food-log-item">'
+        +'<span class="food-emoji">'+e.emoji+'</span>'
+        +'<span class="food-name">'+e.name+'</span>'
+        +'<div class="food-macros">'
+        +'<span class="food-prot">'+e.g+'g</span>'
+        +'<span class="food-cal">'+e.cal+' cal</span>'
+        +'</div></div>';
+    });
+    if(log.length>4)html+='<div style="text-align:center;padding-top:8px"><button onclick="setTab(\'Protein\')" style="font-size:11px;color:var(--plum);background:none;border:none;cursor:pointer">View all '+log.length+' items \u2192</button></div>';
+    html+='</div>';
+  } else {
+    html+='<div class="card" style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">\uD83C\uDF7D\uFE0F</div><div style="font-size:13px;color:var(--mist)">No food logged yet today</div><button onclick="setTab(\'Protein\')" style="margin-top:10px;font-size:12px;color:var(--plum);background:var(--plum-soft);border:none;border-radius:20px;padding:6px 14px;cursor:pointer;font-weight:500">Add food</button></div>';
+  }
+
+  sec.innerHTML=html;
+}
+
+// ── PROTEIN section ───────────────────────────────────────────────
+function renderProteinSection(){
+  var sec=$('secProtein');if(!sec)return;
+  var log=getProteinLog();
+  var totalProt=Math.round(log.reduce(function(s,e){return s+(e.g||0);},0)*10)/10;
+  var totalCal=log.reduce(function(s,e){return s+(e.cal||0);},0);
+  var protTarget=160;var calTarget=getCalTarget();
+  var protPct=totalProt/protTarget;
+  var ringColor=protPct>=1?'#4A7C6F':protPct>=0.7?'#6B4F7A':'#E8607A';
+
+  var html='';
+
+  // Ring + macros
+  html+='<div class="card">'
+    +'<div class="card-label">Protein today</div>'
+    +'<div class="ring-section">'
+    +'<div class="ring-wrap">'+drawRing(protPct,ringColor)
+    +'<div class="ring-center"><div class="ring-g">'+totalProt+'g</div><div class="ring-label">of '+protTarget+'g</div></div>'
+    +'</div>'
+    +'<div class="ring-info">'
+    +'<div style="font-size:13px;color:var(--mist);margin-bottom:8px">Total: '+totalCal+' / '+calTarget+' cal</div>'
+    +(totalProt>=protTarget&&totalCal<=calTarget
+      ?'<div class="ring-tip">\u2705 Protein and calories on track. Perfect nutrition day.</div>'
+      :totalCal>calTarget
+        ?'<div class="ring-tip" style="background:rgba(232,96,122,0.08);border-color:var(--rose)">\u26A0\uFE0F Over calories by '+(totalCal-calTarget)+' cal.</div>'
+        :'<div class="ring-tip">\uD83D\uDCA1 '+(protTarget-totalProt>0?Math.round(protTarget-totalProt)+'g protein':'Protein done!')+' \u00B7 '+(calTarget-totalCal>0?calTarget-totalCal+' cal remaining':'over budget')+'</div>'
+    )
+    +'</div></div></div>';
+
+  // Food log
+  html+='<div class="card"><div class="card-label">Food log</div>';
+  if(!log.length){
+    html+='<div class="log-empty">Nothing logged yet \u2014 add your first meal below</div>';
+  } else {
+    log.forEach(function(e,i){
+      html+='<div class="food-log-item">'
+        +'<span class="food-emoji">'+e.emoji+'</span>'
+        +'<span class="food-name">'+e.name+'</span>'
+        +'<div class="food-macros">'
+        +'<span class="food-prot">'+e.g+'g</span>'
+        +'<span class="food-cal">'+e.cal+' cal</span>'
+        +'<span class="food-del" onclick="pfRemove('+i+')">\u00D7</span>'
+        +'</div></div>';
+    });
+  }
+  html+='</div>';
+
+  // Search
+  html+='<div class="card"><div class="card-label">Search foods</div>'
+    +'<input type="search" class="search-input" id="pf-search-input" placeholder="\uD83D\uDD0D Search any food..." '
+    +'oninput="(function(v){if(window._pfTimer)clearTimeout(window._pfTimer);window._pfTimer=setTimeout(function(){pfFetch(v);},400);})(this.value)">'
+    +'<div id="pf-results" style="display:none"></div>'
+    +'<div id="pf-portion" style="display:none"></div>'
+    +'</div>';
+
+  // Quick add
+  html+='<div class="card"><div class="qa-title">Quick add \u2014 your usual foods</div>';
+  PFOODS.forEach(function(f){
+    html+='<div class="qa-item" onclick="pfQuickAdd(\''+f.name+'\','+f.g+','+f.cal+','+f.carbs+','+f.fat+')">'
+      +'<div class="qa-left"><span class="qa-emoji">'+f.emoji+'</span><span class="qa-name">'+f.name+'</span></div>'
+      +'<div class="qa-right"><span class="qa-prot">'+f.g+'g</span><span class="qa-cal">'+f.cal+' cal</span></div>'
+      +'</div>';
+  });
+  html+='</div>';
+
+  sec.innerHTML=html;
+}
+
+function pfQuickAdd(name,g,cal,carbs,fat){
+  var log=getProteinLog();
+  log.push({emoji:guessFoodEmoji(name),name:name,g:g,cal:cal,carbs:carbs,fat:fat});
+  saveProteinLog(log);
+  renderProteinSection();
+  // Flash feedback
+  var sec=$('secProtein');
+  if(sec){
+    var flash=document.createElement('div');
+    flash.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--plum);color:white;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:999;opacity:1;transition:opacity 0.5s';
+    flash.textContent='\u2714 '+name.split(' ')[0]+' added';
+    document.body.appendChild(flash);
+    setTimeout(function(){flash.style.opacity='0';setTimeout(function(){flash.remove();},500);},1200);
+  }
+}
+function pfRemove(i){
+  var log=getProteinLog();log.splice(i,1);saveProteinLog(log);renderProteinSection();
+}
+
+// ── COACH (Trends) section ────────────────────────────────────────
+function renderCoach(){
+  var sec=$('secCoach');if(!sec)return;
+  var dk2=dk();
+  var isMonday=currentDate.getDay()===1;
+  var wt=getWeight()||'';var ws=getWaist()||'';var sl=getSleep()||'';
+
+  var html='<div class="card"><div class="card-label">Log body stats</div>';
+
+  // Weight input
+  html+='<div class="body-input-row">'
+    +'<div class="body-input-label">\u2696\uFE0F Weight</div>'
+    +'<div class="body-input-right">'
+    +'<input class="body-num" type="number" step="0.1" placeholder="kg" value="'+wt+'" id="wtInp" oninput="saveWeight(null,this.value);renderWeightChart()">'
+    +'<span class="body-unit">kg</span></div></div>';
+
+  // Waist — Monday only
+  if(isMonday){
+    html+='<div class="body-input-row">'
+      +'<div class="body-input-label">\uD83D\uDCCF Waist</div>'
+      +'<div class="body-input-right">'
+      +'<input class="body-num" type="number" step="0.1" placeholder="cm" value="'+ws+'" id="wsInp" oninput="saveWaist(null,this.value);renderWaistChart()">'
+      +'<span class="body-unit">cm</span></div></div>';
+  } else {
+    html+='<div class="body-input-row">'
+      +'<div class="body-input-label">\uD83D\uDCCF Waist'
+      +(ws?' <span style="font-size:10px;color:var(--mist)">'+ws+' cm</span>':'')
+      +'</div><div class="body-input-right" style="font-size:11px;color:var(--mist)">Mondays only</div></div>';
+  }
+
+  // Sleep
+  html+='<div class="body-input-row">'
+    +'<div class="body-input-label">\uD83D\uDE34 Sleep</div>'
+    +'<div class="body-input-right">'
+    +'<input class="body-num" type="number" step="0.5" min="0" max="14" placeholder="hrs" value="'+sl+'" id="slInp" oninput="saveSleep(null,this.value)">'
+    +'<span class="body-unit">hrs</span></div></div>';
+
+  html+='</div>';
+
+  // Weight trend
+  html+='<div class="card"><div class="card-label">Weight trend</div>'
+    +'<div class="spark-wrap" id="wtChart"></div></div>';
+
+  // Waist trend
+  html+='<div class="card"><div class="card-label">Waist trend</div>'
+    +'<div class="spark-wrap" id="wsChart"></div></div>';
+
+  // Protein 7-day insight
+  var weekProt=[];
+  var d=new Date(currentDate);
+  for(var i=0;i<7;i++){
+    var k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    try{
+      var log=JSON.parse(localStorage.getItem('tp-plog-'+k)||'[]');
+      var total=Math.round(log.reduce(function(s,e){return s+(e.g||0);},0)*10)/10;
+      weekProt.unshift({d:DAYS[d.getDay()].slice(0,3),v:total,hit:total>=160});
+    }catch(e){weekProt.unshift({d:DAYS[d.getDay()].slice(0,3),v:0,hit:false});}
+    d.setDate(d.getDate()-1);
+  }
+  var hitDays=weekProt.filter(function(d){return d.hit;}).length;
+  html+='<div class="card"><div class="card-label">Protein \u2014 last 7 days</div>'
+    +'<div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:8px">';
+  weekProt.forEach(function(d){
+    var h=Math.max(Math.round((d.v/160)*100),4);
+    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+      +'<div style="font-size:8px;color:'+(d.hit?'var(--sage)':'var(--rose)')+';font-weight:600">'+d.v+'</div>'
+      +'<div style="width:100%;height:'+h+'%;background:'+(d.hit?'var(--sage)':'rgba(232,96,122,0.3)')+';border-radius:3px 3px 0 0;min-height:3px"></div>'
+      +'<div style="font-size:8px;color:var(--mist)">'+d.d+'</div>'
+      +'</div>';
+  });
+  html+='</div>'
+    +'<div class="coach-insight '+(hitDays>=5?'good':hitDays>=3?'info':'warn')+'">'
+    +'<div class="coach-insight-title">'+(hitDays>=5?'\u2705 Strong consistency':hitDays>=3?'\uD83D\uDCA1 Building the habit':'\u26A0\uFE0F Protein needs attention')+'</div>'
+    +'<div class="coach-insight-body">'
+    +(hitDays>=5?hitDays+'/7 days hitting 160g. This is exactly what drives recovery and muscle retention. Keep it up.'
+      :hitDays>=3?hitDays+'/7 days hitting your target. Getting there \u2014 try prepping a high-protein meal the night before on days you miss.'
+      :'Only '+hitDays+'/7 days hitting 160g. Protein is the most important nutrition lever for your training. Prioritise Chobani, tuna, or chicken at every meal.')
+    +'</div></div>';
+  html+='</div>';
+
+  sec.innerHTML=html;
+  setTimeout(function(){renderWeightChart();renderWaistChart();},0);
+}
+
+function renderWeightChart(){
+  var el=$('wtChart');if(!el)return;
+  el.innerHTML=sparkLine(getEntries(getWeight,60),'#6B4F7A','kg');
+}
+function renderWaistChart(){
+  var el=$('wsChart');if(!el)return;
+  el.innerHTML=sparkLine(getMondayEntries(getWaist),'#E8607A','cm');
+}
+
+// ── Main render ───────────────────────────────────────────────────
+function render(){
+  updateDateDisplay();
+  if(currentTab==='Home')renderHome();
+  else if(currentTab==='Protein')renderProteinSection();
+  else if(currentTab==='Coach')renderCoach();
+}
+
+updateDateDisplay();
+render();
+</script>
+</body>
+</html>
