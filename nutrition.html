@@ -338,7 +338,7 @@ body::before{
 </nav>
 
 <script>
-// ── localStorage shim ─────────────────────────────────────────────
+// \u2500\u2500 localStorage shim \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 var _store={};
 try{localStorage.setItem('_t','1');localStorage.removeItem('_t');}
 catch(e){
@@ -346,7 +346,7 @@ catch(e){
   Object.defineProperty(window,'localStorage',{value:_ls});
 }
 
-// ── State ─────────────────────────────────────────────────────────
+// \u2500\u2500 State \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 var currentDate=new Date();
 currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
 var currentTab='Home';
@@ -357,7 +357,7 @@ function dk(d){return(d||currentDate).getFullYear()+'-'+((d||currentDate).getMon
 function isToday(d){var t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();}
 function fmtDate(d){return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()];}
 
-// ── Date nav ──────────────────────────────────────────────────────
+// \u2500\u2500 Date nav \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function updateDateDisplay(){
   $('dateMain').textContent=fmtDate(currentDate)+(isToday(currentDate)?' \u2014 Today':'');
   $('pageTitle').textContent=isToday(currentDate)?'Today':fmtDate(currentDate);
@@ -373,7 +373,7 @@ function goToday(){
   updateDateDisplay();render();
 }
 
-// ── Tab switching ─────────────────────────────────────────────────
+// \u2500\u2500 Tab switching \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function setTab(name){
   currentTab=name;
   ['Home','Protein','Coach'].forEach(function(t){
@@ -383,7 +383,7 @@ function setTab(name){
   render();
 }
 
-// ── Storage helpers ───────────────────────────────────────────────
+// \u2500\u2500 Storage helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function getProteinLog(){try{return JSON.parse(localStorage.getItem('tp-plog-'+dk())||'[]');}catch(e){return[];}}
 function saveProteinLog(log){localStorage.setItem('tp-plog-'+dk(),JSON.stringify(log));}
 function getWeight(key){return localStorage.getItem('tp-weight-'+(key||dk()));}
@@ -398,7 +398,7 @@ function getCalTarget(){
   return 1800;
 }
 
-// ── PFOODS quick-add ──────────────────────────────────────────────
+// \u2500\u2500 PFOODS quick-add \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 var PFOODS=[
   {emoji:'\uD83E\uDD44',name:'Chobani Fit passionfruit 170g',g:16,cal:97,carbs:7,fat:0},
   {emoji:'\u2615',name:'Oat flat white',g:2,cal:120,carbs:14,fat:4},
@@ -412,7 +412,7 @@ var PFOODS=[
   {emoji:'\uD83E\uDDC0',name:'Cottage cheese 200g',g:14,cal:140,carbs:6,fat:4}
 ];
 
-// ── Food search ───────────────────────────────────────────────────
+// \u2500\u2500 Food search \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function guessFoodEmoji(n){
   n=n.toLowerCase();
   if(/chicken|poultry/.test(n))return'\uD83D\uDC14';
@@ -531,7 +531,7 @@ function pfAddSelected(){
   pfAdd(s.name,s.c100,s.pr100,s.ch100,s.f100,g);
 }
 
-// ── Sparkline helper ──────────────────────────────────────────────
+// \u2500\u2500 Sparkline helper \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function sparkLine(entries,color,unit){
   if(entries.length<2)return'<div style="font-size:11px;color:var(--mist);text-align:center;padding:8px 0">Log more '+unit+' data to see your trend</div>';
   var vals=entries.map(function(e){return e.v;});
@@ -585,7 +585,7 @@ function getMondayEntries(getter){
   return entries;
 }
 
-// ── Protein ring SVG ──────────────────────────────────────────────
+// \u2500\u2500 Protein ring SVG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function drawRing(pct,color){
   var r=48;var circ=2*Math.PI*r;var fill=circ*(1-Math.min(pct,1));
   return'<svg viewBox="0 0 120 120" width="110" height="110">'
@@ -596,7 +596,7 @@ function drawRing(pct,color){
     +'</svg>';
 }
 
-// ── HOME section ──────────────────────────────────────────────────
+// \u2500\u2500 HOME section \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function renderHome(){
   var sec=$('secHome');if(!sec)return;
   var log=getProteinLog();
@@ -674,7 +674,7 @@ function renderHome(){
   sec.innerHTML=html;
 }
 
-// ── PROTEIN section ───────────────────────────────────────────────
+// \u2500\u2500 PROTEIN section \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function renderProteinSection(){
   var sec=$('secProtein');if(!sec)return;
   var log=getProteinLog();
@@ -761,7 +761,7 @@ function pfRemove(i){
   var log=getProteinLog();log.splice(i,1);saveProteinLog(log);renderProteinSection();
 }
 
-// ── COACH (Trends) section ────────────────────────────────────────
+// \u2500\u2500 COACH (Trends) section \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function renderCoach(){
   var sec=$('secCoach');if(!sec)return;
   var dk2=dk();
@@ -777,7 +777,7 @@ function renderCoach(){
     +'<input class="body-num" type="number" step="0.1" placeholder="kg" value="'+wt+'" id="wtInp" oninput="saveWeight(null,this.value);renderWeightChart()">'
     +'<span class="body-unit">kg</span></div></div>';
 
-  // Waist — Monday only
+  // Waist \u2014 Monday only
   if(isMonday){
     html+='<div class="body-input-row">'
       +'<div class="body-input-label">\uD83D\uDCCF Waist</div>'
@@ -854,7 +854,7 @@ function renderWaistChart(){
   el.innerHTML=sparkLine(getMondayEntries(getWaist),'#E8607A','cm');
 }
 
-// ── Main render ───────────────────────────────────────────────────
+// \u2500\u2500 Main render \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function render(){
   updateDateDisplay();
   if(currentTab==='Home')renderHome();
