@@ -21,7 +21,7 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:90px}
 
 /* HEADER */
-.header{background:var(–ink);padding:env(safe-area-inset-top,44px) 22px 22px;position:relative;overflow:hidden}
+.header{background:var(–ink);padding:env(safe-area-inset-top,44px) 22px 22px;position:relative}
 .hblob1{position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(196,113,74,.28) 0%,transparent 65%);pointer-events:none}
 .hblob2{position:absolute;bottom:-60px;left:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(74,114,96,.25) 0%,transparent 65%);pointer-events:none}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;position:relative;z-index:1}
@@ -65,11 +65,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .ring-unit{font-size:8px;color:var(–ink3)}
 .macro-name{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(–ink3);font-weight:600}
 .macro-target-txt{font-size:10px;color:var(–ink3);margin-top:2px}
-
-/* TABS */
-.tabs{display:flex;margin:18px 16px 0;gap:0;background:var(–surface);border-radius:12px;padding:3px;box-shadow:var(–shadow);border:1px solid var(–border)}
-.tab-btn{flex:1;background:transparent;border:none;font-family:‘DM Sans’,sans-serif;font-size:12px;font-weight:600;color:var(–ink3);padding:9px 4px;border-radius:9px;cursor:pointer;transition:all .2s;letter-spacing:.02em}
-.tab-btn.active{background:var(–ink);color:#fff}
 
 /* SECTION */
 .section{margin:14px 16px 0}
@@ -215,14 +210,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
     <div class="perfect-title">Perfect Day, Soph!</div>
     <div class="perfect-sub" id="perfectSub"></div>
   </div>
-</div>
-
-<!-- TABS -->
-
-<div class="tabs">
-  <button class="tab-btn active" id="tab-btn-log" onclick="switchTab('log')">Today</button>
-  <button class="tab-btn" id="tab-btn-body" onclick="switchTab('body')">Body</button>
-  <button class="tab-btn" id="tab-btn-targets" onclick="switchTab('targets')">Targets</button>
 </div>
 
 <!-- ══ TAB: LOG ══ -->
@@ -530,8 +517,8 @@ function renderHeader() {
 
 // ── TOTALS ────────────────────────────────────────────────────
 function totals() {
-  return getLog().reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+(f.fat||f.f||0),kcal:a.kcal+f.kcal}),
-    {p:0,c:0,fat:0,kcal:0});
+  return getLog().reduce((a,f)=>({p:a.p+f.p, c:a.c+f.c, fat:a.fat+f.fat, kcal:a.kcal+f.kcal}),
+    {p:0, c:0, fat:0, kcal:0});
 }
 
 // ── CALORIE BANNER ────────────────────────────────────────────
@@ -575,7 +562,7 @@ function renderLog() {
       <div class="food-emoji">${f.emoji||'🍽'}</div>
       <div class="food-info">
         <div class="food-name">${f.name}</div>
-        <div class="food-macros-txt">P ${f.p}g · C ${f.c}g · F ${f.fat||f.f||0}g</div>
+        <div class="food-macros-txt">P ${f.p}g · C ${f.c}g · F ${f.fat}g</div>
       </div>
       <div class="food-kcal">${f.kcal} kcal</div>
       <button class="food-del" onclick="removeFood(${i})">✕</button>
@@ -590,54 +577,54 @@ function clearLog()    { if(confirm('Clear today\'s log?')) { saveLog([]); rende
 // ── FOOD DATABASE (your foods + common Aussie extras) ─────────
 const ALL_FOODS = [
   // Your regulars
-  { emoji:'🥩', name:'200g Lean Mince Beef',   p:42, c:0,  f:10, kcal:240 },
-  { emoji:'🥩', name:'Steak',                   p:42, c:0,  f:14, kcal:300 },
-  { emoji:'🥤', name:'Cali Press Arnold',        p:36, c:28, f:9,  kcal:350 },
-  { emoji:'🍗', name:'200g Minced Chicken',      p:34, c:0,  f:6,  kcal:210 },
-  { emoji:'🐟', name:'Salmon',                   p:34, c:0,  f:16, kcal:290 },
-  { emoji:'🐟', name:'Canned Tuna',              p:25, c:0,  f:2,  kcal:120 },
-  { emoji:'🥄', name:'Chobani Fit Passionfruit', p:15, c:12, f:0,  kcal:90  },
-  { emoji:'🧀', name:'Cottage Cheese (100g)',    p:14, c:4,  f:4,  kcal:110 },
-  { emoji:'☕', name:'Oat Flat White',           p:2,  c:14, f:4,  kcal:100 },
+  { emoji:'🥩', name:'200g Lean Mince Beef',   p:42, c:0, fat:10, kcal:240 },
+  { emoji:'🥩', name:'Steak',                   p:42, c:0, fat:14, kcal:300 },
+  { emoji:'🥤', name:'Cali Press Arnold',        p:36, c:28, fat:9, kcal:350 },
+  { emoji:'🍗', name:'200g Minced Chicken',      p:34, c:0, fat:6, kcal:210 },
+  { emoji:'🐟', name:'Salmon',                   p:34, c:0, fat:16, kcal:290 },
+  { emoji:'🐟', name:'Canned Tuna',              p:25, c:0, fat:2, kcal:120 },
+  { emoji:'🥄', name:'Chobani Fit Passionfruit', p:15, c:12, fat:0, kcal:90  },
+  { emoji:'🧀', name:'Cottage Cheese (100g)',    p:14, c:4, fat:4, kcal:110 },
+  { emoji:'☕', name:'Oat Flat White',           p:2,  c:14, fat:4, kcal:100 },
   // Proteins
-  { emoji:'🍗', name:'Chicken Breast (150g)',    p:47, c:0,  f:4,  kcal:230 },
-  { emoji:'🍗', name:'Chicken Thigh (150g)',     p:38, c:0,  f:12, kcal:270 },
-  { emoji:'🥚', name:'Whole Egg',                p:6,  c:0,  f:5,  kcal:70  },
-  { emoji:'🥚', name:'Egg White (3)',            p:11, c:0,  f:0,  kcal:50  },
-  { emoji:'🐟', name:'Barramundi (150g)',        p:32, c:0,  f:3,  kcal:158 },
-  { emoji:'🦐', name:'Prawns (150g)',            p:29, c:0,  f:2,  kcal:136 },
-  { emoji:'🧀', name:'Greek Yoghurt (170g)',     p:17, c:6,  f:0,  kcal:100 },
-  { emoji:'🥛', name:'Skim Milk (250ml)',        p:9,  c:12, f:0,  kcal:85  },
-  { emoji:'🫘', name:'Edamame (100g)',           p:11, c:8,  f:5,  kcal:121 },
-  { emoji:'🫘', name:'Lentils (100g cooked)',    p:9,  c:20, f:0,  kcal:116 },
+  { emoji:'🍗', name:'Chicken Breast (150g)',    p:47, c:0, fat:4, kcal:230 },
+  { emoji:'🍗', name:'Chicken Thigh (150g)',     p:38, c:0, fat:12, kcal:270 },
+  { emoji:'🥚', name:'Whole Egg',                p:6,  c:0, fat:5, kcal:70  },
+  { emoji:'🥚', name:'Egg White (3)',            p:11, c:0, fat:0, kcal:50  },
+  { emoji:'🐟', name:'Barramundi (150g)',        p:32, c:0, fat:3, kcal:158 },
+  { emoji:'🦐', name:'Prawns (150g)',            p:29, c:0, fat:2, kcal:136 },
+  { emoji:'🧀', name:'Greek Yoghurt (170g)',     p:17, c:6, fat:0, kcal:100 },
+  { emoji:'🥛', name:'Skim Milk (250ml)',        p:9,  c:12, fat:0, kcal:85  },
+  { emoji:'🫘', name:'Edamame (100g)',           p:11, c:8, fat:5, kcal:121 },
+  { emoji:'🫘', name:'Lentils (100g cooked)',    p:9,  c:20, fat:0, kcal:116 },
   // Carbs
-  { emoji:'🍚', name:'White Rice (150g cooked)', p:4,  c:42, f:0,  kcal:194 },
-  { emoji:'🍚', name:'Brown Rice (150g cooked)', p:4,  c:38, f:1,  kcal:182 },
-  { emoji:'🍠', name:'Sweet Potato (150g)',      p:2,  c:30, f:0,  kcal:130 },
-  { emoji:'🥔', name:'Potato (150g)',            p:3,  c:26, f:0,  kcal:116 },
-  { emoji:'🌾', name:'Oats (40g dry)',           p:5,  c:27, f:3,  kcal:154 },
-  { emoji:'🍞', name:'Sourdough (1 slice)',      p:4,  c:18, f:1,  kcal:97  },
-  { emoji:'🌯', name:'Wrap (1 medium)',          p:5,  c:30, f:3,  kcal:170 },
-  { emoji:'🍌', name:'Banana',                   p:1,  c:27, f:0,  kcal:105 },
-  { emoji:'🍎', name:'Apple',                    p:0,  c:25, f:0,  kcal:95  },
-  { emoji:'🫐', name:'Berries (100g)',           p:1,  c:14, f:0,  kcal:57  },
-  { emoji:'🍊', name:'Orange',                   p:1,  c:15, f:0,  kcal:62  },
+  { emoji:'🍚', name:'White Rice (150g cooked)', p:4,  c:42, fat:0, kcal:194 },
+  { emoji:'🍚', name:'Brown Rice (150g cooked)', p:4,  c:38, fat:1, kcal:182 },
+  { emoji:'🍠', name:'Sweet Potato (150g)',      p:2,  c:30, fat:0, kcal:130 },
+  { emoji:'🥔', name:'Potato (150g)',            p:3,  c:26, fat:0, kcal:116 },
+  { emoji:'🌾', name:'Oats (40g dry)',           p:5,  c:27, fat:3, kcal:154 },
+  { emoji:'🍞', name:'Sourdough (1 slice)',      p:4,  c:18, fat:1, kcal:97  },
+  { emoji:'🌯', name:'Wrap (1 medium)',          p:5,  c:30, fat:3, kcal:170 },
+  { emoji:'🍌', name:'Banana',                   p:1,  c:27, fat:0, kcal:105 },
+  { emoji:'🍎', name:'Apple',                    p:0,  c:25, fat:0, kcal:95  },
+  { emoji:'🫐', name:'Berries (100g)',           p:1,  c:14, fat:0, kcal:57  },
+  { emoji:'🍊', name:'Orange',                   p:1,  c:15, fat:0, kcal:62  },
   // Fats / extras
-  { emoji:'🥑', name:'Avocado (½)',              p:2,  c:6,  f:12, kcal:120 },
-  { emoji:'🫒', name:'Olive Oil (1 tbsp)',       p:0,  c:0,  f:14, kcal:120 },
-  { emoji:'🥜', name:'Almonds (30g)',            p:6,  c:2,  f:15, kcal:174 },
-  { emoji:'🧈', name:'Peanut Butter (1 tbsp)',   p:4,  c:3,  f:8,  kcal:95  },
-  { emoji:'🧀', name:'Feta (30g)',               p:4,  c:1,  f:6,  kcal:75  },
+  { emoji:'🥑', name:'Avocado (½)',              p:2,  c:6, fat:12, kcal:120 },
+  { emoji:'🫒', name:'Olive Oil (1 tbsp)',       p:0,  c:0, fat:14, kcal:120 },
+  { emoji:'🥜', name:'Almonds (30g)',            p:6,  c:2, fat:15, kcal:174 },
+  { emoji:'🧈', name:'Peanut Butter (1 tbsp)',   p:4,  c:3, fat:8, kcal:95  },
+  { emoji:'🧀', name:'Feta (30g)',               p:4,  c:1, fat:6, kcal:75  },
   // Veggies
-  { emoji:'🥦', name:'Broccoli (100g)',          p:3,  c:4,  f:0,  kcal:34  },
-  { emoji:'🥗', name:'Mixed Salad (large)',      p:2,  c:5,  f:0,  kcal:30  },
-  { emoji:'🥕', name:'Carrot (1 medium)',        p:1,  c:7,  f:0,  kcal:31  },
-  { emoji:'🫛', name:'Snow Peas (100g)',         p:3,  c:8,  f:0,  kcal:42  },
-  { emoji:'🥒', name:'Cucumber (100g)',          p:1,  c:4,  f:0,  kcal:16  },
+  { emoji:'🥦', name:'Broccoli (100g)',          p:3,  c:4, fat:0, kcal:34  },
+  { emoji:'🥗', name:'Mixed Salad (large)',      p:2,  c:5, fat:0, kcal:30  },
+  { emoji:'🥕', name:'Carrot (1 medium)',        p:1,  c:7, fat:0, kcal:31  },
+  { emoji:'🫛', name:'Snow Peas (100g)',         p:3,  c:8, fat:0, kcal:42  },
+  { emoji:'🥒', name:'Cucumber (100g)',          p:1,  c:4, fat:0, kcal:16  },
   // Drinks / misc
-  { emoji:'🥤', name:'Protein Shake (1 scoop)',  p:25, c:3,  f:2,  kcal:130 },
-  { emoji:'🍵', name:'Bone Broth (250ml)',       p:10, c:0,  f:0,  kcal:40  },
-  { emoji:'🥛', name:'Almond Milk (250ml)',      p:1,  c:3,  f:3,  kcal:40  },
+  { emoji:'🥤', name:'Protein Shake (1 scoop)',  p:25, c:3, fat:2, kcal:130 },
+  { emoji:'🍵', name:'Bone Broth (250ml)',       p:10, c:0, fat:0, kcal:40  },
+  { emoji:'🥛', name:'Almond Milk (250ml)',      p:1,  c:3, fat:3, kcal:40  },
 ];
 
 // Quick-add = your personal foods (first 9)
@@ -664,7 +651,7 @@ function onSearch(q) {
         <div class="sr-emoji">${f.emoji}</div>
         <div class="sr-info">
           <div class="sr-name">${f.name}</div>
-          <div class="sr-sub">${f.kcal} kcal · C ${f.c}g · F ${f.f||f.fat||0}g</div>
+          <div class="sr-sub">${f.kcal} kcal · C ${f.c}g · F ${f.fat}g</div>
           <div class="sr-p">P ${f.p}g protein</div>
         </div>
         <button class="sr-add">+ Add</button>
@@ -687,7 +674,7 @@ function renderQuickAdd() {
       <div class="qa-emoji">${f.emoji}</div>
       <div class="qa-info">
         <div class="qa-name">${f.name}</div>
-        <div class="qa-sub">${f.kcal} kcal · C${f.c}g · F${f.f}g</div>
+        <div class="qa-sub">${f.kcal} kcal · C${f.c}g · F${f.fat}g</div>
         <div class="qa-p">P ${f.p}g</div>
       </div>
     </button>`
@@ -815,13 +802,11 @@ function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
 // ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab) {
   ['log','body','targets'].forEach(t=>{
-    document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab);
+    document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab);
     const nb=document.getElementById('nav-'+t);
-    if (nb) nb.classList.toggle('active',t===tab);
-    const tb=document.getElementById('tab-btn-'+t);
-    if (tb) tb.classList.toggle('active',t===tab);
+    if (nb) nb.classList.toggle('active', t===tab);
   });
-  if (tab==='body') setTimeout(renderBodyTab,50);
+  if (tab==='body') setTimeout(renderBodyTab, 50);
 }
 
 // ── MASTER RENDER ─────────────────────────────────────────────
