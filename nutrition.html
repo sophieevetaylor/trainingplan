@@ -21,9 +21,9 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:90px}
 
 /* HEADER */
-.header{background:var(–ink);padding:env(safe-area-inset-top,44px) 22px 22px;position:relative}
-.hblob1{position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(196,113,74,.28) 0%,transparent 65%);pointer-events:none}
-.hblob2{position:absolute;bottom:-60px;left:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(74,114,96,.25) 0%,transparent 65%);pointer-events:none}
+.header{background:var(–ink);padding:env(safe-area-inset-top,44px) 22px 22px;position:relative;isolation:isolate}
+.hblob1{position:absolute;top:-80px;right:-80px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(196,113,74,.22) 0%,transparent 65%);pointer-events:none;z-index:0}
+.hblob2{position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(74,114,96,.18) 0%,transparent 65%);pointer-events:none;z-index:0}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;position:relative;z-index:1}
 .header-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:500}
 .header-title{font-family:‘Playfair Display’,serif;font-size:26px;color:#fff;line-height:1.1;margin-top:2px}
@@ -34,7 +34,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .dt-btn.active{background:var(–terra);border-color:var(–terra);color:#fff}
 
 /* CALORIE BANNER */
-.cal-banner{background:var(–surface);margin:16px 16px 0;border-radius:var(–r);padding:20px;box-shadow:var(–shadow);border:1px solid var(–border)}
+.cal-banner{background:var(–surface);margin:16px 16px 0;border-radius:var(–r);padding:20px;box-shadow:var(–shadow);border:1px solid var(–border);position:relative;z-index:1}
 .cal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .cal-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(–ink3);font-weight:600}
 .cal-numbers{display:flex;align-items:baseline;gap:4px;margin-top:4px}
@@ -47,7 +47,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .cal-bar-fill.over{background:linear-gradient(90deg,#C44A4A,#E86D6D)}
 
 /* MACRO RINGS */
-.macro-row{display:flex;gap:10px;margin:12px 16px 0}
+.macro-row{display:flex;gap:10px;margin:12px 16px 0;position:relative;z-index:1}
+.section{margin:14px 16px 0;position:relative;z-index:1}
 .macro-card{flex:1;background:var(–surface);border-radius:var(–r);padding:14px 10px 12px;text-align:center;box-shadow:var(–shadow);border:1px solid var(–border);position:relative;overflow:hidden}
 .macro-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:3px}
 .macro-card.protein::before{background:var(–protein-c)}
@@ -66,9 +67,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .macro-name{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(–ink3);font-weight:600}
 .macro-target-txt{font-size:10px;color:var(–ink3);margin-top:2px}
 
-/* SECTION */
-.section{margin:14px 16px 0}
-.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+/* SECTION */.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .section-title{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(–ink3);font-weight:600}
 .section-action{font-size:12px;color:var(–terra);font-weight:600;cursor:pointer}
 
@@ -123,8 +122,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 
 /* CHART */
 .chart-card{background:var(–surface);border-radius:var(–r);padding:18px;box-shadow:var(–shadow);border:1px solid var(–border);margin-bottom:10px}
+.chart-card.empty{padding:14px 18px}
 .chart-title{font-size:12px;font-weight:600;color:var(–ink);margin-bottom:14px;display:flex;justify-content:space-between}
 .chart-title span{color:var(–ink3);font-weight:400;font-size:11px}
+.chart-svg{width:100%;overflow:visible;display:block}
 
 /* FOOD SEARCH */
 .search-wrap{position:relative;margin-bottom:10px}
@@ -345,17 +346,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
     <div class="section-head"><div class="section-title">Progress</div></div>
     <div class="chart-card">
       <div class="chart-title">Weight <span id="weightTrendLabel"></span></div>
-      <svg id="weightChart" width="100%" height="120" style="overflow:visible"></svg>
+      <svg id="weightChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="weightChartSub"></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Waist <span id="waistTrendLabel"></span></div>
-      <svg id="waistChart" width="100%" height="120" style="overflow:visible"></svg>
+      <svg id="waistChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="waistChartSub"></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Sleep Score <span id="sleepTrendLabel"></span></div>
-      <svg id="sleepChart" width="100%" height="120" style="overflow:visible"></svg>
+      <svg id="sleepChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="sleepChartSub"></div>
     </div>
   </div>
@@ -766,20 +767,32 @@ function renderBodyTab() {
 }
 
 function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
-  const svg=document.getElementById(svgId);
-  if (!hist.length) { svg.innerHTML='<text x="50%" y="60" text-anchor="middle" fill="#A8998C" font-size="12">No data yet</text>'; return; }
-  const W=svg.parentElement.offsetWidth-36, H=110;
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  const vals=hist.map(h=>h.val);
-  const min=Math.min(...vals), max=Math.max(...vals), range=max-min||1;
-  const pad={l:8,r:8,t:10,b:20};
-  const xS=i=>pad.l+(i/Math.max(hist.length-1,1))*(W-pad.l-pad.r);
-  const yS=v=>pad.t+(1-(v-min)/range)*(H-pad.t-pad.b);
-  const gradId='g_'+svgId;
-  let d=`M${xS(0)},${yS(vals[0])}`;
+  const svg = document.getElementById(svgId);
+  const card = svg.closest('.chart-card');
+  if (!hist.length) {
+    svg.setAttribute('height', '0');
+    svg.innerHTML = '';
+    if (trendEl) trendEl.innerHTML = '';
+    if (subEl) subEl.textContent = '';
+    card.classList.add('empty');
+    return;
+  }
+  card.classList.remove('empty');
+  const W = svg.parentElement.offsetWidth - 36;
+  const H = 110;
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const vals = hist.map(h=>h.val);
+  const min = Math.min(...vals), max = Math.max(...vals), range = max-min||1;
+  const pad = {l:8,r:8,t:10,b:20};
+  const xS = i => pad.l + (i/Math.max(hist.length-1,1))*(W-pad.l-pad.r);
+  const yS = v => pad.t + (1-(v-min)/range)*(H-pad.t-pad.b);
+  const gradId = 'g_'+svgId;
+  let d = `M${xS(0)},${yS(vals[0])}`;
   hist.forEach((_,i)=>{ if(i>0) d+=` L${xS(i)},${yS(vals[i])}`; });
-  const fillD=d+` L${xS(hist.length-1)},${H-pad.b} L${xS(0)},${H-pad.b} Z`;
-  svg.innerHTML=`
+  const fillD = d+` L${xS(hist.length-1)},${H-pad.b} L${xS(0)},${H-pad.b} Z`;
+  svg.innerHTML = `
     <defs><linearGradient id="${gradId}" x1="0" x2="0" y1="0" y2="1">
       <stop offset="0%" stop-color="${color}" stop-opacity="0.18"/>
       <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
@@ -791,12 +804,12 @@ function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
       <text x="${xS(0)}" y="${H}" font-size="9" fill="#A8998C" text-anchor="start">${hist[0].date.slice(5)}</text>
       <text x="${xS(hist.length-1)}" y="${H}" font-size="9" fill="#A8998C" text-anchor="end">${hist[hist.length-1].date.slice(5)}</text>
     `:''}`;
-  if (hist.length>1&&trendEl) {
-    const diff=vals[vals.length-1]-vals[0];
-    const col=diff<0?'#4A7260':diff>0?'#C44A4A':'#A8998C';
-    trendEl.innerHTML=`<span style="color:${col}">${diff<0?'▼':'▲'} ${Math.abs(diff).toFixed(2)}${unit} total</span>`;
+  if (hist.length>1 && trendEl) {
+    const diff = vals[vals.length-1]-vals[0];
+    const col = diff<0?'#4A7260':diff>0?'#C44A4A':'#A8998C';
+    trendEl.innerHTML = `<span style="color:${col}">${diff<0?'▼':'▲'} ${Math.abs(diff).toFixed(1)}${unit} total</span>`;
   }
-  if (subEl) subEl.textContent=`${hist.length} log${hist.length!==1?'s':''} · Latest: ${vals[vals.length-1].toFixed(2)}${unit}`;
+  if (subEl) subEl.textContent = `${hist.length} log${hist.length!==1?'s':''} · Latest: ${vals[vals.length-1].toFixed(unit==='kg'||unit===''?1:1)}${unit}`;
 }
 
 // ── TABS ──────────────────────────────────────────────────────
