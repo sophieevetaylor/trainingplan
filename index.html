@@ -507,8 +507,13 @@ checkPerfectDay();
 
 function checkPerfectDay(){
 const s=getState();let allDone=true;
-[["run-check","run"],["str-check","str"],["pil-check","pil"],["tm-check","tm"],["spin-check","spin"]].forEach(([ck,sk])=>{if($(ck)&&!s[sk])allDone=false});
-if(!s.steps||!s.water||(ggArmsActive(currentDate)&&!s.ba))allDone=false;
+const plan=getPlan(currentDate);
+if(plan.run&&!s.run)allDone=false;
+if(plan.str&&!s.str)allDone=false;
+if(plan.other&&plan.other.toLowerCase().includes('pilates')&&!s.pil)allDone=false;
+if(plan.spin&&!s.spin)allDone=false;
+if(!s.steps||!s.water)allDone=false;
+if(ggArmsActive(currentDate)&&!s.ba)allDone=false;
 const existing=$("perfect-day-banner");
 if(allDone&&!existing){const banner=document.createElement("div");banner.id="perfect-day-banner";banner.className="perfect-day";banner.innerHTML='<div class="perfect-day-icon">\u2B50</div><div class="perfect-day-title">PERFECT DAY</div><div class="perfect-day-sub">Every box ticked. That\'s how champions are built.</div>';var c=$("content");if(c){var fc=c.firstChild;if(fc)c.insertBefore(banner,fc);else c.appendChild(banner);}}
 else if(!allDone&&existing){existing.remove()}
@@ -804,7 +809,7 @@ function renderCoachTab(){
   cv.innerHTML=html;
 }
 
-
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){render();});}else{render();}
 </script>
 </body>
 </html>
