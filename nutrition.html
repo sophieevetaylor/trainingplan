@@ -128,23 +128,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .chart-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;justify-content:space-between}
 .chart-title span{color:var(--ink3);font-weight:400;font-size:11px}
 
-/* RENPHO IMPORT */
-.renpho-card{background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1.5px dashed var(--border);margin-bottom:10px}
-.renpho-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.renpho-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#00B4D8,#0077B6);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.renpho-title{font-size:13px;font-weight:600;color:var(--ink)}
-.renpho-sub{font-size:11px;color:var(--ink3);margin-top:1px}
-.renpho-steps{margin-bottom:14px}
-.renpho-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
-.step-num{width:20px;height:20px;border-radius:50%;background:var(--terra-pale);color:var(--terra);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.step-txt{font-size:12px;color:var(--ink2);line-height:1.5}
-.step-txt strong{color:var(--ink)}
-.import-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s}
-.import-btn:active{background:var(--ink2)}
-.import-result{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:12px;font-weight:500;display:none}
-.import-result.success{background:var(--sage-pale);color:var(--sage)}
-.import-result.error{background:#FDEAEA;color:#C44A4A}
-#renphoCsvInput{display:none}
+/* FOOD SEARCH */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px 11px 38px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--terra)}
+.search-input::placeholder{color:var(--ink3)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+.search-results{background:var(--surface);border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-top:6px}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.search-result-item:last-child{border-bottom:none}
+.search-result-item:active{background:var(--terra-pale)}
+.sr-emoji{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.sr-info{flex:1}
+.sr-name{font-size:13px;font-weight:600;color:var(--ink)}
+.sr-sub{font-size:10px;color:var(--ink3);margin-top:1px}
+.sr-p{font-size:11px;font-weight:600;color:var(--protein-c)}
+.sr-add{background:var(--terra);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0}
+.no-results{padding:16px;text-align:center;color:var(--ink3);font-size:12px}
 
 /* TARGETS */
 .targets-card{background:var(--surface);border-radius:var(--r);padding:0 18px;box-shadow:var(--shadow);border:1px solid var(--border)}
@@ -272,15 +272,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
   </div>
 
   <div class="section">
-    <div class="section-head"><div class="section-title">Quick Add</div></div>
-    <div class="quick-add-grid" id="quickAddGrid"></div>
-    <div class="custom-add-row">
-      <input class="custom-input" id="customName" placeholder="Food name…" style="flex:2;min-width:0">
-      <input class="custom-input" id="customProt" placeholder="P" type="number" style="width:48px">
-      <input class="custom-input" id="customCarb" placeholder="C" type="number" style="width:48px">
-      <input class="custom-input" id="customFat"  placeholder="F" type="number" style="width:48px">
-      <button class="add-btn" onclick="addCustomFood()">Add</button>
+    <div class="section-head"><div class="section-title">Add Food</div></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="foodSearch" placeholder="Search foods…" oninput="onSearch(this.value)" autocomplete="off">
     </div>
+    <div id="searchResults" class="hidden"></div>
+    <div id="quickAddGrid" class="quick-add-grid"></div>
   </div>
 
   <div class="section" style="margin-bottom:16px">
@@ -322,39 +320,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
           <button class="metric-save" onclick="saveMetric('waist')">Save</button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- RENPHO IMPORT -->
-  <div class="section">
-    <div class="section-head"><div class="section-title">RENPHO Import</div></div>
-    <div class="renpho-card">
-      <div class="renpho-header">
-        <div class="renpho-logo">📱</div>
-        <div>
-          <div class="renpho-title">Import from RENPHO</div>
-          <div class="renpho-sub">Bulk-load your weight history in one tap</div>
+      <div class="metric-card" style="grid-column:1/-1">
+        <div class="metric-label">Sleep Score <span style="color:var(--ink3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">· Garmin</span></div>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:6px">
+          <div>
+            <div class="metric-value-row" style="margin:0">
+              <div class="metric-value" id="dispSleep">—</div>
+              <div class="metric-unit">/ 100</div>
+            </div>
+            <div class="metric-change" id="changeSleep"></div>
+          </div>
+          <div id="sleepBar" style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:2px">
+            <div id="sleepBarFill" style="height:100%;border-radius:4px;width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+          </div>
+          <div id="sleepBadge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;white-space:nowrap"></div>
+        </div>
+        <div class="metric-input-row" style="margin-top:10px">
+          <input class="metric-input" id="inputSleep" type="number" min="0" max="100" placeholder="e.g. 78">
+          <button class="metric-save" onclick="saveMetric('sleep')">Save</button>
         </div>
       </div>
-      <div class="renpho-steps">
-        <div class="renpho-step">
-          <div class="step-num">1</div>
-          <div class="step-txt">Open RENPHO app → tap your <strong>profile photo</strong> → <strong>Data Export</strong></div>
-        </div>
-        <div class="renpho-step">
-          <div class="step-num">2</div>
-          <div class="step-txt">Export as <strong>CSV</strong> → save to Files or share to yourself</div>
-        </div>
-        <div class="renpho-step">
-          <div class="step-num">3</div>
-          <div class="step-txt">Tap Import below and select the <strong>RENPHO_weight.csv</strong> file</div>
-        </div>
-      </div>
-      <input type="file" id="renphoCsvInput" accept=".csv" onchange="handleRenphoImport(event)">
-      <button class="import-btn" onclick="document.getElementById('renphoCsvInput').click()">
-        <span>📂</span> Import RENPHO CSV
-      </button>
-      <div class="import-result" id="importResult"></div>
     </div>
   </div>
 
@@ -369,6 +354,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
       <div class="chart-title">Waist <span id="waistTrendLabel"></span></div>
       <svg id="waistChart" width="100%" height="120" style="overflow:visible"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="waistChartSub"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Sleep Score <span id="sleepTrendLabel"></span></div>
+      <svg id="sleepChart" width="100%" height="120" style="overflow:visible"></svg>
+      <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="sleepChartSub"></div>
     </div>
   </div>
 
@@ -475,7 +465,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
   <button class="nav-btn active" id="nav-log" onclick="switchTab('log')"><div class="nav-icon">🍽</div><div class="nav-label">Today</div></button>
   <button class="nav-btn" id="nav-body" onclick="switchTab('body')"><div class="nav-icon">⚖️</div><div class="nav-label">Body</div></button>
   <button class="nav-btn" id="nav-targets" onclick="switchTab('targets')"><div class="nav-icon">🎯</div><div class="nav-label">Targets</div></button>
-  <button class="nav-btn" onclick="window.location.href='/'"><div class="nav-icon">🏃</div><div class="nav-label">Training</div></button>
 </div>
 
 <script>
@@ -487,23 +476,8 @@ const DAY_TYPES = [
   { key:'rest',    label:'Rest Day',        cal:1625, p:130, c:160, f:55, days:[4] },
 ];
 
-const QUICK_FOODS = [
-  { emoji:'🥩', name:'200g Lean Mince',    p:42, c:0,  f:10, kcal:240 },
-  { emoji:'🥩', name:'Steak',              p:42, c:0,  f:14, kcal:300 },
-  { emoji:'🥤', name:'Cali Press Arnold',  p:36, c:28, f:9,  kcal:350 },
-  { emoji:'🍗', name:'200g Mince Chicken', p:34, c:0,  f:6,  kcal:210 },
-  { emoji:'🐟', name:'Salmon',             p:34, c:0,  f:16, kcal:290 },
-  { emoji:'🐟', name:'Canned Tuna',        p:25, c:0,  f:2,  kcal:120 },
-  { emoji:'🥄', name:'Chobani Fit',        p:15, c:12, f:0,  kcal:90  },
-  { emoji:'🧀', name:'Cottage Cheese',     p:14, c:4,  f:4,  kcal:110 },
-  { emoji:'☕', name:'Oat Flat White',     p:2,  c:14, f:4,  kcal:100 },
-  { emoji:'🥑', name:'Avocado (½)',        p:2,  c:6,  f:12, kcal:120 },
-  { emoji:'🫐', name:'Berries (100g)',     p:1,  c:14, f:0,  kcal:57  },
-  { emoji:'🍚', name:'White Rice (150g)', p:4,  c:42, f:0,  kcal:194 },
-];
-
-// ── STORAGE ───────────────────────────────────────────────────
-const todayKey  = () => 'nutr_' + new Date().toISOString().slice(0,10);
+// ── STORAGE (Sydney time for daily reset) ─────────────────────
+const todayKey  = () => 'nutr_' + new Date().toLocaleDateString('en-CA', {timeZone:'Australia/Sydney'});
 const histKey   = m  => 'body_' + m;
 const getLog    = () => JSON.parse(localStorage.getItem(todayKey()) || '[]');
 const saveLog   = l  => localStorage.setItem(todayKey(), JSON.stringify(l));
@@ -599,14 +573,98 @@ function addFood(food) { const l=getLog(); l.push({...food}); saveLog(l); render
 function removeFood(i) { const l=getLog(); l.splice(i,1); saveLog(l); render(); }
 function clearLog()    { if(confirm('Clear today\'s log?')) { saveLog([]); render(); } }
 
-function addCustomFood() {
-  const name=document.getElementById('customName').value.trim();
-  if (!name) return;
-  const p=parseFloat(document.getElementById('customProt').value)||0;
-  const c=parseFloat(document.getElementById('customCarb').value)||0;
-  const fat=parseFloat(document.getElementById('customFat').value)||0;
-  addFood({ emoji:'🍽', name, p, c, fat, kcal:Math.round(p*4+c*4+fat*9) });
-  ['customName','customProt','customCarb','customFat'].forEach(id=>document.getElementById(id).value='');
+// ── FOOD DATABASE (your foods + common Aussie extras) ─────────
+const ALL_FOODS = [
+  // Your regulars
+  { emoji:'🥩', name:'200g Lean Mince Beef',   p:42, c:0,  f:10, kcal:240 },
+  { emoji:'🥩', name:'Steak',                   p:42, c:0,  f:14, kcal:300 },
+  { emoji:'🥤', name:'Cali Press Arnold',        p:36, c:28, f:9,  kcal:350 },
+  { emoji:'🍗', name:'200g Minced Chicken',      p:34, c:0,  f:6,  kcal:210 },
+  { emoji:'🐟', name:'Salmon',                   p:34, c:0,  f:16, kcal:290 },
+  { emoji:'🐟', name:'Canned Tuna',              p:25, c:0,  f:2,  kcal:120 },
+  { emoji:'🥄', name:'Chobani Fit Passionfruit', p:15, c:12, f:0,  kcal:90  },
+  { emoji:'🧀', name:'Cottage Cheese (100g)',    p:14, c:4,  f:4,  kcal:110 },
+  { emoji:'☕', name:'Oat Flat White',           p:2,  c:14, f:4,  kcal:100 },
+  // Proteins
+  { emoji:'🍗', name:'Chicken Breast (150g)',    p:47, c:0,  f:4,  kcal:230 },
+  { emoji:'🍗', name:'Chicken Thigh (150g)',     p:38, c:0,  f:12, kcal:270 },
+  { emoji:'🥚', name:'Whole Egg',                p:6,  c:0,  f:5,  kcal:70  },
+  { emoji:'🥚', name:'Egg White (3)',            p:11, c:0,  f:0,  kcal:50  },
+  { emoji:'🐟', name:'Barramundi (150g)',        p:32, c:0,  f:3,  kcal:158 },
+  { emoji:'🦐', name:'Prawns (150g)',            p:29, c:0,  f:2,  kcal:136 },
+  { emoji:'🧀', name:'Greek Yoghurt (170g)',     p:17, c:6,  f:0,  kcal:100 },
+  { emoji:'🥛', name:'Skim Milk (250ml)',        p:9,  c:12, f:0,  kcal:85  },
+  { emoji:'🫘', name:'Edamame (100g)',           p:11, c:8,  f:5,  kcal:121 },
+  { emoji:'🫘', name:'Lentils (100g cooked)',    p:9,  c:20, f:0,  kcal:116 },
+  // Carbs
+  { emoji:'🍚', name:'White Rice (150g cooked)', p:4,  c:42, f:0,  kcal:194 },
+  { emoji:'🍚', name:'Brown Rice (150g cooked)', p:4,  c:38, f:1,  kcal:182 },
+  { emoji:'🍠', name:'Sweet Potato (150g)',      p:2,  c:30, f:0,  kcal:130 },
+  { emoji:'🥔', name:'Potato (150g)',            p:3,  c:26, f:0,  kcal:116 },
+  { emoji:'🌾', name:'Oats (40g dry)',           p:5,  c:27, f:3,  kcal:154 },
+  { emoji:'🍞', name:'Sourdough (1 slice)',      p:4,  c:18, f:1,  kcal:97  },
+  { emoji:'🌯', name:'Wrap (1 medium)',          p:5,  c:30, f:3,  kcal:170 },
+  { emoji:'🍌', name:'Banana',                   p:1,  c:27, f:0,  kcal:105 },
+  { emoji:'🍎', name:'Apple',                    p:0,  c:25, f:0,  kcal:95  },
+  { emoji:'🫐', name:'Berries (100g)',           p:1,  c:14, f:0,  kcal:57  },
+  { emoji:'🍊', name:'Orange',                   p:1,  c:15, f:0,  kcal:62  },
+  // Fats / extras
+  { emoji:'🥑', name:'Avocado (½)',              p:2,  c:6,  f:12, kcal:120 },
+  { emoji:'🫒', name:'Olive Oil (1 tbsp)',       p:0,  c:0,  f:14, kcal:120 },
+  { emoji:'🥜', name:'Almonds (30g)',            p:6,  c:2,  f:15, kcal:174 },
+  { emoji:'🧈', name:'Peanut Butter (1 tbsp)',   p:4,  c:3,  f:8,  kcal:95  },
+  { emoji:'🧀', name:'Feta (30g)',               p:4,  c:1,  f:6,  kcal:75  },
+  // Veggies
+  { emoji:'🥦', name:'Broccoli (100g)',          p:3,  c:4,  f:0,  kcal:34  },
+  { emoji:'🥗', name:'Mixed Salad (large)',      p:2,  c:5,  f:0,  kcal:30  },
+  { emoji:'🥕', name:'Carrot (1 medium)',        p:1,  c:7,  f:0,  kcal:31  },
+  { emoji:'🫛', name:'Snow Peas (100g)',         p:3,  c:8,  f:0,  kcal:42  },
+  { emoji:'🥒', name:'Cucumber (100g)',          p:1,  c:4,  f:0,  kcal:16  },
+  // Drinks / misc
+  { emoji:'🥤', name:'Protein Shake (1 scoop)',  p:25, c:3,  f:2,  kcal:130 },
+  { emoji:'🍵', name:'Bone Broth (250ml)',       p:10, c:0,  f:0,  kcal:40  },
+  { emoji:'🥛', name:'Almond Milk (250ml)',      p:1,  c:3,  f:3,  kcal:40  },
+];
+
+// Quick-add = your personal foods (first 9)
+const QUICK_FOODS = ALL_FOODS.slice(0, 9);
+
+// ── SEARCH ────────────────────────────────────────────────────
+function onSearch(q) {
+  const results = document.getElementById('searchResults');
+  const grid    = document.getElementById('quickAddGrid');
+  q = q.trim().toLowerCase();
+  if (!q) {
+    results.classList.add('hidden');
+    results.innerHTML = '';
+    grid.classList.remove('hidden');
+    return;
+  }
+  grid.classList.add('hidden');
+  const matches = ALL_FOODS.filter(f => f.name.toLowerCase().includes(q));
+  if (!matches.length) {
+    results.innerHTML = `<div class="no-results">No foods found for "${q}"</div>`;
+  } else {
+    results.innerHTML = matches.map(f =>
+      `<div class="search-result-item" onclick='addFood(${JSON.stringify(f)});clearSearch()'>
+        <div class="sr-emoji">${f.emoji}</div>
+        <div class="sr-info">
+          <div class="sr-name">${f.name}</div>
+          <div class="sr-sub">${f.kcal} kcal · C ${f.c}g · F ${f.fat}g</div>
+          <div class="sr-p">P ${f.p}g protein</div>
+        </div>
+        <button class="sr-add">+ Add</button>
+      </div>`
+    ).join('');
+  }
+  results.classList.remove('hidden');
+}
+
+function clearSearch() {
+  document.getElementById('foodSearch').value = '';
+  document.getElementById('searchResults').classList.add('hidden');
+  document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('quickAddGrid').classList.remove('hidden');
 }
 
 // ── QUICK ADD ─────────────────────────────────────────────────
@@ -640,15 +698,26 @@ function saveMetric(metric) {
   const cap = metric[0].toUpperCase()+metric.slice(1);
   const val = parseFloat(document.getElementById('input'+cap).value);
   if (isNaN(val)) return;
-  const hist=getHist(metric), today=new Date().toISOString().slice(0,10);
+  if (metric==='sleep' && (val<0||val>100)) return;
+  const hist=getHist(metric), today=new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Sydney'});
   const idx=hist.findIndex(h=>h.date===today);
   if (idx>=0) hist[idx].val=val; else hist.push({date:today,val});
   if (hist.length>90) hist.splice(0,hist.length-90);
   saveHist(metric,hist);
+  document.getElementById('input'+cap).value='';
   renderBodyTab();
 }
 
+function sleepGrade(s) {
+  if (s>=90) return { label:'Excellent', color:'#4A7260', bg:'#EBF3EF' };
+  if (s>=80) return { label:'Good',      color:'#4A7260', bg:'#EBF3EF' };
+  if (s>=70) return { label:'Fair',      color:'#B8943A', bg:'#FAF3E0' };
+  if (s>=60) return { label:'Poor',      color:'#C4714A', bg:'#FBF0EA' };
+  return              { label:'Very Poor',color:'#C44A4A', bg:'#FDEAEA' };
+}
+
 function renderBodyTab() {
+  // Weight & waist
   ['weight','waist'].forEach(metric=>{
     const hist=getHist(metric), cap=metric[0].toUpperCase()+metric.slice(1);
     const dispEl=document.getElementById('disp'+cap), changeEl=document.getElementById('change'+cap);
@@ -665,6 +734,35 @@ function renderBodyTab() {
       document.getElementById(metric+'TrendLabel'),
       document.getElementById(metric+'ChartSub'));
   });
+
+  // Sleep
+  const sleepHist = getHist('sleep');
+  const dispSleep = document.getElementById('dispSleep');
+  const changeSleep = document.getElementById('changeSleep');
+  if (sleepHist.length) {
+    const latest = sleepHist[sleepHist.length-1];
+    dispSleep.textContent = Math.round(latest.val);
+    const grade = sleepGrade(latest.val);
+    const badge = document.getElementById('sleepBadge');
+    badge.textContent = grade.label;
+    badge.style.background = grade.bg;
+    badge.style.color = grade.color;
+    const fill = document.getElementById('sleepBarFill');
+    fill.style.width = latest.val + '%';
+    fill.style.background = `linear-gradient(90deg, ${grade.color}, ${grade.color}99)`;
+    if (sleepHist.length>1) {
+      const diff = latest.val - sleepHist[sleepHist.length-2].val;
+      changeSleep.textContent = (diff>0?'+':'')+Math.round(diff)+' vs prev';
+      changeSleep.className = 'metric-change '+(diff>0?'down':diff<0?'up':'same'); // higher sleep = good
+    }
+  } else {
+    dispSleep.textContent='—';
+    document.getElementById('sleepBadge').textContent='';
+    document.getElementById('sleepBarFill').style.width='0%';
+  }
+  renderLineChart('sleepChart', sleepHist, '#8B6BA0', '', 
+    document.getElementById('sleepTrendLabel'),
+    document.getElementById('sleepChartSub'));
 }
 
 function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
@@ -699,84 +797,6 @@ function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
     trendEl.innerHTML=`<span style="color:${col}">${diff<0?'▼':'▲'} ${Math.abs(diff).toFixed(2)}${unit} total</span>`;
   }
   if (subEl) subEl.textContent=`${hist.length} log${hist.length!==1?'s':''} · Latest: ${vals[vals.length-1].toFixed(2)}${unit}`;
-}
-
-// ── RENPHO CSV IMPORT ─────────────────────────────────────────
-function handleRenphoImport(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const text = e.target.result;
-      const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-      if (!lines.length) throw new Error('Empty file');
-
-      // Detect header row — find column indices
-      const header = lines[0].toLowerCase().split(',').map(h=>h.replace(/"/g,'').trim());
-
-      // RENPHO exports use various column names — handle both English and other variants
-      // Common: "Time of Measurement", "Weight(kg)", "Weight(lbs)"
-      const timeIdx   = header.findIndex(h=>h.includes('time')||h.includes('date'));
-      const weightKgIdx = header.findIndex(h=>h.includes('weight') && (h.includes('kg')||!h.includes('lbs')));
-      const weightLbIdx = header.findIndex(h=>h.includes('weight') && h.includes('lbs'));
-
-      if (timeIdx === -1) throw new Error('Could not find date column. Please export from RENPHO app → Data Export → CSV.');
-      if (weightKgIdx === -1 && weightLbIdx === -1) throw new Error('Could not find weight column.');
-
-      const useKg = weightKgIdx !== -1;
-      const wIdx  = useKg ? weightKgIdx : weightLbIdx;
-
-      let imported = 0, skipped = 0;
-      const existing = getHist('weight');
-      const existingDates = new Set(existing.map(h=>h.date));
-
-      for (let i=1; i<lines.length; i++) {
-        const cols = lines[i].split(',').map(c=>c.replace(/"/g,'').trim());
-        if (cols.length <= Math.max(timeIdx, wIdx)) { skipped++; continue; }
-
-        const rawDate = cols[timeIdx];
-        const rawWeight = parseFloat(cols[wIdx]);
-
-        if (!rawDate || isNaN(rawWeight) || rawWeight < 20 || rawWeight > 250) { skipped++; continue; }
-
-        // Parse date — RENPHO uses "YYYY-MM-DD HH:MM:SS" or "MM/DD/YYYY"
-        let dateStr = '';
-        const isoMatch = rawDate.match(/(\d{4})-(\d{2})-(\d{2})/);
-        const usMatch  = rawDate.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-        if (isoMatch) dateStr = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
-        else if (usMatch) dateStr = `${usMatch[3]}-${usMatch[1].padStart(2,'0')}-${usMatch[2].padStart(2,'0')}`;
-        else { skipped++; continue; }
-
-        const val = useKg ? Math.round(rawWeight*100)/100 : Math.round(rawWeight*0.453592*100)/100;
-        if (!existingDates.has(dateStr)) {
-          existing.push({ date: dateStr, val });
-          existingDates.add(dateStr);
-          imported++;
-        }
-      }
-
-      // Sort chronologically and save
-      existing.sort((a,b)=>a.date.localeCompare(b.date));
-      if (existing.length > 90) existing.splice(0, existing.length-90);
-      saveHist('weight', existing);
-
-      showImportResult(`✓ Imported ${imported} entries${skipped?' ('+skipped+' skipped)':''}`, 'success');
-      renderBodyTab();
-    } catch(err) {
-      showImportResult('⚠ ' + err.message, 'error');
-    }
-    event.target.value = ''; // reset so same file can be re-imported
-  };
-  reader.readAsText(file);
-}
-
-function showImportResult(msg, type) {
-  const el = document.getElementById('importResult');
-  el.textContent = msg;
-  el.className = 'import-result ' + type;
-  el.style.display = 'block';
-  setTimeout(()=>{ el.style.display='none'; }, 5000);
 }
 
 // ── TABS ──────────────────────────────────────────────────────
