@@ -350,7 +350,7 @@ for(let i=0;i<7;i++){
 const d=new Date(monday);d.setDate(d.getDate()+i);
 const isToday=d.getDate()===todayNorm.getDate()&&d.getMonth()===todayNorm.getMonth();
 const isPast=d<todayNorm;let status="";
-try{const s=localStorage.getItem("tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());if(s){const st=JSON.parse(s);const protKey="tp-prot-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();let proteinHit=false;try{const pl=localStorage.getItem(protKey);if(pl){proteinHit=JSON.parse(pl).reduce((s2,f)=>s2+f.g,0)>=110}}catch(e2){}const dp=getPlan(d);let needed=[];if(dp.run)needed.push(st.run);if(dp.str){needed.push(st.str);needed.push(st.tm)}if(dp.spin)needed.push(st.spin);if(dp.other&&dp.other.toLowerCase().includes("pilates"))needed.push(st.pil);if(ggArmsActive(d))needed.push(st.ba);needed.push(st.steps);needed.push(st.water);needed.push(proteinHit);const allDone=needed.every(v=>v===true);const doneCt=needed.filter(Boolean).length;const totalCt=needed.length;if(allDone&&totalCt>=3)status="perfect";else if(doneCt>=Math.floor(totalCt*0.6))status="partial";else if(isPast&&doneCt>=1)status="concern";else if(doneCt>=1)status="partial";}else if(isPast&&!isToday){status="missed"}}catch(e){}
+try{const s=localStorage.getItem("tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());if(s){const st=JSON.parse(s);const dp=getPlan(d);let needed=[];if(dp.run)needed.push(st.run);if(dp.str){needed.push(st.str);needed.push(st.tm)}if(dp.spin)needed.push(st.spin);if(dp.other&&dp.other.toLowerCase().includes("pilates"))needed.push(st.pil);if(ggArmsActive(d))needed.push(st.ba);needed.push(st.steps);needed.push(st.water);const allDone=needed.every(v=>v===true);const doneCt=needed.filter(Boolean).length;const totalCt=needed.length;if(allDone&&totalCt>=3)status="perfect";else if(doneCt>=Math.floor(totalCt*0.6))status="partial";else if(isPast&&doneCt>=1)status="concern";else if(doneCt>=1)status="partial";}else if(isPast&&!isToday){status="missed"}}catch(e){}
 let dotsHtml="";
 try{
 const s=localStorage.getItem("tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());
@@ -490,7 +490,7 @@ const RACES2=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf"
 function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES2.find(r=>r.date>=nn)||RACES2[RACES2.length-1]}setActiveTab("goHome");
 
 function dateKey(d){return"tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
-function getState(){const k=dateKey(currentDate);try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,protein:false,water:false,ba:false}}
+function getState(){const k=dateKey(currentDate);try{const s=localStorage.getItem(k);if(s)return JSON.parse(s)}catch(e){}return{ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,water:false,ba:false}}
 function setState(s){const k=dateKey(currentDate);try{localStorage.setItem(k,JSON.stringify(s))}catch(e){}}
 function saveRun(done){const s=getState();s.run=done;setState(s)}
 function saveStr(done){const s=getState();s.str=done;setState(s)}
@@ -680,165 +680,131 @@ function renderCoachTab(){
     var prevKm=longRuns.length>1?(longRuns[longRuns.length-2].distance_km||0):0;
     var trend=latestLR.distance_km>prevKm?"\u2191 building":latestLR.distance_km<prevKm?"\u2193 down":"= steady";
     var totalLRkm=Math.round(longRuns.reduce(function(s,r){return s+(r.distance_km||0);},0)*10)/10;
+    var raceKm=21.1;
+    var pctOfRace=Math.round((maxLR/raceKm)*100);
+
     html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">'
       +'<div style="font-size:15px;font-weight:700;color:#3D2E4A">Long run progression</div>'
-      +'<div style="font-size:11px;background:rgba(107,91,138,0.1);color:#6B5B8A;padding:3px 10px;border-radius:10px;font-weight:600">'+longRuns.length+' long runs logged</div></div>'
-      +'<div style="display:flex;gap:8px;margin-bottom:12px">'
-      +'<div style="flex:1;background:rgba(45,106,79,0.06);border-radius:10px;padding:10px;text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">LATEST</div><div style="font-size:24px;font-weight:700;color:#2D6A4F">'+(latestLR.distance_km||0)+'</div><div style="font-size:10px;color:#A898B0">km</div>'+(latestLR.pace_per_km?'<div style="font-size:11px;color:#7A6B8A;margin-top:2px">'+latestLR.pace_per_km+'/km</div>':"")+'</div>'
-      +'<div style="flex:1;background:rgba(107,91,138,0.06);border-radius:10px;padding:10px;text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">LONGEST EVER</div><div style="font-size:24px;font-weight:700;color:#6B5B8A">'+maxLR+'</div><div style="font-size:10px;color:#A898B0">km</div><div style="font-size:11px;color:#7A6B8A;margin-top:2px">'+trend+'</div></div>'
-      +'<div style="flex:1;background:rgba(180,160,190,0.08);border-radius:10px;padding:10px;text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">TOTAL</div><div style="font-size:24px;font-weight:700;color:#3D2E4A">'+totalLRkm+'</div><div style="font-size:10px;color:#A898B0">km</div><div style="font-size:11px;color:#7A6B8A;margin-top:2px">long run km</div></div>'
+      +'<div style="font-size:11px;background:rgba(45,106,79,0.1);color:#2D6A4F;padding:3px 10px;border-radius:10px;font-weight:600">'+longRuns.length+' long runs logged</div>'
       +'</div>'
-      +'<div style="display:flex;align-items:flex-end;gap:4px;height:50px;margin-bottom:4px">';
+      // Stats row - LATEST / LONGEST EVER / TOTAL
+      +'<div style="display:flex;gap:8px;margin-bottom:16px">'
+      +'<div style="flex:1;background:white;border-radius:12px;padding:12px;text-align:center;border:0.5px solid rgba(180,160,190,0.15)">'
+      +'<div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:6px">LATEST</div>'
+      +'<div style="font-size:28px;font-weight:700;color:#2D6A4F;line-height:1">'+(latestLR.distance_km||0)+'</div>'
+      +'<div style="font-size:11px;color:#A898B0;margin-top:2px">km</div>'
+      +(latestLR.pace_per_km?'<div style="font-size:11px;color:#7A6B8A;margin-top:4px">'+latestLR.pace_per_km+'/km</div>':"")
+      +'</div>'
+      +'<div style="flex:1;background:white;border-radius:12px;padding:12px;text-align:center;border:0.5px solid rgba(180,160,190,0.15)">'
+      +'<div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:6px">LONGEST EVER</div>'
+      +'<div style="font-size:28px;font-weight:700;color:#2D6A4F;line-height:1">'+maxLR+'</div>'
+      +'<div style="font-size:11px;color:#A898B0;margin-top:2px">km</div>'
+      +'<div style="font-size:11px;color:#7A6B8A;margin-top:4px">'+trend+'</div>'
+      +'</div>'
+      +'<div style="flex:1;background:white;border-radius:12px;padding:12px;text-align:center;border:0.5px solid rgba(180,160,190,0.15)">'
+      +'<div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:6px">TOTAL</div>'
+      +'<div style="font-size:22px;font-weight:700;color:#3D2E4A;line-height:1">'+totalLRkm+'</div>'
+      +'<div style="font-size:11px;color:#A898B0;margin-top:2px">km</div>'
+      +'<div style="font-size:11px;color:#7A6B8A;margin-top:4px">long run km</div>'
+      +'</div>'
+      +'</div>'
+      // Bar chart with km labels above and dates below
+      +'<div style="display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:4px;padding:0 2px">';
     longRuns.forEach(function(r,i){
-      var km=r.distance_km||0;var h=Math.max(Math.round((km/maxLR)*100),8);var isLatest=(i===longRuns.length-1);
-      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px"><div style="font-size:8px;color:'+(isLatest?"#2D6A4F":"#A898B0")+';font-weight:'+(isLatest?"700":"400")+'">'+km+'</div><div style="width:100%;height:'+h+'%;background:'+(isLatest?"#2D6A4F":"rgba(107,91,138,0.3)")+';border-radius:2px 2px 0 0;min-height:3px"></div></div>';
+      var km=r.distance_km||0;
+      var h=Math.max(Math.round((km/maxLR)*100),8);
+      var isLatest=(i===longRuns.length-1);
+      var d=new Date(r.date+"T12:00:00");
+      var dayNum=d.getDate();
+      var mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
+      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+        +'<div style="font-size:9px;font-weight:'+(isLatest?"700":"400")+';color:'+(isLatest?"#2D6A4F":"#A898B0")+'">'+km+'</div>'
+        +'<div style="width:100%;height:'+h+'%;background:'+(isLatest?"#2D6A4F":"rgba(45,106,79,0.2)")+';border-radius:3px 3px 0 0;min-height:4px"></div>'
+        +'<div style="font-size:8px;color:#A898B0;text-align:center;line-height:1.3">'+dayNum+'<br>'+mon+'</div>'
+        +'</div>';
     });
-    html+='</div></div>';
-  }
+    html+='</div>'
+      // Race distance context bar
+      +'<div style="background:rgba(107,91,138,0.06);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:18px">\uD83C\uDFC1</span>'
+      +'<div><div style="font-size:12px;font-weight:600;color:#C4607A">Race distance: 21.1 km</div>'
+      +'<div style="font-size:11px;color:#7A6B8A">Your longest run is '+pctOfRace+'% of race distance</div></div>'
+      +'</div>'
+      +'</div>';
 
-  // \u2500\u2500 Strength Progression \u2014 ALL exercises from last 8 weeks \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  // Map: {day: 1=Mon, 3=Wed, 5=Fri} \u2192 exercise index \u2192 name
-  var exMap={
-    1:{1:"Hip Thrust",2:"DB Sumo Squat",3:"Adductor Machine",4:"Chest Press",5:"Shoulder Press"},
-    3:{1:"Romanian Deadlift",2:"Cable Kickback",3:"Abductor Machine",5:"Lat Pulldown",6:"Machine Row"},
-    5:{1:"Hip Thrust (Fri)",2:"Single-leg Hip Thrust",3:"DB Lateral Lunge",4:"Face Pulls",5:"Bicep Curl"}
-  };
-
-  // Scan last 56 days
-  var exData={};
-  var sd=new Date(currentDate);
-  for(var di=0;di<56;di++){
-    var dk="tp-exlog-"+sd.getFullYear()+"-"+(sd.getMonth()+1)+"-"+sd.getDate();
-    var sdow=sd.getDay();
-    var dayMap=exMap[sdow];
-    if(dayMap){
-      try{
-        var lg=JSON.parse(localStorage.getItem(dk)||"{}");
-        var ds2=("0"+sd.getDate()).slice(-2)+"/"+(sd.getMonth()+1);
-        Object.keys(dayMap).forEach(function(idx){
-          var exName=dayMap[idx];
-          if(lg[idx]&&lg[idx].w&&parseFloat(lg[idx].w)>0){
-            if(!exData[exName])exData[exName]=[];
-            exData[exName].unshift({d:ds2,w:parseFloat(lg[idx].w)||0,r:lg[idx].r||""});
-          }
-        });
-      }catch(e){}
+    // Long run insight card
+    var lrInsightTitle="",lrInsightBody="",lrInsightColor="#2D6A4F",lrInsightBg="rgba(45,106,79,0.08)",lrInsightBorder="rgba(45,106,79,0.2)",lrIcon="\u2705";
+    if(pctOfRace>=85){
+      lrInsightTitle="Long run endurance is race-ready";
+      lrInsightBody="Your longest run is "+pctOfRace+"% of race distance. You're well prepared physically. The taper will do the rest \u2014 trust your training.";
+    } else if(pctOfRace>=70){
+      lrInsightTitle="Long run endurance building nicely";
+      lrInsightBody="Your latest long run was "+(latestLR.distance_km||0)+" km at "+(latestLR.pace_per_km||"??")+"/km. This is strong prep for the half marathon. You're proving your body can handle the distance \u2014 now it's about sharpening the pace.";
+    } else if(pctOfRace>=55){
+      lrInsightTitle="Building the aerobic base";
+      lrInsightBody="At "+pctOfRace+"% of race distance, you're making good progress. Keep prioritising the Sunday long run \u2014 it's the single most important session for your half marathon goal.";
+      lrIcon="\uD83D\uDCA1";lrInsightColor="#B8883E";lrInsightBg="rgba(184,136,62,0.08)";lrInsightBorder="rgba(184,136,62,0.2)";
+    } else {
+      lrInsightTitle="Long run needs attention";
+      lrInsightBody="Your longest run so far is "+pctOfRace+"% of race distance. The long run is non-negotiable for half marathon prep. Prioritise it every Sunday even if you miss other sessions.";
+      lrIcon="\u26A0\uFE0F";lrInsightColor="#DC2626";lrInsightBg="rgba(220,38,38,0.08)";lrInsightBorder="rgba(220,38,38,0.2)";
     }
-    sd.setDate(sd.getDate()-1);
-  }
-
-  var exNames=Object.keys(exData).filter(function(n){return exData[n].length>0;});
-
-  if(exNames.length>0){
-    // Group by session
-    var saEx=["Hip Thrust","DB Sumo Squat","Adductor Machine","Chest Press","Shoulder Press"];
-    var sbEx=["Romanian Deadlift","Cable Kickback","Abductor Machine","Lat Pulldown","Machine Row"];
-    var scEx=["Hip Thrust (Fri)","Single-leg Hip Thrust","DB Lateral Lunge","Face Pulls","Bicep Curl"];
-
-    function renderExSection(sessionName,exList,color){
-      var hasData=exList.filter(function(n){return exData[n]&&exData[n].length>0;});
-      if(!hasData.length)return'';
-      var h='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
-        +'<div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:14px;letter-spacing:0.2px">'+sessionName+'</div>';
-      hasData.forEach(function(exName){
-        var data=exData[exName];
-        if(data.length<1)return;
-        var vals=data.map(function(d){return d.w;});
-        var maxW=Math.max.apply(null,vals);
-        var minW=Math.min.apply(null,vals);
-        var rng=maxW-minW||1;
-        var latest=data[data.length-1];
-        var gain=data.length>1?Math.round((latest.w-data[0].w)*10)/10:0;
-        var gainColor=gain>0?color:gain<0?"#DC2626":"#A898B0";
-        var gainStr=data.length>1?(gain>0?"\u2191 +":gain<0?"\u2193 ":"=")+Math.abs(gain)+" kg":"";
-
-        // SVG sparkline
-        var W=260,H=44,pad=4;
-        var n=data.length;
-        var pts=data.map(function(d,i){
-          var x=n===1?W/2:pad+i*(W-pad*2)/(n-1);
-          var y=H-pad-(H-pad*2)*((d.w-minW)/rng);
-          return[Math.round(x),Math.round(y)];
-        });
-        var polyline=pts.map(function(p){return p[0]+","+p[1];}).join(" ");
-        // gradient area fill
-        var areapts=polyline+" "+(pts[pts.length-1][0])+","+(H-pad)+" "+pts[0][0]+","+(H-pad);
-
-        var svg='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="overflow:visible">'
-          +'<defs><linearGradient id="lg'+exName.replace(/\W/g,'')+'\" x1="0" y1="0" x2="0" y2="1">'
-          +'<stop offset="0%" stop-color="'+color+'" stop-opacity="0.15"/>'
-          +'<stop offset="100%" stop-color="'+color+'" stop-opacity="0.01"/>'
-          +'</linearGradient></defs>'
-          +'<polygon points="'+areapts+'" fill="url(#lg'+exName.replace(/\W/g,'')+')" />'
-          +'<polyline points="'+polyline+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
-        // dots \u2014 small for past, larger for latest
-        pts.forEach(function(p,i){
-          var isLatest=(i===n-1);
-          if(isLatest){
-            svg+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+color+'" stroke="white" stroke-width="2"/>';
-          } else {
-            svg+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2" fill="'+color+'" opacity="0.4"/>';
-          }
-        });
-        // date labels for first and last
-        if(n>1){
-          svg+='<text x="'+pts[0][0]+'" y="'+(H)+'" text-anchor="middle" font-size="8" fill="#C0B0CC">'+data[0].d+'</text>';
-          svg+='<text x="'+pts[n-1][0]+'" y="'+(H)+'" text-anchor="middle" font-size="8" fill="#A898B0" font-weight="600">'+data[n-1].d+'</text>';
-        }
-        svg+='</svg>';
-
-        h+='<div style="margin-bottom:16px">'
-          +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
-          +'<div style="font-size:13px;font-weight:600;color:#3D2E4A">'+exName+'</div>'
-          +'<div style="display:flex;align-items:baseline;gap:8px">'
-          +'<div style="font-size:16px;font-weight:700;color:#3D2E4A">'+latest.w+' <span style="font-size:11px;font-weight:400;color:#A898B0">kg</span></div>'
-          +(gainStr?'<div style="font-size:11px;font-weight:600;color:'+gainColor+'">'+gainStr+'</div>':"")
-          +'</div></div>'
-          +'<div style="margin:0 -2px">'+svg+'</div>'
-          +'</div>';
-      });
-      h+='</div>';
-      return h;
-    }
-
-    html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:14px 0 8px">STRENGTH PROGRESSION</div>';
-    html+=renderExSection("\uD83D\uDCAA Strength A \u2014 Mon (Glute + Push)",saEx,"#8B5CF6");
-    html+=renderExSection("\uD83D\uDCAA Strength B \u2014 Wed (Posterior + Pull)",sbEx,"#2D6A4F");
-    html+=renderExSection("\uD83D\uDCAA Strength C \u2014 Fri (Glute + Arms)",scEx,"#6B5B8A");
-  } else {
-    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
-      +'<div style="font-size:15px;font-weight:700;color:#3D2E4A;margin-bottom:8px">Strength Progression</div>'
-      +'<div style="font-size:13px;color:#A898B0;line-height:1.6">Log weights in your daily gym sessions to track progressive overload here. Each exercise you log will show a bar chart of your progress over the last 8 weeks.</div>'
+    html+='<div style="background:'+lrInsightBg+';border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid '+lrInsightBorder+'">'
+      +'<div style="font-size:13px;font-weight:700;color:'+lrInsightColor+';margin-bottom:6px">'+lrIcon+' '+lrInsightTitle+'</div>'
+      +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+lrInsightBody+'</div>'
       +'</div>';
   }
 
-  html+='</div>';
+  // Strength Progression
+  var exMap={1:{1:"Hip Thrust",2:"DB Sumo Squat",3:"Adductor Machine",4:"Chest Press",5:"Shoulder Press"},3:{1:"Romanian Deadlift",2:"Cable Kickback",3:"Abductor Machine",5:"Lat Pulldown",6:"Machine Row"},5:{1:"Hip Thrust (Fri)",2:"Single-leg Hip Thrust",3:"DB Lateral Lunge",4:"Face Pulls",5:"Bicep Curl"}};
+  var exData={};
+  var sd2=new Date(currentDate);
+  for(var di=0;di<56;di++){
+    var dk2=sd2.getFullYear()+"-"+(sd2.getMonth()+1)+"-"+sd2.getDate();
+    var sdow=sd2.getDay();var dayMap=exMap[sdow];
+    if(dayMap){try{var lg=JSON.parse(localStorage.getItem("tp-exlog-"+dk2)||"{}");var ds3=("0"+sd2.getDate()).slice(-2)+"/"+(sd2.getMonth()+1);Object.keys(dayMap).forEach(function(idx2){var exName=dayMap[idx2];if(lg[idx2]&&lg[idx2].w&&parseFloat(lg[idx2].w)>0){if(!exData[exName])exData[exName]=[];exData[exName].unshift({d:ds3,w:parseFloat(lg[idx2].w)||0});}});}catch(e2){}}
+    sd2.setDate(sd2.getDate()-1);
+  }
+  function renderExSection2(sessionName,exList,color){
+    var hasData=exList.filter(function(n){return exData[n]&&exData[n].length>0;});
+    if(!hasData.length)return"";
+    var h2='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:14px">'+sessionName+'</div>';
+    hasData.forEach(function(exName){
+      var data=exData[exName];if(!data||!data.length)return;
+      var maxW=Math.max.apply(null,data.map(function(d){return d.w;}));
+      var minW=Math.min.apply(null,data.map(function(d){return d.w;}));
+      var rng=maxW-minW||1;
+      var latest=data[data.length-1];
+      var gain=data.length>1?Math.round((latest.w-data[0].w)*10)/10:0;
+      var W=260,H=44,pad=4;
+      var pts=data.map(function(d,i){var x=pad+i*(W-pad*2)/(data.length===1?1:data.length-1);var y=H-pad-(H-pad*2)*((d.w-minW)/rng);return[Math.round(x),Math.round(y)];});
+      var poly=pts.map(function(p){return p[0]+","+p[1];}).join(" ");
+      var area=poly+" "+pts[pts.length-1][0]+","+(H-pad)+" "+pts[0][0]+","+(H-pad);
+      var svg='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="overflow:visible"><polygon points="'+area+'" fill="'+color+'" opacity="0.1"/><polyline points="'+poly+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      pts.forEach(function(p,i){var isL=(i===data.length-1);svg+=isL?'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+color+'" stroke="white" stroke-width="2"/>'+'<text x="'+p[0]+'" y="'+(p[1]-7)+'" text-anchor="middle" font-size="9" fill="'+color+'" font-weight="700">'+data[i].w+'</text>':'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2" fill="'+color+'" opacity="0.4"/>';});
+      if(data.length>1){svg+='<text x="'+pts[0][0]+'" y="'+H+'" text-anchor="middle" font-size="8" fill="#C0B0CC">'+data[0].d+'</text><text x="'+pts[pts.length-1][0]+'" y="'+H+'" text-anchor="end" font-size="8" fill="#A898B0" font-weight="600">'+data[data.length-1].d+'</text>';}
+      svg+='</svg>';
+      h2+='<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div style="font-size:13px;font-weight:600;color:#3D2E4A">'+exName+'</div><div style="font-size:12px;color:'+(gain>0?color:gain<0?"#DC2626":"#A898B0")+'">'+latest.w+' kg'+(data.length>1?' ('+(gain>0?"+":"")+gain+' kg)':'')+'</div></div>'+svg+'</div>';
+    });
+    return h2+'</div>';
+  }
+  var saEx=["Hip Thrust","DB Sumo Squat","Adductor Machine","Chest Press","Shoulder Press"];
+  var sbEx=["Romanian Deadlift","Cable Kickback","Abductor Machine","Lat Pulldown","Machine Row"];
+  var scEx=["Hip Thrust (Fri)","Single-leg Hip Thrust","DB Lateral Lunge","Face Pulls","Bicep Curl"];
+  var hasStr=saEx.concat(sbEx).concat(scEx).some(function(n){return exData[n]&&exData[n].length>0;});
+  if(hasStr){
+    html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:14px 0 8px">STRENGTH PROGRESSION</div>';
+    html+=renderExSection2("\uD83D\uDCAA Strength A \u2014 Mon",saEx,"#8B5CF6");
+    html+=renderExSection2("\uD83D\uDCAA Strength B \u2014 Wed",sbEx,"#2D6A4F");
+    html+=renderExSection2("\uD83D\uDCAA Strength C \u2014 Fri",scEx,"#6B5B8A");
+  } else {
+    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:6px">Strength Progression</div><div style="font-size:12px;color:#A898B0">Log weights in your daily gym sessions to see progressive overload charts here.</div></div>';
+  }
   cv.innerHTML=html;
 }
 
-try{if(!localStorage.getItem("tp-move-cleanup-v3")){for(let ci=localStorage.length-1;ci>=0;ci--){const ck=localStorage.key(ci);if(ck&&ck.startsWith("tp-moved"))localStorage.removeItem(ck)}localStorage.setItem("tp-move-cleanup-v3","done")}}catch(e){}
 
-window.addEventListener('error',function(e){
-  if(!e||!e.message)return;
-  var m=e.message.toLowerCase();
-  if(m.indexOf('notfounderror')>=0||m.indexOf('can not be found')>=0||m.indexOf('cannot find')>=0||m.indexOf('hierarchyrequesterror')>=0)return;
-  var d=document.getElementById('content');
-  if(d)d.innerHTML='<div style="padding:20px;color:red;font-size:12px;font-family:monospace"><b>JS ERROR:</b><br>'+(e.message)+'<br>Line: '+(e.lineno)+'</div>';
-});
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', function(){
-    try{render();}catch(e){
-      var d=document.getElementById('dashboard');
-      if(d){d.style.display='block';d.innerHTML='<div style="padding:20px;color:red;font-size:13px">RENDER ERROR: '+e.message+'</div>';}
-    }
-  });
-} else {
-  try{render();}catch(e){
-    var d=document.getElementById('dashboard');
-    if(d){d.style.display='block';d.innerHTML='<div style="padding:20px;color:red;font-size:13px">RENDER ERROR: '+e.message+'</div>';}
-  }
-}
 </script>
 </body>
 </html>
