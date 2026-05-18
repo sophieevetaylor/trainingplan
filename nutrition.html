@@ -20,9 +20,7 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:90px}
 
 /* HEADER */
-.header{background:var(--ink);padding:env(safe-area-inset-top,44px) 22px 22px;position:relative;isolation:isolate}
-.hblob1{position:absolute;top:-80px;right:-80px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(196,113,74,.22) 0%,transparent 65%);pointer-events:none;z-index:0}
-.hblob2{position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(74,114,96,.18) 0%,transparent 65%);pointer-events:none;z-index:0}
+.header{background:linear-gradient(160deg,#2C2420 60%,#3D2E28);padding:env(safe-area-inset-top,44px) 22px 22px;position:relative;z-index:10}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;position:relative;z-index:1}
 .header-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:500}
 .header-title{font-family:'Playfair Display',serif;font-size:26px;color:#fff;line-height:1.1;margin-top:2px}
@@ -33,7 +31,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .dt-btn.active{background:var(--terra);border-color:var(--terra);color:#fff}
 
 /* CALORIE BANNER */
-.cal-banner{background:var(--surface);margin:16px 16px 0;border-radius:var(--r);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);position:relative;z-index:1}
+.cal-banner{background:var(--surface);margin:16px 16px 0;border-radius:var(--r);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
 .cal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .cal-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}
 .cal-numbers{display:flex;align-items:baseline;gap:4px;margin-top:4px}
@@ -185,7 +183,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 
 <!-- HEADER -->
 <div class="header">
-  <div class="hblob1"></div><div class="hblob2"></div>
   <div class="header-top">
     <div>
       <div class="header-eyebrow">Soph · Fuel</div>
