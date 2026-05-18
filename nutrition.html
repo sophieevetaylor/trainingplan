@@ -100,7 +100,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 
 /* BODY METRICS */
 .metrics-grid{display:flex;flex-direction:column;gap:10px}
-.metrics-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metrics-row{display:flex;flex-direction:column;gap:10px}
 .metric-card{background:var(--surface);border-radius:var(--r);padding:16px 14px;box-shadow:var(--shadow);border:1px solid var(--border)}
 .metric-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:600}
 .metric-value-row{display:flex;align-items:baseline;gap:4px;margin:6px 0 4px}
@@ -119,7 +119,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 
 /* CHART */
 .chart-card{background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:10px}
-.chart-card.empty{padding:14px 18px}
+.chart-card.hidden{display:none}
 .chart-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;justify-content:space-between}
 .chart-title span{color:var(--ink3);font-weight:400;font-size:11px}
 .chart-svg{width:100%;overflow:visible;display:block}
@@ -335,17 +335,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 
   <div class="section">
     <div class="section-head"><div class="section-title">Progress</div></div>
-    <div class="chart-card">
+    <div id="noDataMsg" style="color:var(--ink3);font-size:13px;padding:12px 0 4px">Start logging to see your trends here.</div>
+    <div class="chart-card hidden" id="chartWeight">
       <div class="chart-title">Weight <span id="weightTrendLabel"></span></div>
       <svg id="weightChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="weightChartSub"></div>
     </div>
-    <div class="chart-card">
+    <div class="chart-card hidden" id="chartWaist">
       <div class="chart-title">Waist <span id="waistTrendLabel"></span></div>
       <svg id="waistChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="waistChartSub"></div>
     </div>
-    <div class="chart-card">
+    <div class="chart-card hidden" id="chartSleep">
       <div class="chart-title">Sleep Score <span id="sleepTrendLabel"></span></div>
       <svg id="sleepChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="sleepChartSub"></div>
@@ -710,16 +711,18 @@ function renderBodyTab() {
   ['weight','waist'].forEach(metric=>{
     const hist=getHist(metric), cap=metric[0].toUpperCase()+metric.slice(1);
     const dispEl=document.getElementById('disp'+cap), changeEl=document.getElementById('change'+cap);
-    if (!hist.length) { dispEl.textContent='—'; changeEl.textContent=''; return; }
-    const latest=hist[hist.length-1];
-    const unit=metric==='weight'?'kg':'cm';
-    dispEl.textContent = latest.val.toFixed(metric==='weight'?2:1);
-    if (hist.length>1) {
-      const diff=latest.val-hist[hist.length-2].val;
-      changeEl.textContent=(diff>0?'+':'')+diff.toFixed(metric==='weight'?2:1)+unit+' vs prev';
-      changeEl.className='metric-change '+(diff<0?'down':diff>0?'up':'same');
+    if (!hist.length) { dispEl.textContent='—'; changeEl.textContent=''; }
+    else {
+      const latest=hist[hist.length-1];
+      const unit=metric==='weight'?'kg':'cm';
+      dispEl.textContent = latest.val.toFixed(metric==='weight'?2:1);
+      if (hist.length>1) {
+        const diff=latest.val-hist[hist.length-2].val;
+        changeEl.textContent=(diff>0?'+':'')+diff.toFixed(metric==='weight'?2:1)+unit+' vs prev';
+        changeEl.className='metric-change '+(diff<0?'down':diff>0?'up':'same');
+      }
     }
-    renderLineChart(metric+'Chart', hist, metric==='weight'?'#C4714A':'#4A7260', unit,
+    renderLineChart(metric+'Chart', hist, metric==='weight'?'#C4714A':'#4A7260', metric==='weight'?'kg':'cm',
       document.getElementById(metric+'TrendLabel'),
       document.getElementById(metric+'ChartSub'));
   });
@@ -732,41 +735,39 @@ function renderBodyTab() {
     const latest = sleepHist[sleepHist.length-1];
     dispSleep.textContent = Math.round(latest.val);
     const grade = sleepGrade(latest.val);
-    const badge = document.getElementById('sleepBadge');
-    badge.textContent = grade.label;
-    badge.style.background = grade.bg;
-    badge.style.color = grade.color;
-    const fill = document.getElementById('sleepBarFill');
-    fill.style.width = latest.val + '%';
-    fill.style.background = `linear-gradient(90deg, ${grade.color}, ${grade.color}99)`;
+    document.getElementById('sleepBadge').textContent = grade.label;
+    document.getElementById('sleepBadge').style.background = grade.bg;
+    document.getElementById('sleepBadge').style.color = grade.color;
+    document.getElementById('sleepBarFill').style.width = latest.val + '%';
+    document.getElementById('sleepBarFill').style.background = `linear-gradient(90deg,${grade.color},${grade.color}99)`;
     if (sleepHist.length>1) {
       const diff = latest.val - sleepHist[sleepHist.length-2].val;
       changeSleep.textContent = (diff>0?'+':'')+Math.round(diff)+' vs prev';
-      changeSleep.className = 'metric-change '+(diff>0?'down':diff<0?'up':'same'); // higher sleep = good
+      changeSleep.className = 'metric-change '+(diff>0?'down':diff<0?'up':'same');
     }
   } else {
     dispSleep.textContent='—';
     document.getElementById('sleepBadge').textContent='';
     document.getElementById('sleepBarFill').style.width='0%';
   }
-  renderLineChart('sleepChart', sleepHist, '#8B6BA0', '', 
+  renderLineChart('sleepChart', sleepHist, '#8B6BA0', '',
     document.getElementById('sleepTrendLabel'),
     document.getElementById('sleepChartSub'));
+
+  // Show/hide no-data message
+  const hasAny = getHist('weight').length || getHist('waist').length || sleepHist.length;
+  document.getElementById('noDataMsg').style.display = hasAny ? 'none' : 'block';
 }
 
 function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
   const svg = document.getElementById(svgId);
   const card = svg.closest('.chart-card');
   if (!hist.length) {
-    svg.setAttribute('height', '0');
-    svg.innerHTML = '';
-    if (trendEl) trendEl.innerHTML = '';
-    if (subEl) subEl.textContent = '';
-    card.classList.add('empty');
+    card.classList.add('hidden');
     return;
   }
-  card.classList.remove('empty');
-  const W = (svg.parentElement.offsetWidth - 36) || 320;
+  card.classList.remove('hidden');
+  const W = (card.offsetWidth - 36) || 320;
   const H = 110;
   svg.setAttribute('width', '100%');
   svg.setAttribute('height', H);
@@ -797,7 +798,7 @@ function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
     const col = diff<0?'#4A7260':diff>0?'#C44A4A':'#A8998C';
     trendEl.innerHTML = `<span style="color:${col}">${diff<0?'▼':'▲'} ${Math.abs(diff).toFixed(1)}${unit} total</span>`;
   }
-  if (subEl) subEl.textContent = `${hist.length} log${hist.length!==1?'s':''} · Latest: ${vals[vals.length-1].toFixed(unit==='kg'||unit===''?1:1)}${unit}`;
+  if (subEl) subEl.textContent = `${hist.length} log${hist.length!==1?'s':''} · Latest: ${vals[vals.length-1].toFixed(1)}${unit}`;
 }
 
 // ── TABS ──────────────────────────────────────────────────────
