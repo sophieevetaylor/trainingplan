@@ -167,7 +167,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .tip-text strong{color:var(--ink)}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:100}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:9999}
 .nav-btn{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;transition:all .2s;gap:3px}
 .nav-icon{font-size:20px;line-height:1}
 .nav-label{font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--ink3)}
@@ -176,6 +176,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 
 .hidden{display:none!important}
 .fade-in{animation:fadeIn .3s ease}
+[id^="tab-"]{position:relative;z-index:1}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 </style>
 </head>
