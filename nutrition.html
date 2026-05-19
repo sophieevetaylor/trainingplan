@@ -25,9 +25,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .header-eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:500}
 .header-title{font-family:'Playfair Display',serif;font-size:26px;color:#fff;line-height:1.1;margin-top:2px}
 .date-str{font-size:12px;color:rgba(255,255,255,.45);margin-top:3px}
-.day-type-row{display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;position:relative;z-index:1;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.day-type-row{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;position:relative;z-index:1;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .day-type-row::-webkit-scrollbar{display:none}
-.dt-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:6px 12px;border-radius:20px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.dt-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;padding:5px 10px;border-radius:20px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .dt-btn.active{background:var(--terra);border-color:var(--terra);color:#fff}
 
 /* CALORIE BANNER */
@@ -125,13 +125,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
 .chart-svg{width:100%;overflow:visible;display:block}
 
 /* FOOD SEARCH */
-.search-wrap{position:relative;margin-bottom:10px}
+.search-wrap{position:relative;margin-bottom:10px;z-index:20}
 .search-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px 11px 38px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s}
 .search-input:focus{border-color:var(--terra)}
 .search-input::placeholder{color:var(--ink3)}
 .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
-.search-results{background:var(--surface);border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-top:6px}
-.search-result-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.search-results{background:var(--surface);border-radius:12px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(30,24,18,.14);overflow:hidden;margin-top:6px;position:relative;z-index:30}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative;z-index:30}
 .search-result-item:last-child{border-bottom:none}
 .search-result-item:active{background:var(--terra-pale)}
 .sr-emoji{font-size:20px;width:28px;text-align:center;flex-shrink:0}
@@ -334,23 +334,59 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
         </div>
       </div>
       <div class="metric-card">
-        <div class="metric-label">Sleep Score <span style="color:var(--ink3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">· Garmin</span></div>
-        <div style="display:flex;align-items:center;gap:16px;margin-top:6px">
-          <div>
-            <div class="metric-value-row" style="margin:0">
-              <div class="metric-value" id="dispSleep">—</div>
-              <div class="metric-unit">/ 100</div>
+          <div class="metric-label">Sleep Score <span style="color:var(--ink3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">· Garmin</span></div>
+          <div style="display:flex;align-items:center;gap:16px;margin-top:6px">
+            <div>
+              <div class="metric-value-row" style="margin:0">
+                <div class="metric-value" id="dispSleep">—</div>
+                <div class="metric-unit">/ 100</div>
+              </div>
+              <div class="metric-change" id="changeSleep"></div>
             </div>
-            <div class="metric-change" id="changeSleep"></div>
+            <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+              <div id="sleepBarFill" style="height:100%;border-radius:4px;width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+            </div>
+            <div id="sleepBadge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;white-space:nowrap"></div>
           </div>
-          <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
-            <div id="sleepBarFill" style="height:100%;border-radius:4px;width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+          <div class="metric-input-row" style="margin-top:10px">
+            <input class="metric-input" id="inputSleep" type="number" min="0" max="100" placeholder="e.g. 78">
+            <button class="metric-save" onclick="saveMetric('sleep')">Save</button>
           </div>
-          <div id="sleepBadge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;white-space:nowrap"></div>
         </div>
-        <div class="metric-input-row" style="margin-top:10px">
-          <input class="metric-input" id="inputSleep" type="number" min="0" max="100" placeholder="e.g. 78">
-          <button class="metric-save" onclick="saveMetric('sleep')">Save</button>
+      <div class="metric-card">
+        <div class="metric-label">Sleep Time <span style="color:var(--ink3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">· hrs</span></div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="dispSleepTime">—</div>
+          <div class="metric-unit">hrs</div>
+        </div>
+        <div class="metric-change" id="changeSleepTime"></div>
+        <div class="metric-input-row">
+          <input class="metric-input" id="inputSleepTime" type="number" step="0.25" min="0" max="14" placeholder="e.g. 7.5">
+          <button class="metric-save" onclick="saveMetric('sleeptime')">Save</button>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Body Fat <span style="color:var(--ink3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">· RENPHO %</span></div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="dispBodyfat">—</div>
+          <div class="metric-unit">%</div>
+        </div>
+        <div class="metric-change" id="changeBodyfat"></div>
+        <div class="metric-input-row">
+          <input class="metric-input" id="inputBodyfat" type="number" step="0.1" placeholder="e.g. 25.9">
+          <button class="metric-save" onclick="saveMetric('bodyfat')">Save</button>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Muscle Mass <span style="color:var(--ink3);font-weight:400;letter-spacing:0;text-transform:none;font-size:10px">· RENPHO kg</span></div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="dispMuscle">—</div>
+          <div class="metric-unit">kg</div>
+        </div>
+        <div class="metric-change" id="changeMuscle"></div>
+        <div class="metric-input-row">
+          <input class="metric-input" id="inputMuscle" type="number" step="0.1" placeholder="e.g. 44.6">
+          <button class="metric-save" onclick="saveMetric('muscle')">Save</button>
         </div>
       </div>
     </div>
@@ -373,6 +409,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
       <div class="chart-title">Sleep Score <span id="sleepTrendLabel"></span></div>
       <svg id="sleepChart" class="chart-svg"></svg>
       <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="sleepChartSub"></div>
+    </div>
+    <div class="chart-card hidden" id="chartSleeptime">
+      <div class="chart-title">Sleep Time <span id="sleeptimeTrendLabel"></span></div>
+      <svg id="sleeptimeChart" class="chart-svg"></svg>
+      <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="sleeptimeChartSub"></div>
+    </div>
+    <div class="chart-card hidden" id="chartBodyfat">
+      <div class="chart-title">Body Fat % <span id="bodyfatTrendLabel"></span></div>
+      <svg id="bodyfatChart" class="chart-svg"></svg>
+      <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="bodyfatChartSub"></div>
+    </div>
+    <div class="chart-card hidden" id="chartMuscle">
+      <div class="chart-title">Muscle Mass <span id="muscleTrendLabel"></span></div>
+      <svg id="muscleChart" class="chart-svg"></svg>
+      <div style="font-size:10px;color:var(--ink3);margin-top:6px;text-align:center" id="muscleChartSub"></div>
     </div>
   </div>
 
@@ -527,17 +578,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
     </div>
   </div>
 
-  <!-- AI Coach -->
+  <!-- Coach tips -->
   <div class="section">
-    <div class="section-head"><div class="section-title">Ask Your Coach</div></div>
-    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)">
-      <div id="coachChat" style="min-height:60px;margin-bottom:12px"></div>
-      <div style="display:flex;gap:8px">
-        <input id="coachInput" class="custom-input" placeholder="Ask about your nutrition…" style="flex:1" onkeydown="if(event.key==='Enter')askCoach()">
-        <button class="add-btn" onclick="askCoach()" style="padding:10px 14px">Ask</button>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="coachSuggestions"></div>
-    </div>
+    <div class="section-head"><div class="section-title">Today's Tips</div></div>
+    <div id="coachTips"></div>
+  </div>
+
+  <!-- Weekly macro breakdown -->
+  <div class="section" style="margin-bottom:16px">
+    <div class="section-head"><div class="section-title">7-Day Macro Avg</div></div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)" id="coachMacroAvg"></div>
   </div>
 
   <!-- Body trend summary -->
@@ -555,7 +605,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
   <button class="nav-btn active" id="nav-log" onclick="switchTab('log')"><div class="nav-icon">🍽</div><div class="nav-label">Today</div></button>
   <button class="nav-btn" id="nav-body" onclick="switchTab('body')"><div class="nav-icon">⚖️</div><div class="nav-label">Body</div></button>
   <button class="nav-btn" id="nav-coach" onclick="switchTab('coach')"><div class="nav-icon">📊</div><div class="nav-label">Coach</div></button>
-  <button class="nav-btn" id="nav-targets" onclick="switchTab('targets')"><div class="nav-icon">🎯</div><div class="nav-label">Targets</div></button>
 </div>
 
 <script>
@@ -832,7 +881,8 @@ function checkPerfect() {
 
 // ── BODY METRICS ──────────────────────────────────────────────
 function saveMetric(metric) {
-  const cap = metric[0].toUpperCase()+metric.slice(1);
+  const idMap = { weight:'Weight', waist:'Waist', sleep:'Sleep', sleeptime:'SleepTime', bodyfat:'Bodyfat', muscle:'Muscle' };
+  const cap = idMap[metric] || metric;
   const val = parseFloat(document.getElementById('input'+cap).value);
   if (isNaN(val)) return;
   if (metric==='sleep' && (val<0||val>100)) return;
@@ -854,27 +904,35 @@ function sleepGrade(s) {
 }
 
 function renderBodyTab() {
-  // Weight & waist
-  ['weight','waist'].forEach(metric=>{
-    const hist=getHist(metric), cap=metric[0].toUpperCase()+metric.slice(1);
-    const dispEl=document.getElementById('disp'+cap), changeEl=document.getElementById('change'+cap);
+  // Simple metrics: weight, waist, sleeptime, bodyfat, muscle
+  const simpleMetrics = [
+    { key:'weight',    disp:'Weight',    unit:'kg',  dp:2, color:'#C4714A', downGood:true  },
+    { key:'waist',     disp:'Waist',     unit:'cm',  dp:1, color:'#4A7260', downGood:true  },
+    { key:'sleeptime', disp:'SleepTime', unit:'hrs', dp:1, color:'#5A8BB0', downGood:false },
+    { key:'bodyfat',   disp:'Bodyfat',   unit:'%',   dp:1, color:'#B8943A', downGood:true  },
+    { key:'muscle',    disp:'Muscle',    unit:'kg',  dp:1, color:'#4A7260', downGood:false },
+  ];
+  simpleMetrics.forEach(m => {
+    const hist = getHist(m.key);
+    const dispEl   = document.getElementById('disp'+m.disp);
+    const changeEl = document.getElementById('change'+m.disp);
     if (!hist.length) { dispEl.textContent='—'; changeEl.textContent=''; }
     else {
-      const latest=hist[hist.length-1];
-      const unit=metric==='weight'?'kg':'cm';
-      dispEl.textContent = latest.val.toFixed(metric==='weight'?2:1);
+      const latest = hist[hist.length-1];
+      dispEl.textContent = latest.val.toFixed(m.dp);
       if (hist.length>1) {
-        const diff=latest.val-hist[hist.length-2].val;
-        changeEl.textContent=(diff>0?'+':'')+diff.toFixed(metric==='weight'?2:1)+unit+' vs prev';
-        changeEl.className='metric-change '+(diff<0?'down':diff>0?'up':'same');
+        const diff = latest.val - hist[hist.length-2].val;
+        changeEl.textContent = (diff>0?'+':'')+diff.toFixed(m.dp)+m.unit+' vs prev';
+        const isGood = (m.downGood && diff<0) || (!m.downGood && diff>0);
+        changeEl.className = 'metric-change ' + (diff===0?'same':isGood?'down':'up');
       }
     }
-    renderLineChart(metric+'Chart', hist, metric==='weight'?'#C4714A':'#4A7260', metric==='weight'?'kg':'cm',
-      document.getElementById(metric+'TrendLabel'),
-      document.getElementById(metric+'ChartSub'));
+    renderLineChart(m.key+'Chart', hist, m.color, m.unit,
+      document.getElementById(m.key+'TrendLabel'),
+      document.getElementById(m.key+'ChartSub'));
   });
 
-  // Sleep
+  // Sleep score (special — has badge + bar)
   const sleepHist = getHist('sleep');
   const dispSleep = document.getElementById('dispSleep');
   const changeSleep = document.getElementById('changeSleep');
@@ -885,24 +943,19 @@ function renderBodyTab() {
     document.getElementById('sleepBadge').textContent = grade.label;
     document.getElementById('sleepBadge').style.background = grade.bg;
     document.getElementById('sleepBadge').style.color = grade.color;
-    document.getElementById('sleepBarFill').style.width = latest.val + '%';
+    document.getElementById('sleepBarFill').style.width = latest.val+'%';
     document.getElementById('sleepBarFill').style.background = `linear-gradient(90deg,${grade.color},${grade.color}99)`;
     if (sleepHist.length>1) {
       const diff = latest.val - sleepHist[sleepHist.length-2].val;
       changeSleep.textContent = (diff>0?'+':'')+Math.round(diff)+' vs prev';
       changeSleep.className = 'metric-change '+(diff>0?'down':diff<0?'up':'same');
     }
-  } else {
-    dispSleep.textContent='—';
-    document.getElementById('sleepBadge').textContent='';
-    document.getElementById('sleepBarFill').style.width='0%';
-  }
+  } else { dispSleep.textContent='—'; document.getElementById('sleepBadge').textContent=''; }
   renderLineChart('sleepChart', sleepHist, '#8B6BA0', '',
-    document.getElementById('sleepTrendLabel'),
-    document.getElementById('sleepChartSub'));
+    document.getElementById('sleepTrendLabel'), document.getElementById('sleepChartSub'));
 
-  // Show/hide no-data message
-  const hasAny = getHist('weight').length || getHist('waist').length || sleepHist.length;
+  // No-data message
+  const hasAny = ['weight','waist','sleep','sleeptime','bodyfat','muscle'].some(m=>getHist(m).length>0);
   document.getElementById('noDataMsg').style.display = hasAny ? 'none' : 'block';
 }
 
@@ -950,7 +1003,7 @@ function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
 
 // ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab) {
-  ['log','body','coach','targets'].forEach(t=>{
+  ['log','body','coach'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab);
     const nb=document.getElementById('nav-'+t);
     if (nb) nb.classList.toggle('active', t===tab);
@@ -1025,16 +1078,73 @@ function renderCoachTab() {
   document.getElementById('coachStreakLabel').textContent = streak === 1 ? 'day hitting protein' : 'days hitting protein';
   document.getElementById('coachStreakEmoji').textContent = streak >= 7 ? '🔥' : streak >= 3 ? '💪' : streak >= 1 ? '✅' : '💤';
 
-  // AI coach suggestions
-  const suggestions = [
-    `How am I tracking today?`,
-    `What should I eat tonight?`,
-    `Am I getting enough carbs?`,
-    `Best pre-run meal ideas?`,
-  ];
-  document.getElementById('coachSuggestions').innerHTML = suggestions.map(s=>
-    `<button onclick="askCoachQ('${s}')" style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif">${s}</button>`
+  // Tips based on today's data
+  const tips = [];
+  if (t.p < dt.p * 0.5 && new Date().getHours() > 12)
+    tips.push({ icon:'⚠️', col:'var(--terra)', text:`Only ${Math.round(t.p)}g protein so far — you need ${dt.p - Math.round(t.p)}g more today. Add a mince or chicken meal tonight.` });
+  else if (t.p >= dt.p)
+    tips.push({ icon:'✅', col:'var(--sage)', text:`Protein target hit! ${Math.round(t.p)}g — your muscle mass is being protected today.` });
+  else
+    tips.push({ icon:'💪', col:'var(--terra)', text:`${Math.round(dt.p - t.p)}g protein to go. A Chobani + tuna can = 40g — easy win before dinner.` });
+
+  if (t.kcal > dt.cal * 1.1)
+    tips.push({ icon:'📊', col:'var(--gold)', text:`${Math.round(t.kcal - dt.cal)} kcal over target. This is fine occasionally — just keep tomorrow's intake clean.` });
+  else if (t.kcal < dt.cal * 0.5 && new Date().getHours() > 14)
+    tips.push({ icon:'⚡', col:'var(--terra)', text:`Only ${Math.round(t.kcal)} kcal by now — make sure you're eating enough to fuel your ${dt.label.toLowerCase()}. Under-fuelling stalls recomp.` });
+
+  const sleepH = getHist('sleep');
+  if (sleepH.length && sleepH[sleepH.length-1].val < 70)
+    tips.push({ icon:'😴', col:'#8B6BA0', text:`Sleep score ${sleepH[sleepH.length-1].val} — poor sleep spikes cortisol and stalls fat loss. Prioritise 7-8hrs tonight.` });
+
+  const wHist = getHist('weight');
+  if (wHist.length >= 7) {
+    const recent = wHist.slice(-7).map(h=>h.val);
+    const avg = recent.reduce((a,b)=>a+b,0)/recent.length;
+    const trend = recent[recent.length-1] - recent[0];
+    if (trend < -0.5) tips.push({ icon:'📉', col:'var(--sage)', text:`Weight down ${Math.abs(trend.toFixed(1))}kg over 7 days — recomp is working. Keep protein high to protect muscle.` });
+    else if (trend > 1.0) tips.push({ icon:'📈', col:'var(--gold)', text:`Weight up ${trend.toFixed(1)}kg over 7 days — check if it's a heavy training week or a food pattern. Body fat vs muscle data helps here.` });
+  }
+
+  if (!tips.length) tips.push({ icon:'🎯', col:'var(--ink3)', text:`Log food throughout the day to get personalised tips here.` });
+
+  document.getElementById('coachTips').innerHTML = tips.map(tip=>
+    `<div style="background:var(--surface);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+      <div style="font-size:20px;flex-shrink:0">${tip.icon}</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:1.5">${tip.text}</div>
+    </div>`
   ).join('');
+
+  // 7-day macro averages
+  const macroAvgs = { p:0, c:0, fat:0, kcal:0, days:0 };
+  for (let i=0; i<7; i++) {
+    const log = getPastDayLog(i);
+    const tot = dayTotals(log);
+    if (tot.kcal > 0) {
+      macroAvgs.p += tot.p; macroAvgs.c += tot.c;
+      macroAvgs.fat += tot.fat; macroAvgs.kcal += tot.kcal;
+      macroAvgs.days++;
+    }
+  }
+  const d7 = macroAvgs.days || 1;
+  const avgKcal = Math.round(macroAvgs.kcal/d7);
+  const avgP = Math.round(macroAvgs.p/d7);
+  const avgC = Math.round(macroAvgs.c/d7);
+  const avgF = Math.round(macroAvgs.fat/d7);
+  document.getElementById('coachMacroAvg').innerHTML = macroAvgs.days === 0
+    ? `<div style="color:var(--ink3);font-size:13px">Log food for a few days to see your averages.</div>`
+    : `<div style="font-size:11px;color:var(--ink3);margin-bottom:14px">Average over ${macroAvgs.days} logged day${macroAvgs.days!==1?'s':''}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${[
+          { label:'Calories', val:avgKcal+' kcal', target:dt.cal+'', color:'var(--ink)', ok: avgKcal>=dt.cal*.9 && avgKcal<=dt.cal*1.1 },
+          { label:'Protein',  val:avgP+'g', target:dt.p+'g target', color:'var(--protein-c)', ok: avgP>=dt.p*.9 },
+          { label:'Carbs',    val:avgC+'g', target:dt.c+'g target', color:'var(--carb-c)', ok: avgC>=dt.c*.85 },
+          { label:'Fat',      val:avgF+'g', target:dt.f+'g target', color:'var(--fat-c)', ok: true },
+        ].map(m=>`<div style="background:var(--bg);border-radius:10px;padding:12px">
+          <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--ink3);margin-bottom:4px">${m.label}</div>
+          <div style="font-size:20px;font-weight:700;color:${m.color}">${m.val}</div>
+          <div style="font-size:10px;color:var(--ink3);margin-top:2px">${m.ok?'✅':'⚠️'} ${m.target}</div>
+        </div>`).join('')}
+      </div>`;
 
   // Body trend summary
   const wHist = getHist('weight');
@@ -1058,52 +1168,6 @@ function renderCoachTab() {
       <div style="font-size:12px;color:var(--ink3)">${wHist.length} weigh-ins · Started ${wHist[0].date.slice(5)} · Latest ${wHist[wHist.length-1].date.slice(5)}</div>`;
   } else {
     bodyEl.innerHTML = `<div style="color:var(--ink3);font-size:13px">Log weight in the Body tab to see your trend here.</div>`;
-  }
-}
-
-// ── AI COACH ──────────────────────────────────────────────────
-function askCoachQ(q) {
-  document.getElementById('coachInput').value = q;
-  askCoach();
-}
-
-async function askCoach() {
-  const input = document.getElementById('coachInput');
-  const q = input.value.trim();
-  if (!q) return;
-  const chatEl = document.getElementById('coachChat');
-  const t = totals();
-  const dt = currentDT;
-  const wHist = getHist('weight');
-  const context = `You are a concise nutrition coach for Soph, a 165cm female runner in Sydney training for a sub-2hr half marathon. Her goals: body recomposition (reduce 25.9% body fat, protect 44.6kg muscle mass). Today is a ${dt.label} with a ${dt.cal} kcal target. So far today: ${Math.round(t.kcal)} kcal, ${Math.round(t.p)}g protein (target ${dt.p}g), ${Math.round(t.c)}g carbs, ${Math.round(t.fat)}g fat. ${wHist.length ? `Current weight: ${wHist[wHist.length-1].val}kg.` : ''} Give a short, specific, practical answer in 2-3 sentences max.`;
-
-  chatEl.innerHTML = `<div style="color:var(--ink3);font-size:13px;font-style:italic">Thinking…</div>`;
-  input.value = '';
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: context,
-        messages: [{ role: 'user', content: q }]
-      })
-    });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || 'No response.';
-    chatEl.innerHTML = `
-      <div style="margin-bottom:8px">
-        <div style="font-size:11px;color:var(--ink3);margin-bottom:4px">You</div>
-        <div style="font-size:13px;color:var(--ink2)">${q}</div>
-      </div>
-      <div style="background:var(--terra-pale);border-radius:10px;padding:12px;border-left:3px solid var(--terra)">
-        <div style="font-size:11px;color:var(--terra);font-weight:600;margin-bottom:4px">Coach</div>
-        <div style="font-size:13px;color:var(--ink);line-height:1.5">${reply}</div>
-      </div>`;
-  } catch(e) {
-    chatEl.innerHTML = `<div style="color:#C44A4A;font-size:13px">Couldn't reach coach. Check your connection.</div>`;
   }
 }
 
