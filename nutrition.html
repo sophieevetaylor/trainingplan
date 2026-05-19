@@ -189,10 +189,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
       <div class="header-title" id="headerTitle">Today</div>
       <div class="date-str" id="headerDate"></div>
     </div>
-    <div style="text-align:right">
-      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px">Day type</div>
-      <div id="dayTypeBadge" style="display:inline-block;background:var(--terra);color:#fff;font-size:11px;font-weight:600;padding:5px 12px;border-radius:16px;letter-spacing:.06em"></div>
-    </div>
   </div>
   <div class="day-type-row" id="dayTypeRow"></div>
 </div>
@@ -266,6 +262,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
       <input class="search-input" id="foodSearch" placeholder="Search foods…" oninput="onSearch(this.value)" autocomplete="off">
     </div>
     <div id="searchResults" class="hidden"></div>
+
+    <!-- Custom food -->
+    <div style="margin-top:10px;background:var(--surface);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:var(--shadow)">
+      <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:10px">Custom Food</div>
+      <input class="custom-input" id="customName" placeholder="Food name (e.g. Carmans Bar)" style="width:100%;margin-bottom:8px">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--protein-c);font-weight:600;margin-bottom:4px">Protein</div>
+          <input class="custom-input" id="customProt" type="number" placeholder="g" style="width:100%;text-align:center">
+        </div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--carb-c);font-weight:600;margin-bottom:4px">Carbs</div>
+          <input class="custom-input" id="customCarb" type="number" placeholder="g" style="width:100%;text-align:center">
+        </div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--fat-c);font-weight:600;margin-bottom:4px">Fat</div>
+          <input class="custom-input" id="customFat" type="number" placeholder="g" style="width:100%;text-align:center">
+        </div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:4px">kcal</div>
+          <input class="custom-input" id="customKcal" type="number" placeholder="or" style="width:100%;text-align:center">
+        </div>
+      </div>
+      <button class="add-btn" style="width:100%" onclick="addCustomFood()">+ Add to Log</button>
+    </div>
+
+    <div style="margin-top:14px;margin-bottom:4px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600">Your Favourites</div>
     <div id="quickAddGrid" class="quick-add-grid"></div>
   </div>
 
@@ -451,10 +474,87 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);max-
   </div>
 </div>
 
+<!-- ══ TAB: COACH ══ -->
+<div id="tab-coach" class="hidden fade-in" style="padding-bottom:16px">
+
+  <!-- Today's summary -->
+  <div class="section">
+    <div class="section-head"><div class="section-title">Today's Snapshot</div></div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+        <div style="text-align:center">
+          <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:4px">Calories</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--ink)" id="coachKcal">0</div>
+          <div style="font-size:10px;color:var(--ink3)" id="coachKcalSub"></div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--protein-c);font-weight:600;margin-bottom:4px">Protein</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--ink)" id="coachProtein">0g</div>
+          <div style="font-size:10px;color:var(--ink3)" id="coachProteinSub"></div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:4px">Day</div>
+          <div style="font-size:13px;font-weight:600;color:var(--terra);margin-top:6px" id="coachDayType"></div>
+        </div>
+      </div>
+      <!-- Calorie progress bar -->
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px">
+        <div id="coachCalBar" style="height:100%;border-radius:2px;background:linear-gradient(90deg,var(--terra),var(--terra-l));transition:width .6s ease;width:0%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--ink3);text-align:center" id="coachCalBarLabel"></div>
+    </div>
+  </div>
+
+  <!-- 7-day calorie chart -->
+  <div class="section">
+    <div class="section-head"><div class="section-title">7-Day Calories</div></div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)">
+      <div id="coachWeekChart"></div>
+      <div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:6px" id="coachWeekSub"></div>
+    </div>
+  </div>
+
+  <!-- Protein streak -->
+  <div class="section">
+    <div class="section-head"><div class="section-title">Protein Streak</div></div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:16px">
+      <div style="font-family:'Playfair Display',serif;font-size:44px;color:var(--terra);line-height:1" id="coachStreak">0</div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink)" id="coachStreakLabel">days hitting protein</div>
+        <div style="font-size:11px;color:var(--ink3);margin-top:2px">130g+ target</div>
+      </div>
+      <div style="margin-left:auto;font-size:28px" id="coachStreakEmoji">💪</div>
+    </div>
+  </div>
+
+  <!-- AI Coach -->
+  <div class="section">
+    <div class="section-head"><div class="section-title">Ask Your Coach</div></div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)">
+      <div id="coachChat" style="min-height:60px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <input id="coachInput" class="custom-input" placeholder="Ask about your nutrition…" style="flex:1" onkeydown="if(event.key==='Enter')askCoach()">
+        <button class="add-btn" onclick="askCoach()" style="padding:10px 14px">Ask</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="coachSuggestions"></div>
+    </div>
+  </div>
+
+  <!-- Body trend summary -->
+  <div class="section">
+    <div class="section-head"><div class="section-title">Body Trend</div></div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border)" id="coachBodySummary">
+      <div style="color:var(--ink3);font-size:13px">Log weight and waist in the Body tab to see your trend here.</div>
+    </div>
+  </div>
+
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="nav-btn active" id="nav-log" onclick="switchTab('log')"><div class="nav-icon">🍽</div><div class="nav-label">Today</div></button>
   <button class="nav-btn" id="nav-body" onclick="switchTab('body')"><div class="nav-icon">⚖️</div><div class="nav-label">Body</div></button>
+  <button class="nav-btn" id="nav-coach" onclick="switchTab('coach')"><div class="nav-icon">📊</div><div class="nav-label">Coach</div></button>
   <button class="nav-btn" id="nav-targets" onclick="switchTab('targets')"><div class="nav-icon">🎯</div><div class="nav-label">Targets</div></button>
 </div>
 
@@ -487,7 +587,6 @@ function renderDayTypeRow() {
   document.getElementById('dayTypeRow').innerHTML = DAY_TYPES.map(d=>
     `<button class="dt-btn${d.key===currentDT.key?' active':''}" onclick="selectDT('${d.key}')">${d.label}</button>`
   ).join('');
-  document.getElementById('dayTypeBadge').textContent = currentDT.label;
 }
 
 function selectDT(k) {
@@ -564,6 +663,18 @@ function addFood(food) { const l=getLog(); l.push({...food}); saveLog(l); render
 function removeFood(i) { const l=getLog(); l.splice(i,1); saveLog(l); render(); }
 function clearLog()    { if(confirm('Clear today\'s log?')) { saveLog([]); render(); } }
 
+function addCustomFood() {
+  const name = document.getElementById('customName').value.trim();
+  if (!name) { document.getElementById('customName').focus(); return; }
+  const p   = parseFloat(document.getElementById('customProt').value) || 0;
+  const c   = parseFloat(document.getElementById('customCarb').value) || 0;
+  const fat = parseFloat(document.getElementById('customFat').value)  || 0;
+  const manualKcal = parseFloat(document.getElementById('customKcal').value);
+  const kcal = isNaN(manualKcal) ? Math.round(p*4 + c*4 + fat*9) : manualKcal;
+  addFood({ emoji:'🍽', name, p, c, fat, kcal });
+  ['customName','customProt','customCarb','customFat','customKcal'].forEach(id=>document.getElementById(id).value='');
+}
+
 // ── FOOD DATABASE (your foods + common Aussie extras) ─────────
 const ALL_FOODS = [
   // Your regulars
@@ -621,10 +732,12 @@ const ALL_FOODS = [
 const QUICK_FOODS = ALL_FOODS.slice(0, 9);
 
 // ── SEARCH ────────────────────────────────────────────────────
+let _searchTimer = null;
+
 function onSearch(q) {
   const results = document.getElementById('searchResults');
   const grid    = document.getElementById('quickAddGrid');
-  q = q.trim().toLowerCase();
+  q = q.trim();
   if (!q) {
     results.classList.add('hidden');
     results.innerHTML = '';
@@ -632,23 +745,57 @@ function onSearch(q) {
     return;
   }
   grid.classList.add('hidden');
-  const matches = ALL_FOODS.filter(f => f.name.toLowerCase().includes(q));
-  if (!matches.length) {
-    results.innerHTML = `<div class="no-results">No foods found for "${q}"</div>`;
-  } else {
-    results.innerHTML = matches.map(f =>
-      `<div class="search-result-item" onclick='addFood(${JSON.stringify(f)});clearSearch()'>
-        <div class="sr-emoji">${f.emoji}</div>
-        <div class="sr-info">
-          <div class="sr-name">${f.name}</div>
-          <div class="sr-sub">${f.kcal} kcal · C ${f.c}g · F ${f.fat}g</div>
-          <div class="sr-p">P ${f.p}g protein</div>
-        </div>
-        <button class="sr-add">+ Add</button>
-      </div>`
-    ).join('');
-  }
   results.classList.remove('hidden');
+  results.innerHTML = `<div class="no-results">Searching…</div>`;
+  if (_searchTimer) clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => doSearch(q), 400);
+}
+
+async function doSearch(q) {
+  const results = document.getElementById('searchResults');
+  // First show local matches instantly
+  const local = ALL_FOODS.filter(f => f.name.toLowerCase().includes(q.toLowerCase()));
+  let html = '';
+  if (local.length) {
+    html += local.map(f => searchResultHTML(f)).join('');
+  }
+  // Then hit the Netlify function
+  try {
+    const res = await fetch(`/.netlify/functions/food-search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    const products = (data.products || []).filter(p => {
+      const n = p.nutriments;
+      return p.product_name && n && n['energy-kcal_100g'];
+    }).slice(0, 10);
+    if (products.length) {
+      html += products.map(p => {
+        const n = p.nutriments;
+        const kcal = Math.round(n['energy-kcal_serving'] || n['energy-kcal_100g'] || 0);
+        const prot = Math.round((n['proteins_serving'] || n['proteins_100g'] || 0) * 10) / 10;
+        const carb = Math.round((n['carbohydrates_serving'] || n['carbohydrates_100g'] || 0) * 10) / 10;
+        const fat  = Math.round((n['fat_serving'] || n['fat_100g'] || 0) * 10) / 10;
+        const name = p.product_name + (p.brands ? ` · ${p.brands.split(',')[0]}` : '');
+        const food = { emoji:'🍽', name, p:prot, c:carb, fat, kcal };
+        return searchResultHTML(food);
+      }).join('');
+    }
+  } catch(e) {
+    // Netlify function failed — local results already shown, just add a note
+    if (!local.length) html += `<div class="no-results">No results found. Try the custom add below.</div>`;
+  }
+  results.innerHTML = html || `<div class="no-results">No results for "${q}"</div>`;
+}
+
+function searchResultHTML(f) {
+  return `<div class="search-result-item" onclick='addFood(${JSON.stringify(f)});clearSearch()'>
+    <div class="sr-emoji">${f.emoji}</div>
+    <div class="sr-info">
+      <div class="sr-name">${f.name}</div>
+      <div class="sr-sub">${f.kcal} kcal · C ${f.c}g · F ${f.fat}g</div>
+      <div class="sr-p">P ${f.p}g protein</div>
+    </div>
+    <button class="sr-add">+ Add</button>
+  </div>`;
 }
 
 function clearSearch() {
@@ -803,12 +950,161 @@ function renderLineChart(svgId, hist, color, unit, trendEl, subEl) {
 
 // ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab) {
-  ['log','body','targets'].forEach(t=>{
+  ['log','body','coach','targets'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab);
     const nb=document.getElementById('nav-'+t);
     if (nb) nb.classList.toggle('active', t===tab);
   });
   if (tab==='body') requestAnimationFrame(()=>requestAnimationFrame(renderBodyTab));
+  if (tab==='coach') requestAnimationFrame(()=>requestAnimationFrame(renderCoachTab));
+}
+
+// ── COACH TAB ─────────────────────────────────────────────────
+function getPastDayLog(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  const key = 'nutr_' + d.toLocaleDateString('en-CA', {timeZone:'Australia/Sydney'});
+  return JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function dayTotals(log) {
+  return log.reduce((a,f)=>({p:a.p+f.p, c:a.c+f.c, fat:a.fat+f.fat, kcal:a.kcal+f.kcal}),
+    {p:0, c:0, fat:0, kcal:0});
+}
+
+function renderCoachTab() {
+  const t = totals();
+  const dt = currentDT;
+
+  // Today snapshot
+  document.getElementById('coachKcal').textContent = Math.round(t.kcal);
+  document.getElementById('coachKcalSub').textContent = `of ${dt.cal} target`;
+  document.getElementById('coachProtein').textContent = Math.round(t.p) + 'g';
+  document.getElementById('coachProteinSub').textContent = `of ${dt.p}g target`;
+  document.getElementById('coachDayType').textContent = dt.label;
+  const calPct = Math.min(Math.round(t.kcal / dt.cal * 100), 100);
+  document.getElementById('coachCalBar').style.width = calPct + '%';
+  document.getElementById('coachCalBarLabel').textContent = calPct + '% of daily target';
+
+  // 7-day calorie bar chart
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const weekData = Array.from({length:7}, (_,i) => {
+    const daysAgo = 6 - i;
+    const log = getPastDayLog(daysAgo);
+    const tot = dayTotals(log);
+    const d = new Date(); d.setDate(d.getDate() - daysAgo);
+    const dow = d.getDay();
+    const tgt = DAY_TYPES.find(dt=>dt.days.includes(dow))?.cal || 1825;
+    return { label: days[d.getDay()], kcal: Math.round(tot.kcal), target: tgt, isToday: daysAgo===0 };
+  });
+  const maxKcal = Math.max(...weekData.map(d=>d.target), 2200);
+  const weekHtml = `<div style="display:flex;align-items:flex-end;gap:6px;height:80px">
+    ${weekData.map(d => {
+      const pct = d.kcal ? Math.round(d.kcal / maxKcal * 100) : 0;
+      const color = d.isToday ? 'var(--terra)' : d.kcal >= d.target * 0.85 && d.kcal <= d.target * 1.1 ? 'var(--sage)' : d.kcal === 0 ? 'var(--border)' : 'var(--gold)';
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="font-size:9px;color:var(--ink3)">${d.kcal||''}</div>
+        <div style="width:100%;background:${color};border-radius:4px 4px 0 0;height:${Math.max(pct,2)}%;min-height:${d.kcal?3:0}px;transition:height .4s ease"></div>
+        <div style="font-size:9px;color:${d.isToday?'var(--terra)':'var(--ink3)'}; font-weight:${d.isToday?'700':'400'}">${d.label}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  document.getElementById('coachWeekChart').innerHTML = weekHtml;
+  const daysLogged = weekData.filter(d=>d.kcal>0).length;
+  document.getElementById('coachWeekSub').textContent = `${daysLogged} of 7 days logged this week`;
+
+  // Protein streak
+  let streak = 0;
+  for (let i = 0; i < 30; i++) {
+    const log = getPastDayLog(i);
+    const tot = dayTotals(log);
+    if (tot.p >= 130) streak++;
+    else if (i > 0) break; // only count consecutive from today back
+  }
+  document.getElementById('coachStreak').textContent = streak;
+  document.getElementById('coachStreakLabel').textContent = streak === 1 ? 'day hitting protein' : 'days hitting protein';
+  document.getElementById('coachStreakEmoji').textContent = streak >= 7 ? '🔥' : streak >= 3 ? '💪' : streak >= 1 ? '✅' : '💤';
+
+  // AI coach suggestions
+  const suggestions = [
+    `How am I tracking today?`,
+    `What should I eat tonight?`,
+    `Am I getting enough carbs?`,
+    `Best pre-run meal ideas?`,
+  ];
+  document.getElementById('coachSuggestions').innerHTML = suggestions.map(s=>
+    `<button onclick="askCoachQ('${s}')" style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--ink2);cursor:pointer;font-family:'DM Sans',sans-serif">${s}</button>`
+  ).join('');
+
+  // Body trend summary
+  const wHist = getHist('weight');
+  const bodyEl = document.getElementById('coachBodySummary');
+  if (wHist.length >= 2) {
+    const first = wHist[0].val, last = wHist[wHist.length-1].val;
+    const diff = (last - first).toFixed(2);
+    const col = diff < 0 ? 'var(--sage)' : diff > 0 ? '#C44A4A' : 'var(--ink3)';
+    const arrow = diff < 0 ? '▼' : diff > 0 ? '▲' : '–';
+    bodyEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-size:11px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;font-weight:600">Current Weight</div>
+          <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--ink);margin-top:2px">${last} kg</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;font-weight:600">Total Change</div>
+          <div style="font-size:22px;font-weight:700;color:${col};margin-top:4px">${arrow} ${Math.abs(diff)} kg</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--ink3)">${wHist.length} weigh-ins · Started ${wHist[0].date.slice(5)} · Latest ${wHist[wHist.length-1].date.slice(5)}</div>`;
+  } else {
+    bodyEl.innerHTML = `<div style="color:var(--ink3);font-size:13px">Log weight in the Body tab to see your trend here.</div>`;
+  }
+}
+
+// ── AI COACH ──────────────────────────────────────────────────
+function askCoachQ(q) {
+  document.getElementById('coachInput').value = q;
+  askCoach();
+}
+
+async function askCoach() {
+  const input = document.getElementById('coachInput');
+  const q = input.value.trim();
+  if (!q) return;
+  const chatEl = document.getElementById('coachChat');
+  const t = totals();
+  const dt = currentDT;
+  const wHist = getHist('weight');
+  const context = `You are a concise nutrition coach for Soph, a 165cm female runner in Sydney training for a sub-2hr half marathon. Her goals: body recomposition (reduce 25.9% body fat, protect 44.6kg muscle mass). Today is a ${dt.label} with a ${dt.cal} kcal target. So far today: ${Math.round(t.kcal)} kcal, ${Math.round(t.p)}g protein (target ${dt.p}g), ${Math.round(t.c)}g carbs, ${Math.round(t.fat)}g fat. ${wHist.length ? `Current weight: ${wHist[wHist.length-1].val}kg.` : ''} Give a short, specific, practical answer in 2-3 sentences max.`;
+
+  chatEl.innerHTML = `<div style="color:var(--ink3);font-size:13px;font-style:italic">Thinking…</div>`;
+  input.value = '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: context,
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'No response.';
+    chatEl.innerHTML = `
+      <div style="margin-bottom:8px">
+        <div style="font-size:11px;color:var(--ink3);margin-bottom:4px">You</div>
+        <div style="font-size:13px;color:var(--ink2)">${q}</div>
+      </div>
+      <div style="background:var(--terra-pale);border-radius:10px;padding:12px;border-left:3px solid var(--terra)">
+        <div style="font-size:11px;color:var(--terra);font-weight:600;margin-bottom:4px">Coach</div>
+        <div style="font-size:13px;color:var(--ink);line-height:1.5">${reply}</div>
+      </div>`;
+  } catch(e) {
+    chatEl.innerHTML = `<div style="color:#C44A4A;font-size:13px">Couldn't reach coach. Check your connection.</div>`;
+  }
 }
 
 // ── MASTER RENDER ─────────────────────────────────────────────
