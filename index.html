@@ -509,13 +509,19 @@ checkPerfectDay();
 
 function isPerfectDay(){
   const s=getState();const plan=getPlan(currentDate);
-  if(plan.run&&!s.run)return false;
-  if(plan.str&&!s.str)return false;
-  if(plan.other&&plan.other.toLowerCase().includes('pilates')&&!s.pil)return false;
-  if(plan.spin&&!s.spin)return false;
-  if(!s.steps||!s.water)return false;
-  if(ggArmsActive(currentDate)&&!s.ba)return false;
-  return true;
+  const checks={
+    run: !plan.run || s.run,
+    str: !plan.str || s.str,
+    pil: !plan.other || !plan.other.toLowerCase().includes('pilates') || s.pil,
+    spin: !plan.spin || s.spin,
+    steps: !!s.steps,
+    water: !!s.water,
+    ba: !ggArmsActive(currentDate) || s.ba
+  };
+  console.log('PerfectDay checks:', JSON.stringify(checks));
+  console.log('State:', JSON.stringify(s));
+  console.log('Plan:', JSON.stringify({run:!!plan.run,str:!!plan.str,other:plan.other,spin:plan.spin}));
+  return Object.values(checks).every(Boolean);
 }
 function checkPerfectDay(){
   const allDone=isPerfectDay();
