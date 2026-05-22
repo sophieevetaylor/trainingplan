@@ -202,7 +202,7 @@ input{font-family:'Inter',sans-serif}
       <button onclick="changeDay(1)" id="btnPrev" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center">‹</button>
       <div style="text-align:center;min-width:70px">
         <div class="hdr-date" id="hdrDate"></div>
-        <div id="hdrDay" style="font-size:10px;color:var(--terra-l);font-weight:600;margin-top:2px;letter-spacing:.05em"></div>
+        <div id="hdrDay" style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;margin-top:2px;letter-spacing:.05em"></div>
       </div>
       <button onclick="changeDay(-1)" id="btnNext" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center">›</button>
     </div>
@@ -242,7 +242,7 @@ input{font-family:'Inter',sans-serif}
   <div class="rings">
     <div class="card ring-card p">
       <div class="ring-wrap">
-        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rP" cx="30" cy="30" r="25" stroke="var(--pc)" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
+        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rP" cx="30" cy="30" r="25" stroke="var(--rose)" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
         <div class="ring-center"><div class="ring-g" id="vP">0</div><div class="ring-u">g</div></div>
       </div>
       <div class="ring-name">Protein</div>
@@ -250,7 +250,7 @@ input{font-family:'Inter',sans-serif}
     </div>
     <div class="card ring-card c">
       <div class="ring-wrap">
-        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rC" cx="30" cy="30" r="25" stroke="var(--cc)" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
+        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rC" cx="30" cy="30" r="25" stroke="var(--amber)" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
         <div class="ring-center"><div class="ring-g" id="vC">0</div><div class="ring-u">g</div></div>
       </div>
       <div class="ring-name">Carbs</div>
@@ -258,7 +258,7 @@ input{font-family:'Inter',sans-serif}
     </div>
     <div class="card ring-card f">
       <div class="ring-wrap">
-        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rF" cx="30" cy="30" r="25" stroke="var(--fc)" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
+        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rF" cx="30" cy="30" r="25" stroke="var(--green)" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
         <div class="ring-center"><div class="ring-g" id="vF">0</div><div class="ring-u">g</div></div>
       </div>
       <div class="ring-name">Fat</div>
@@ -281,26 +281,26 @@ input{font-family:'Inter',sans-serif}
       <input class="cust-name" id="cName" placeholder="Name (e.g. Carmans Muesli Bar)">
       <div class="cust-macros">
         <div class="cust-mac-wrap">
-          <div class="cust-mac-lbl" style="color:var(--pc)">Protein</div>
+          <div class="cust-mac-lbl" style="color:var(--rose)">Protein</div>
           <input class="cust-mac-in" id="cP" type="number" placeholder="g">
         </div>
         <div class="cust-mac-wrap">
-          <div class="cust-mac-lbl" style="color:var(--cc)">Carbs</div>
+          <div class="cust-mac-lbl" style="color:var(--amber)">Carbs</div>
           <input class="cust-mac-in" id="cC" type="number" placeholder="g">
         </div>
         <div class="cust-mac-wrap">
-          <div class="cust-mac-lbl" style="color:var(--fc)">Fat</div>
+          <div class="cust-mac-lbl" style="color:var(--green)">Fat</div>
           <input class="cust-mac-in" id="cFt" type="number" placeholder="g">
         </div>
         <div class="cust-mac-wrap">
-          <div class="cust-mac-lbl" style="color:var(--ink3)">kcal</div>
+          <div class="cust-mac-lbl" style="color:var(--slate3)">kcal</div>
           <input class="cust-mac-in" id="cK" type="number" placeholder="or">
         </div>
       </div>
       <button class="cust-add" onclick="addCustom()">+ Add to Log</button>
     </div>
     <!-- Favourites -->
-    <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin:14px 0 8px">Your Favourites</div>
+    <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate3);font-weight:600;margin:14px 0 8px">Your Favourites</div>
     <div class="qa-grid" id="qaGrid"></div>
   </div>
 
@@ -345,7 +345,7 @@ input{font-family:'Inter',sans-serif}
 
       <!-- Body Fat -->
       <div class="met-card">
-        <div class="met-lbl">Body Fat <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink3)">· RENPHO %</span></div>
+        <div class="met-lbl">Body Fat <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--slate3)">· RENPHO %</span></div>
         <div class="met-val-row"><div class="met-val" id="dBf">—</div><div class="met-unit">%</div></div>
         <div class="met-chg" id="chBf"></div>
         <div class="met-inp-row">
@@ -356,7 +356,7 @@ input{font-family:'Inter',sans-serif}
 
       <!-- Muscle Mass -->
       <div class="met-card">
-        <div class="met-lbl">Muscle Mass <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink3)">· RENPHO kg</span></div>
+        <div class="met-lbl">Muscle Mass <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--slate3)">· RENPHO kg</span></div>
         <div class="met-val-row"><div class="met-val" id="dMm">—</div><div class="met-unit">kg</div></div>
         <div class="met-chg" id="chMm"></div>
         <div class="met-inp-row">
@@ -367,7 +367,7 @@ input{font-family:'Inter',sans-serif}
 
       <!-- Sleep Score -->
       <div class="met-card">
-        <div class="met-lbl">Sleep Score <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink3)">· Garmin /100</span></div>
+        <div class="met-lbl">Sleep Score <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--slate3)">· Garmin /100</span></div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
           <div>
             <div class="met-val-row" style="margin:0"><div class="met-val" id="dSs">—</div><div class="met-unit" style="font-size:11px">/100</div></div>
@@ -386,7 +386,7 @@ input{font-family:'Inter',sans-serif}
 
       <!-- Sleep Time -->
       <div class="met-card">
-        <div class="met-lbl">Sleep Time <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink3)">· Garmin hrs</span></div>
+        <div class="met-lbl">Sleep Time <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--slate3)">· Garmin hrs</span></div>
         <div class="met-val-row"><div class="met-val" id="dSt">—</div><div class="met-unit">hrs</div></div>
         <div class="met-chg" id="chSt"></div>
         <div class="met-inp-row">
@@ -401,13 +401,13 @@ input{font-family:'Inter',sans-serif}
   <!-- Progress charts -->
   <div class="sec" style="margin-bottom:16px">
     <div class="sec-hd"><div class="sec-t">Progress</div></div>
-    <div id="noDataMsg" style="color:var(--ink3);font-size:13px;padding:8px 0 12px">Log your first entries above to see trends.</div>
-    <div id="chWeight"  class="ch-card hidden"><div class="ch-title">Weight <span id="chWTrend"></span></div><svg id="svgW"  style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px" id="chWSub"></div></div>
-    <div id="chWaist"   class="ch-card hidden"><div class="ch-title">Waist <span id="chWaTrend"></span></div><svg id="svgWa" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px" id="chWaSub"></div></div>
-    <div id="chBf2"     class="ch-card hidden"><div class="ch-title">Body Fat % <span id="chBfTrend"></span></div><svg id="svgBf" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px" id="chBfSub"></div></div>
-    <div id="chMm2"     class="ch-card hidden"><div class="ch-title">Muscle Mass <span id="chMmTrend"></span></div><svg id="svgMm" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px" id="chMmSub"></div></div>
-    <div id="chSs2"     class="ch-card hidden"><div class="ch-title">Sleep Score <span id="chSsTrend"></span></div><svg id="svgSs" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px" id="chSsSub"></div></div>
-    <div id="chSt2"     class="ch-card hidden"><div class="ch-title">Sleep Time <span id="chStTrend"></span></div><svg id="svgSt" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:4px" id="chStSub"></div></div>
+    <div id="noDataMsg" style="color:var(--slate3);font-size:13px;padding:8px 0 12px">Log your first entries above to see trends.</div>
+    <div id="chWeight"  class="ch-card hidden"><div class="ch-title">Weight <span id="chWTrend"></span></div><svg id="svgW"  style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:4px" id="chWSub"></div></div>
+    <div id="chWaist"   class="ch-card hidden"><div class="ch-title">Waist <span id="chWaTrend"></span></div><svg id="svgWa" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:4px" id="chWaSub"></div></div>
+    <div id="chBf2"     class="ch-card hidden"><div class="ch-title">Body Fat % <span id="chBfTrend"></span></div><svg id="svgBf" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:4px" id="chBfSub"></div></div>
+    <div id="chMm2"     class="ch-card hidden"><div class="ch-title">Muscle Mass <span id="chMmTrend"></span></div><svg id="svgMm" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:4px" id="chMmSub"></div></div>
+    <div id="chSs2"     class="ch-card hidden"><div class="ch-title">Sleep Score <span id="chSsTrend"></span></div><svg id="svgSs" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:4px" id="chSsSub"></div></div>
+    <div id="chSt2"     class="ch-card hidden"><div class="ch-title">Sleep Time <span id="chStTrend"></span></div><svg id="svgSt" style="width:100%;display:block;overflow:visible"></svg><div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:4px" id="chStSub"></div></div>
   </div>
 </div>
 
@@ -424,19 +424,19 @@ input{font-family:'Inter',sans-serif}
         <div class="cs-sub" id="ccKcalSub"></div>
       </div>
       <div class="coach-stat">
-        <div class="cs-lbl" style="color:var(--pc)">Protein</div>
+        <div class="cs-lbl" style="color:var(--rose)">Protein</div>
         <div class="cs-val" id="ccProt">0g</div>
         <div class="cs-sub" id="ccProtSub"></div>
       </div>
       <div class="coach-stat">
         <div class="cs-lbl">Day Type</div>
-        <div style="font-size:11px;font-weight:700;color:var(--terra);margin-top:6px;line-height:1.2" id="ccDay"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--rose);margin-top:6px;line-height:1.2" id="ccDay"></div>
       </div>
     </div>
     <div style="height:4px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden">
-      <div id="ccBar" style="height:100%;background:linear-gradient(90deg,var(--terra),var(--terra-l));border-radius:2px;width:0%;transition:width .5s ease"></div>
+      <div id="ccBar" style="height:100%;background:linear-gradient(90deg,var(--rose),rgba(255,255,255,0.7));border-radius:2px;width:0%;transition:width .5s ease"></div>
     </div>
-    <div style="font-size:11px;color:var(--ink3);text-align:center;margin-top:5px" id="ccBarLbl"></div>
+    <div style="font-size:11px;color:var(--slate3);text-align:center;margin-top:5px" id="ccBarLbl"></div>
   </div>
 
   <!-- 7-day chart -->
@@ -444,7 +444,7 @@ input{font-family:'Inter',sans-serif}
     <div class="sec-hd"><div class="sec-t">7-Day Calories</div></div>
     <div class="card" style="padding:16px">
       <div id="weekChart" style="height:90px;display:flex;align-items:flex-end;gap:5px"></div>
-      <div style="font-size:10px;color:var(--ink3);text-align:center;margin-top:8px" id="weekSub"></div>
+      <div style="font-size:10px;color:var(--slate3);text-align:center;margin-top:8px" id="weekSub"></div>
     </div>
   </div>
 
@@ -452,10 +452,10 @@ input{font-family:'Inter',sans-serif}
   <div class="sec">
     <div class="sec-hd"><div class="sec-t">Protein Streak</div></div>
     <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">
-      <div style="font-family:'Playfair Display',serif;font-size:48px;color:var(--terra);line-height:1" id="ccStreak">0</div>
+      <div style="font-family:'Playfair Display',serif;font-size:48px;color:var(--rose);line-height:1" id="ccStreak">0</div>
       <div>
-        <div style="font-size:14px;font-weight:600;color:var(--ink)" id="ccStreakLbl">days hitting protein</div>
-        <div style="font-size:11px;color:var(--ink3);margin-top:3px">130g+ consecutive</div>
+        <div style="font-size:14px;font-weight:600;color:var(--slate)" id="ccStreakLbl">days hitting protein</div>
+        <div style="font-size:11px;color:var(--slate3);margin-top:3px">130g+ consecutive</div>
       </div>
       <div style="margin-left:auto;font-size:30px" id="ccStreakEm">💤</div>
     </div>
@@ -523,16 +523,6 @@ const ALL_FOODS = [...FAVS,
   {emoji:'🥗',name:'Mixed Salad (large)',p:2,c:5,fat:0,kcal:30},
   {emoji:'🥤',name:'Protein Shake (1 scoop)',p:25,c:3,fat:2,kcal:130},
 ];
-
-// ── STORAGE ───────────────────────────────────────────
-const sydDate = () => new Date().toLocaleDateString('en-CA',{timeZone:'Australia/Sydney'});
-const todayKey = () => 'nutr_' + sydDate();
-const hKey = k => 'bdy_' + k;
-const getLog = () => JSON.parse(localStorage.getItem(todayKey())||'[]');
-const saveLog = l => localStorage.setItem(todayKey(), JSON.stringify(l));
-const getHist = k => JSON.parse(localStorage.getItem(hKey(k))||'[]');
-const saveHist = (k,a) => localStorage.setItem(hKey(k), JSON.stringify(a));
-const getPastLog = n => { const d=new Date(); d.setDate(d.getDate()-n); const k='nutr_'+d.toLocaleDateString('en-CA',{timeZone:'Australia/Sydney'}); return JSON.parse(localStorage.getItem(k)||'[]'); };
 
 // ── DATE NAVIGATION ───────────────────────────────────
 let viewOffset = 0; // 0 = today, 1 = yesterday, etc.
@@ -901,13 +891,13 @@ function renderCoachTab() {
   const maxK=Math.max(...week.map(w=>w.tgt),2200);
   document.getElementById('weekChart').innerHTML=week.map(w=>{
     const pct=w.kcal?Math.round(w.kcal/maxK*100):0;
-    const col=w.today?'var(--terra)':w.kcal===0?'var(--border)':w.kcal>=w.tgt*.85&&w.kcal<=w.tgt*1.1?'var(--sage)':'var(--gold)';
+    const col=w.today?'var(--rose)':w.kcal===0?'var(--border)':w.kcal>=w.tgt*.85&&w.kcal<=w.tgt*1.1?'var(--green)':'var(--gold)';
     return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%">
-      <div style="font-size:9px;color:var(--ink3);line-height:1">${w.kcal||''}</div>
+      <div style="font-size:9px;color:var(--slate3);line-height:1">${w.kcal||''}</div>
       <div style="flex:1;width:100%;display:flex;align-items:flex-end">
         <div style="width:100%;background:${col};border-radius:3px 3px 0 0;height:${Math.max(pct,w.kcal?4:0)}%"></div>
       </div>
-      <div style="font-size:9px;color:${w.today?'var(--terra)':'var(--ink3)'};font-weight:${w.today?700:400}">${w.lbl}</div>
+      <div style="font-size:9px;color:${w.today?'var(--rose)':'var(--slate3)'};font-weight:${w.today?700:400}">${w.lbl}</div>
     </div>`;
   }).join('');
   document.getElementById('weekSub').textContent=`${week.filter(w=>w.kcal>0).length} of 7 days logged`;
@@ -964,19 +954,19 @@ function renderCoachTab() {
   }
   const dn=avgs.n||1;
   const avgEl=document.getElementById('macroAvg');
-  if(!avgs.n){avgEl.innerHTML=`<div style="color:var(--ink3);font-size:13px">Log food for a few days to see your averages.</div>`;return;}
+  if(!avgs.n){avgEl.innerHTML=`<div style="color:var(--slate3);font-size:13px">Log food for a few days to see your averages.</div>`;return;}
   const aK=Math.round(avgs.kcal/dn),aP=Math.round(avgs.p/dn),aC=Math.round(avgs.c/dn),aF=Math.round(avgs.fat/dn);
-  avgEl.innerHTML=`<div style="font-size:11px;color:var(--ink3);margin-bottom:12px">Average over ${avgs.n} logged day${avgs.n!==1?'s':''}</div>
+  avgEl.innerHTML=`<div style="font-size:11px;color:var(--slate3);margin-bottom:12px">Average over ${avgs.n} logged day${avgs.n!==1?'s':''}</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     ${[
-      {lbl:'Calories',val:aK+' kcal',tgt:d.cal+' target',ok:aK>=d.cal*.9&&aK<=d.cal*1.1,col:'var(--ink)'},
-      {lbl:'Protein', val:aP+'g',    tgt:d.p+'g target',  ok:aP>=d.p*.9,                 col:'var(--pc)'},
-      {lbl:'Carbs',   val:aC+'g',    tgt:d.c+'g target',  ok:aC>=d.c*.85,                col:'var(--cc)'},
-      {lbl:'Fat',     val:aF+'g',    tgt:d.f+'g target',  ok:true,                        col:'var(--fc)'},
+      {lbl:'Calories',val:aK+' kcal',tgt:d.cal+' target',ok:aK>=d.cal*.9&&aK<=d.cal*1.1,col:'var(--slate)'},
+      {lbl:'Protein', val:aP+'g',    tgt:d.p+'g target',  ok:aP>=d.p*.9,                 col:'var(--rose)'},
+      {lbl:'Carbs',   val:aC+'g',    tgt:d.c+'g target',  ok:aC>=d.c*.85,                col:'var(--amber)'},
+      {lbl:'Fat',     val:aF+'g',    tgt:d.f+'g target',  ok:true,                        col:'var(--green)'},
     ].map(m=>`<div style="background:var(--bg);border-radius:10px;padding:11px">
-      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--ink3);margin-bottom:3px">${m.lbl}</div>
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--slate3);margin-bottom:3px">${m.lbl}</div>
       <div style="font-size:19px;font-weight:700;color:${m.col}">${m.val}</div>
-      <div style="font-size:10px;color:var(--ink3);margin-top:2px">${m.ok?'✅':'⚠️'} ${m.tgt}</div>
+      <div style="font-size:10px;color:var(--slate3);margin-top:2px">${m.ok?'✅':'⚠️'} ${m.tgt}</div>
     </div>`).join('')}
   </div>`;
 }
