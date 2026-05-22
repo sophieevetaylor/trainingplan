@@ -468,9 +468,15 @@ input{font-family:'Inter',sans-serif}
   </div>
 
   <!-- 7-day macro averages -->
-  <div class="sec" style="margin-bottom:16px">
+  <div class="sec">
     <div class="sec-hd"><div class="sec-t">7-Day Macro Avg</div></div>
     <div class="card" style="padding:16px" id="macroAvg"></div>
+  </div>
+
+  <!-- Macro deep dive -->
+  <div class="sec" style="margin-bottom:16px">
+    <div class="sec-hd"><div class="sec-t">Macro Analysis</div></div>
+    <div id="macroAnalysis"></div>
   </div>
 
 </div>
@@ -941,11 +947,6 @@ function renderCoachTab() {
     else if(mmDiff<-0.5) tips.push({ico:'🚨',txt:`Muscle mass dropped ${Math.abs(mmDiff).toFixed(1)}kg. Increase protein and ensure you're not under-eating on training days.`});
   }
 
-  if(!tips.length) tips.push({ico:'🎯',txt:'Log food throughout the day to get personalised tips here.'});
-  document.getElementById('coachTips').innerHTML=tips.map(tp=>
-    `<div class="tip-item"><div class="tip-ico">${tp.ico}</div><div class="tip-txt">${tp.txt}</div></div>`
-  ).join('');
-
   // 7-day macro averages
   let avgs={p:0,c:0,fat:0,kcal:0,n:0};
   for(let i=0;i<7;i++){
@@ -954,21 +955,132 @@ function renderCoachTab() {
   }
   const dn=avgs.n||1;
   const avgEl=document.getElementById('macroAvg');
-  if(!avgs.n){avgEl.innerHTML=`<div style="color:var(--slate3);font-size:13px">Log food for a few days to see your averages.</div>`;return;}
-  const aK=Math.round(avgs.kcal/dn),aP=Math.round(avgs.p/dn),aC=Math.round(avgs.c/dn),aF=Math.round(avgs.fat/dn);
-  avgEl.innerHTML=`<div style="font-size:11px;color:var(--slate3);margin-bottom:12px">Average over ${avgs.n} logged day${avgs.n!==1?'s':''}</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    ${[
-      {lbl:'Calories',val:aK+' kcal',tgt:d.cal+' target',ok:aK>=d.cal*.9&&aK<=d.cal*1.1,col:'var(--slate)'},
-      {lbl:'Protein', val:aP+'g',    tgt:d.p+'g target',  ok:aP>=d.p*.9,                 col:'var(--rose)'},
-      {lbl:'Carbs',   val:aC+'g',    tgt:d.c+'g target',  ok:aC>=d.c*.85,                col:'var(--amber)'},
-      {lbl:'Fat',     val:aF+'g',    tgt:d.f+'g target',  ok:true,                        col:'var(--green)'},
-    ].map(m=>`<div style="background:var(--bg);border-radius:10px;padding:11px">
-      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--slate3);margin-bottom:3px">${m.lbl}</div>
-      <div style="font-size:19px;font-weight:700;color:${m.col}">${m.val}</div>
-      <div style="font-size:10px;color:var(--slate3);margin-top:2px">${m.ok?'✅':'⚠️'} ${m.tgt}</div>
-    </div>`).join('')}
-  </div>`;
+  if(!avgs.n){avgEl.innerHTML=`<div style="color:var(--slate3);font-size:13px">Log food for a few days to see your averages.</div>`;}
+  else {
+    const aK=Math.round(avgs.kcal/dn),aP=Math.round(avgs.p/dn),aC=Math.round(avgs.c/dn),aF=Math.round(avgs.fat/dn);
+    avgEl.innerHTML=`<div style="font-size:11px;color:var(--slate3);margin-bottom:12px">Average over ${avgs.n} logged day${avgs.n!==1?'s':''}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[
+        {lbl:'Calories',val:aK+' kcal',tgt:d.cal+' target',ok:aK>=d.cal*.9&&aK<=d.cal*1.1,col:'var(--slate)'},
+        {lbl:'Protein', val:aP+'g',    tgt:d.p+'g target',  ok:aP>=d.p*.9,                 col:'var(--rose)'},
+        {lbl:'Carbs',   val:aC+'g',    tgt:d.c+'g target',  ok:aC>=d.c*.85,                col:'var(--amber)'},
+        {lbl:'Fat',     val:aF+'g',    tgt:d.f+'g target',  ok:true,                        col:'var(--green)'},
+      ].map(m=>`<div style="background:rgba(255,255,255,.5);border-radius:10px;padding:11px">
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--slate3);margin-bottom:3px">${m.lbl}</div>
+        <div style="font-size:19px;font-weight:700;color:${m.col}">${m.val}</div>
+        <div style="font-size:10px;color:var(--slate3);margin-top:2px">${m.ok?'✅':'⚠️'} ${m.tgt}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // ── MACRO ANALYSIS ──────────────────────────────────
+  const analysis = [];
+
+  // Protein deep dive
+  const protPct = Math.round(t.p / d.p * 100);
+  const protKcal = Math.round(t.p * 4);
+  const protOfTotal = t.kcal > 0 ? Math.round(protKcal / t.kcal * 100) : 0;
+  let protStatus, protColor, protBg;
+  if (t.p >= d.p) { protStatus='On target'; protColor='var(--green)'; protBg='var(--green-pale)'; }
+  else if (t.p >= d.p * 0.7) { protStatus='Getting there'; protColor='var(--amber)'; protBg='var(--amber-pale)'; }
+  else { protStatus='Needs attention'; protColor='var(--rose)'; protBg='var(--rose-pale)'; }
+
+  // Build 7-day protein history
+  const p7 = Array.from({length:7},(_,i)=>logTotals(getPastLog(i)).p);
+  const p7avg = Math.round(p7.reduce((a,b)=>a+b,0) / p7.filter(v=>v>0).length || 0);
+  const p7hit = p7.filter(v=>v>=130).length;
+
+  analysis.push({
+    emoji:'🥩', title:'Protein', color:protColor, bg:protBg, status:protStatus,
+    today:`${Math.round(t.p)}g of ${d.p}g target (${protPct}%)`,
+    lines:[
+      `${protKcal} kcal from protein today — ${protOfTotal}% of total intake. Ideal range is 25–35% for recomposition.`,
+      p7avg > 0 ? `7-day average: ${p7avg}g/day. You hit 130g+ on ${p7hit} of the last 7 days.` : null,
+      t.p < d.p ? `Still need ${d.p - Math.round(t.p)}g today. Each serve of mince, chicken or salmon adds ~34–42g.` : `Protein target hit — muscle synthesis active, fat loss preserved.`,
+      `Protein keeps you full, protects your 44.6kg muscle mass, and is hardest to overeat. Prioritise it at every meal.`,
+    ].filter(Boolean)
+  });
+
+  // Carbs deep dive
+  const carbPct = Math.round(t.c / d.c * 100);
+  const carbKcal = Math.round(t.c * 4);
+  const carbOfTotal = t.kcal > 0 ? Math.round(carbKcal / t.kcal * 100) : 0;
+  let carbStatus, carbColor, carbBg, carbNote;
+  if (t.c >= d.c * 1.15) {
+    carbStatus='Over target'; carbColor='var(--rose)'; carbBg='var(--rose-pale)';
+    carbNote=`${Math.round(t.c - d.c)}g over your ${d.c}g target. On a ${d.lbl.toLowerCase()} this is fine if the extra came from whole foods — just watch it on rest days.`;
+  } else if (t.c >= d.c * 0.85) {
+    carbStatus='On target'; carbColor='var(--green)'; carbBg='var(--green-pale)';
+    carbNote=`Carbs dialled in — your muscles have glycogen to fuel training and recover well.`;
+  } else if (d.key === 'long' || d.key === 'quality') {
+    carbStatus='Too low for today'; carbColor='var(--rose)'; carbBg='var(--rose-pale)';
+    carbNote=`It's a ${d.lbl.toLowerCase()} — you need ${d.c}g carbs to fuel performance. Under-fuelling hard sessions tanks pace and muscle.`;
+  } else {
+    carbStatus='Slightly low'; carbColor='var(--amber)'; carbBg='var(--amber-pale)';
+    carbNote=`${Math.round(d.c - t.c)}g under target. Top up with rice, sweet potato or oats if you have a session today.`;
+  }
+  const c7 = Array.from({length:7},(_,i)=>logTotals(getPastLog(i)).c);
+  const c7avg = Math.round(c7.reduce((a,b)=>a+b,0) / c7.filter(v=>v>0).length || 0);
+
+  analysis.push({
+    emoji:'🍚', title:'Carbohydrates', color:carbColor, bg:carbBg, status:carbStatus,
+    today:`${Math.round(t.c)}g of ${d.c}g target (${carbPct}%)`,
+    lines:[
+      `${carbKcal} kcal from carbs — ${carbOfTotal}% of intake. For a runner, 40–50% is typical on training days.`,
+      c7avg > 0 ? `7-day average: ${c7avg}g/day. Your target ranges from 160g (rest) to 200g (long run).` : null,
+      carbNote,
+      `Carbs before quality sessions and long runs are non-negotiable — they're your fuel, not your enemy.`,
+    ].filter(Boolean)
+  });
+
+  // Fat deep dive
+  const fatPct = Math.round(t.fat / d.f * 100);
+  const fatKcal = Math.round(t.fat * 9);
+  const fatOfTotal = t.kcal > 0 ? Math.round(fatKcal / t.kcal * 100) : 0;
+  let fatStatus, fatColor, fatBg, fatNote;
+  if (t.fat > d.f * 1.3) {
+    fatStatus='Higher than target'; fatColor='var(--amber)'; fatBg='var(--amber-pale)';
+    fatNote=`${Math.round(t.fat - d.f)}g over your ${d.f}g target. Fat is calorie-dense (9 kcal/g) — small amounts add up fast. Check dressings, oils and nuts.`;
+  } else if (t.fat >= d.f * 0.7) {
+    fatStatus='On target'; fatColor='var(--green)'; fatBg='var(--green-pale)';
+    fatNote=`Fat intake is balanced — supporting hormone health without excess calories.`;
+  } else {
+    fatStatus='Low'; fatColor='var(--amber)'; fatBg='var(--amber-pale)';
+    fatNote=`Fat intake is low today. Healthy fats (avocado, salmon, olive oil) support hormones, joint health and fat-soluble vitamins.`;
+  }
+  const f7 = Array.from({length:7},(_,i)=>logTotals(getPastLog(i)).fat);
+  const f7avg = Math.round(f7.reduce((a,b)=>a+b,0) / f7.filter(v=>v>0).length || 0);
+
+  analysis.push({
+    emoji:'🥑', title:'Fat', color:fatColor, bg:fatBg, status:fatStatus,
+    today:`${Math.round(t.fat)}g of ${d.f}g target (${fatPct}%)`,
+    lines:[
+      `${fatKcal} kcal from fat — ${fatOfTotal}% of intake. Fat should sit around 25–30% of total calories.`,
+      f7avg > 0 ? `7-day average: ${f7avg}g/day. Your target is 55–65g across the week.` : null,
+      fatNote,
+      `Fat doesn't make you fat — excess calories do. Focus fat intake on omega-3 sources like salmon and quality oils.`,
+    ].filter(Boolean)
+  });
+
+  document.getElementById('macroAnalysis').innerHTML = analysis.map(a=>`
+    <div class="card" style="padding:16px;margin-bottom:10px;border-left:4px solid ${a.color}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:20px">${a.emoji}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--slate)">${a.title}</div>
+            <div style="font-size:11px;color:var(--slate3);margin-top:1px">${a.today}</div>
+          </div>
+        </div>
+        <div style="background:${a.bg};color:${a.color};font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap">${a.status}</div>
+      </div>
+      <div style="height:4px;background:rgba(100,50,100,.08);border-radius:2px;overflow:hidden;margin-bottom:12px">
+        <div style="height:100%;width:${Math.min(Math.round((a.title==='Protein'?t.p/d.p:a.title==='Carbohydrates'?t.c/d.c:t.fat/d.f)*100),100)}%;background:${a.color};border-radius:2px;transition:width .5s ease"></div>
+      </div>
+      ${a.lines.map(l=>`<div style="font-size:12px;color:var(--slate2);line-height:1.6;margin-bottom:6px;padding-left:6px;border-left:2px solid ${a.bg}">${l}</div>`).join('')}
+    </div>`
+  ).join('');
+}
 }
 
 // ── TABS ──────────────────────────────────────────────
