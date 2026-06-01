@@ -264,6 +264,15 @@ input{font-family:'Inter',sans-serif}
       <div class="ring-name">Fat</div>
       <div class="ring-tgt" id="tF"></div>
     </div>
+    <div class="card ring-card" style="--ring-color:#0891b2">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;background:#0891b2"></div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 60 60"><circle class="ring-bg" cx="30" cy="30" r="25"/><circle class="ring-fill" id="rFi" cx="30" cy="30" r="25" stroke="#0891b2" stroke-dasharray="157" stroke-dashoffset="157"/></svg>
+        <div class="ring-center"><div class="ring-g" id="vFi">0</div><div class="ring-u">g</div></div>
+      </div>
+      <div class="ring-name">Fibre</div>
+      <div class="ring-tgt" id="tFi"></div>
+    </div>
   </div>
 
   <!-- Add food -->
@@ -293,8 +302,12 @@ input{font-family:'Inter',sans-serif}
           <input class="cust-mac-in" id="cFt" type="number" placeholder="g">
         </div>
         <div class="cust-mac-wrap">
-          <div class="cust-mac-lbl" style="color:var(--slate3)">kcal</div>
-          <input class="cust-mac-in" id="cK" type="number" placeholder="or">
+          <div class="cust-mac-lbl" style="color:#0891b2">Fibre</div>
+          <input class="cust-mac-in" id="cFi" type="number" placeholder="g">
+        </div>
+        <div class="cust-mac-wrap" style="grid-column:1/-1">
+          <div class="cust-mac-lbl" style="color:var(--slate3)">kcal (or leave blank to calculate)</div>
+          <input class="cust-mac-in" id="cK" type="number" placeholder="optional">
         </div>
       </div>
       <button class="cust-add" onclick="addCustom()">+ Add to Log</button>
@@ -498,36 +511,41 @@ const DT = [
 ];
 
 const FAVS = [
-  {emoji:'🥩',name:'200g Lean Mince Beef',p:42,c:0,fat:10,kcal:240},
-  {emoji:'🥩',name:'Steak',p:42,c:0,fat:14,kcal:300},
-  {emoji:'🥤',name:'Cali Press Arnold',p:36,c:28,fat:9,kcal:350},
-  {emoji:'🍗',name:'200g Minced Chicken',p:34,c:0,fat:6,kcal:210},
-  {emoji:'🐟',name:'Salmon',p:34,c:0,fat:16,kcal:290},
-  {emoji:'🐟',name:'Canned Tuna',p:25,c:0,fat:2,kcal:120},
-  {emoji:'🥛',name:'WPI 90 Protein (1 scoop)',p:27,c:1,fat:1,kcal:120},
-  {emoji:'🍫',name:'Double Dark Choc Protein Bar',p:20,c:26,fat:9,kcal:262},
-  {emoji:'🥄',name:'Chobani Fit Passionfruit',p:15,c:12,fat:0,kcal:90},
-  {emoji:'🧀',name:'Cottage Cheese (100g)',p:14,c:4,fat:4,kcal:110},
-  {emoji:'☕',name:'Oat Flat White',p:2,c:14,fat:4,kcal:100},
+  {emoji:'🥩',name:'200g Lean Mince Beef',p:42,c:0,fat:10,fi:0,kcal:240},
+  {emoji:'🥩',name:'Steak',p:42,c:0,fat:14,fi:0,kcal:300},
+  {emoji:'🥤',name:'Cali Press Arnold',p:36,c:28,fat:9,fi:2,kcal:350},
+  {emoji:'🍗',name:'200g Minced Chicken',p:34,c:0,fat:6,fi:0,kcal:210},
+  {emoji:'🐟',name:'Salmon',p:34,c:0,fat:16,fi:0,kcal:290},
+  {emoji:'🐟',name:'Canned Tuna',p:25,c:0,fat:2,fi:0,kcal:120},
+  {emoji:'🥛',name:'WPI 90 Protein (1 scoop)',p:27,c:1,fat:1,fi:0,kcal:120},
+  {emoji:'🍫',name:'Double Dark Choc Protein Bar',p:20,c:26,fat:9,fi:4,kcal:262},
+  {emoji:'🥄',name:'Chobani Fit Passionfruit',p:15,c:12,fat:0,fi:0,kcal:90},
+  {emoji:'🧀',name:'Cottage Cheese (100g)',p:14,c:4,fat:4,fi:0,kcal:110},
+  {emoji:'☕',name:'Oat Flat White',p:2,c:14,fat:4,fi:1,kcal:100},
+  {emoji:'🌾',name:'Psyllium Husk (1 tsp)',p:0,c:3,fat:0,fi:5,kcal:15},
+  {emoji:'🍠',name:'Roast Sweet Potato (½)',p:2,c:20,fat:1,fi:3,kcal:95},
+  {emoji:'🥑',name:'Avocado (½)',p:2,c:6,fat:12,fi:5,kcal:120},
+  {emoji:'🍫',name:'KitKat Chunky',p:4,c:38,fat:13,fi:1,kcal:280},
+  {emoji:'🍏',name:'Granny Smith Apple',p:0,c:21,fat:0,fi:4,kcal:80},
 ];
 
 const ALL_FOODS = [...FAVS,
-  {emoji:'🍗',name:'Chicken Breast (150g)',p:47,c:0,fat:4,kcal:230},
-  {emoji:'🥚',name:'Whole Egg',p:6,c:0,fat:5,kcal:70},
-  {emoji:'🥚',name:'Egg Whites (3)',p:11,c:0,fat:0,kcal:50},
-  {emoji:'🦐',name:'Prawns (150g)',p:29,c:0,fat:2,kcal:136},
-  {emoji:'🧀',name:'Greek Yoghurt (170g)',p:17,c:6,fat:0,kcal:100},
-  {emoji:'🍚',name:'White Rice (150g)',p:4,c:42,fat:0,kcal:194},
-  {emoji:'🍠',name:'Sweet Potato (150g)',p:2,c:30,fat:0,kcal:130},
-  {emoji:'🌾',name:'Oats (40g)',p:5,c:27,fat:3,kcal:154},
-  {emoji:'🍞',name:'Sourdough (1 slice)',p:4,c:18,fat:1,kcal:97},
-  {emoji:'🍌',name:'Banana',p:1,c:27,fat:0,kcal:105},
-  {emoji:'🫐',name:'Berries (100g)',p:1,c:14,fat:0,kcal:57},
-  {emoji:'🥑',name:'Avocado (½)',p:2,c:6,fat:12,kcal:120},
-  {emoji:'🥜',name:'Almonds (30g)',p:6,c:2,fat:15,kcal:174},
-  {emoji:'🥦',name:'Broccoli (100g)',p:3,c:4,fat:0,kcal:34},
-  {emoji:'🥗',name:'Mixed Salad (large)',p:2,c:5,fat:0,kcal:30},
-  {emoji:'🥤',name:'Protein Shake (1 scoop)',p:25,c:3,fat:2,kcal:130},
+  {emoji:'🍗',name:'Chicken Breast (150g)',p:47,c:0,fat:4,fi:0,kcal:230},
+  {emoji:'🥚',name:'Whole Egg',p:6,c:0,fat:5,fi:0,kcal:70},
+  {emoji:'🥚',name:'Egg Whites (3)',p:11,c:0,fat:0,fi:0,kcal:50},
+  {emoji:'🦐',name:'Prawns (150g)',p:29,c:0,fat:2,fi:0,kcal:136},
+  {emoji:'🧀',name:'Greek Yoghurt (170g)',p:17,c:6,fat:0,fi:0,kcal:100},
+  {emoji:'🍚',name:'White Rice (150g)',p:4,c:42,fat:0,fi:0,kcal:194},
+  {emoji:'🍠',name:'Sweet Potato (150g)',p:2,c:30,fat:0,fi:4,kcal:130},
+  {emoji:'🌾',name:'Oats (40g)',p:5,c:27,fat:3,fi:4,kcal:154},
+  {emoji:'🍞',name:'Sourdough (1 slice)',p:4,c:18,fat:1,fi:1,kcal:97},
+  {emoji:'🍌',name:'Banana',p:1,c:27,fat:0,fi:3,kcal:105},
+  {emoji:'🫐',name:'Berries (100g)',p:1,c:14,fat:0,fi:4,kcal:57},
+  {emoji:'🥑',name:'Avocado (½)',p:2,c:6,fat:12,fi:5,kcal:120},
+  {emoji:'🥜',name:'Almonds (30g)',p:6,c:2,fat:15,fi:3,kcal:174},
+  {emoji:'🥦',name:'Broccoli (100g)',p:3,c:4,fat:0,fi:3,kcal:34},
+  {emoji:'🥗',name:'Mixed Salad (large)',p:2,c:5,fat:0,fi:3,kcal:30},
+  {emoji:'🥤',name:'Protein Shake (1 scoop)',p:25,c:3,fat:2,fi:0,kcal:130},
 ];
 
 // ── DATE NAVIGATION ───────────────────────────────────
@@ -598,12 +616,12 @@ function renderHeader() {
 
 // ── TOTALS ────────────────────────────────────────────
 function totals() {
-  return getLog().reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,kcal:a.kcal+f.kcal}),
-    {p:0,c:0,fat:0,kcal:0});
+  return getLog().reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,fi:a.fi+(f.fi||0),kcal:a.kcal+f.kcal}),
+    {p:0,c:0,fat:0,fi:0,kcal:0});
 }
 function logTotals(log) {
-  return log.reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,kcal:a.kcal+f.kcal}),
-    {p:0,c:0,fat:0,kcal:0});
+  return log.reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,fi:a.fi+(f.fi||0),kcal:a.kcal+f.kcal}),
+    {p:0,c:0,fat:0,fi:0,kcal:0});
 }
 
 // ── CALORIE BANNER ────────────────────────────────────
@@ -625,13 +643,15 @@ function setRing(id, pct) {
 }
 function renderRings() {
   const t=totals(), d=cDT;
-  setRing('rP',t.p/d.p); setRing('rC',t.c/d.c); setRing('rF',t.fat/d.f);
+  setRing('rP',t.p/d.p); setRing('rC',t.c/d.c); setRing('rF',t.fat/d.f); setRing('rFi',t.fi/32);
   document.getElementById('vP').textContent=Math.round(t.p);
   document.getElementById('vC').textContent=Math.round(t.c);
   document.getElementById('vF').textContent=Math.round(t.fat);
+  document.getElementById('vFi').textContent=Math.round(t.fi);
   document.getElementById('tP').textContent=`/ ${d.p}g`;
   document.getElementById('tC').textContent=`/ ${d.c}g`;
   document.getElementById('tF').textContent=`/ ${d.f}g`;
+  document.getElementById('tFi').textContent=`/ 32g`;
 }
 
 // ── PERFECT DAY ───────────────────────────────────────
@@ -658,7 +678,7 @@ function renderLog() {
       <div class="fi-em">${f.emoji||'🍽'}</div>
       <div class="fi-info">
         <div class="fi-name">${f.name}</div>
-        <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g</div>
+        <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g${f.fi?` · Fi ${f.fi}g`:''}</div>
       </div>
       <div class="fi-kcal">${f.kcal} kcal</div>
       <button class="fi-del" onclick="delFood(${i})">✕</button>
@@ -679,10 +699,11 @@ function addCustom() {
   const p   = parseFloat(document.getElementById('cP').value)||0;
   const c   = parseFloat(document.getElementById('cC').value)||0;
   const fat = parseFloat(document.getElementById('cFt').value)||0;
+  const fi  = parseFloat(document.getElementById('cFi').value)||0;
   const mk  = parseFloat(document.getElementById('cK').value);
   const kcal = isNaN(mk) ? Math.round(p*4+c*4+fat*9) : mk;
-  addFood({emoji:'🍽',name,p,c,fat,kcal});
-  ['cName','cP','cC','cFt','cK'].forEach(id=>document.getElementById(id).value='');
+  addFood({emoji:'🍽',name,p,c,fat,fi,kcal});
+  ['cName','cP','cC','cFt','cFi','cK'].forEach(id=>document.getElementById(id).value='');
 }
 
 // ── QUICK ADD ─────────────────────────────────────────
@@ -692,7 +713,7 @@ function renderFavs() {
       <div class="qa-em">${f.emoji}</div>
       <div>
         <div class="qa-name">${f.name}</div>
-        <div class="qa-sub">${f.kcal} kcal · C${f.c}g · F${f.fat}g</div>
+        <div class="qa-sub">${f.kcal} kcal · C${f.c}g · F${f.fat}g${f.fi?` · Fi${f.fi}g`:''}</div>
         <div class="qa-p">P ${f.p}g</div>
       </div>
     </button>`
@@ -931,6 +952,10 @@ function renderCoachTab() {
 
   const ssH=getHist('ss');
   if(ssH.length&&ssH[ssH.length-1].val<70) tips.push({ico:'😴',txt:`Sleep score ${ssH[ssH.length-1].val}/100 — poor sleep spikes cortisol and stalls fat loss. Prioritise 8hrs tonight.`});
+
+  // Fibre tip
+  if(t.fi>=32) tips.push({ico:'🌿',txt:`Fibre target hit at ${Math.round(t.fi)}g — great for gut health, satiety and blood sugar stability.`});
+  else if(new Date().getHours()>14&&t.fi<16) tips.push({ico:'🌿',txt:`Only ${Math.round(t.fi)}g fibre so far — ${32-Math.round(t.fi)}g to go. Add berries, broccoli, avocado or oats to close the gap.`});
 
   const wH=getHist('weight');
   if(wH.length>=7){
