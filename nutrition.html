@@ -526,6 +526,7 @@ const FAVS = [
   {emoji:'🍠',name:'Roast Sweet Potato (½)',p:2,c:20,fat:1,fi:3,kcal:95},
   {emoji:'🥑',name:'Avocado (½)',p:2,c:6,fat:12,fi:5,kcal:120},
   {emoji:'🍫',name:'KitKat Chunky',p:4,c:38,fat:13,fi:1,kcal:280},
+  {emoji:'🥦',name:'Broccolini (1 bunch)',p:4,c:4,fat:0,fi:3,kcal:35},
   {emoji:'🍏',name:'Granny Smith Apple',p:0,c:21,fat:0,fi:4,kcal:80},
 ];
 
@@ -678,7 +679,7 @@ function renderLog() {
       <div class="fi-em">${f.emoji||'🍽'}</div>
       <div class="fi-info">
         <div class="fi-name">${f.name}</div>
-        <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g${f.fi?` · Fi ${f.fi}g`:''}</div>
+        <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g · Fi ${f.fi||0}g</div>
       </div>
       <div class="fi-kcal">${f.kcal} kcal</div>
       <button class="fi-del" onclick="delFood(${i})">✕</button>
@@ -713,7 +714,7 @@ function renderFavs() {
       <div class="qa-em">${f.emoji}</div>
       <div>
         <div class="qa-name">${f.name}</div>
-        <div class="qa-sub">${f.kcal} kcal · C${f.c}g · F${f.fat}g${f.fi?` · Fi${f.fi}g`:''}</div>
+        <div class="qa-sub">${f.kcal} kcal · C${f.c}g · F${f.fat}g · Fi${f.fi}g</div>
         <div class="qa-p">P ${f.p}g</div>
       </div>
     </button>`
