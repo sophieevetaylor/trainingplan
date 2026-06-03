@@ -107,27 +107,27 @@ input{font-family:'Inter',sans-serif}
 .no-res{padding:14px;text-align:center;color:var(--slate3);font-size:12px}
 
 /* ── QUICK ADD ── */
-.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-.qa-btn{padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(8px);box-shadow:var(--sh-sm);text-align:left;display:flex;align-items:center;gap:8px}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.qa-btn{padding:8px 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(8px);box-shadow:var(--sh-sm);text-align:left;display:flex;align-items:center;gap:7px}
 .qa-btn:active{background:rgba(225,29,72,.08)}
-.qa-em{font-size:18px;flex-shrink:0}
-.qa-name{font-size:11px;font-weight:600;color:var(--slate);line-height:1.3}
-.qa-sub{font-size:10px;color:var(--slate3);margin-top:2px}
-.qa-p{font-size:11px;font-weight:700;color:var(--rose);margin-top:2px}
+.qa-em{font-size:16px;flex-shrink:0}
+.qa-name{font-size:11px;font-weight:600;color:var(--slate);line-height:1.2}
+.qa-sub{font-size:9px;color:var(--slate3);margin-top:2px}
+.qa-p{font-size:10px;font-weight:700;color:var(--rose);margin-top:2px}
 
 /* ── CUSTOM FOOD ── */
-.cust-box{background:var(--glass);backdrop-filter:blur(8px);border-radius:12px;padding:14px;border:1px solid var(--glass-border);box-shadow:var(--sh-sm);margin-top:10px}
-.cust-lbl{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--slate3);font-weight:700;margin-bottom:10px}
-.cust-name{width:100%;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--slate);outline:none;margin-bottom:8px}
+.cust-box{background:var(--glass);backdrop-filter:blur(8px);border-radius:12px;padding:10px 12px;border:1px solid var(--glass-border);box-shadow:var(--sh-sm);margin-top:8px}
+.cust-lbl{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--slate3);font-weight:700;margin-bottom:8px}
+.cust-name{width:100%;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--slate);outline:none;margin-bottom:6px}
 .cust-name:focus{border-color:var(--rose);background:rgba(255,255,255,.95)}
 .cust-name::placeholder{color:var(--slate3)}
-.cust-macros{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.cust-macros{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px;margin-bottom:8px}
 .cust-mac-wrap{text-align:center}
-.cust-mac-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
-.cust-mac-in{width:100%;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);border-radius:8px;padding:8px 4px;font-size:13px;color:var(--slate);text-align:center;outline:none}
+.cust-mac-lbl{font-size:8px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:3px}
+.cust-mac-in{width:100%;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.6);border-radius:6px;padding:6px 3px;font-size:12px;color:var(--slate);text-align:center;outline:none}
 .cust-mac-in:focus{border-color:var(--rose);background:rgba(255,255,255,.95)}
 .cust-mac-in::placeholder{color:var(--slate3)}
-.cust-add{width:100%;background:linear-gradient(135deg,var(--rose),var(--purple));color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;letter-spacing:.02em}
+.cust-add{width:100%;background:linear-gradient(135deg,var(--rose),var(--purple));color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;letter-spacing:.02em}
 .cust-add:active{opacity:.9}
 
 /* ── FOOD LOG ── */
@@ -305,9 +305,9 @@ input{font-family:'Inter',sans-serif}
           <div class="cust-mac-lbl" style="color:#0891b2">Fibre</div>
           <input class="cust-mac-in" id="cFi" type="number" placeholder="g">
         </div>
-        <div class="cust-mac-wrap" style="grid-column:1/-1">
-          <div class="cust-mac-lbl" style="color:var(--slate3)">kcal (or leave blank to calculate)</div>
-          <input class="cust-mac-in" id="cK" type="number" placeholder="optional">
+        <div class="cust-mac-wrap">
+          <div class="cust-mac-lbl" style="color:var(--slate3)">kcal</div>
+          <input class="cust-mac-in" id="cK" type="number" placeholder="opt">
         </div>
       </div>
       <button class="cust-add" onclick="addCustom()">+ Add to Log</button>
@@ -478,6 +478,12 @@ input{font-family:'Inter',sans-serif}
   <div class="sec">
     <div class="sec-hd"><div class="sec-t">Today's Tips</div></div>
     <div id="coachTips"></div>
+  </div>
+
+  <!-- Meal timing -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-t">Meal Timing</div></div>
+    <div id="mealTiming"></div>
   </div>
 
   <!-- 7-day macro averages -->
@@ -972,6 +978,84 @@ function renderCoachTab() {
     if(bfDiff<0&&mmDiff>=0) tips.push({ico:'🔥',txt:`Body fat down ${Math.abs(bfDiff).toFixed(1)}% and muscle holding at ${mmH[mmH.length-1].val}kg — this is textbook recomposition. Keep going.`});
     else if(mmDiff<-0.5) tips.push({ico:'🚨',txt:`Muscle mass dropped ${Math.abs(mmDiff).toFixed(1)}kg. Increase protein and ensure you're not under-eating on training days.`});
   }
+
+  if(!tips.length) tips.push({ico:'🎯',txt:'Log food throughout the day to get personalised tips here.'});
+  document.getElementById('coachTips').innerHTML=tips.map(tp=>
+    `<div class="tip-item"><div class="tip-ico">${tp.ico}</div><div class="tip-txt">${tp.txt}</div></div>`
+  ).join('');
+
+  // ── MEAL TIMING ───────────────────────────────────────
+  const tomorrow = DT.find(dt=>dt.days.includes(new Date(Date.now()+86400000).getDay()))||DT[2];
+  const timing = [];
+
+  if (hr>=5&&hr<9) {
+    timing.push({ico:'🌅',title:'Breakfast window',col:'var(--amber)',
+      txt:`Start with protein — aim for 30–40g now. Chobani + psyllium husk + WPI shake gets you ~42g and 10g fibre before 9am.`});
+    if(d.key==='quality'||d.key==='long') timing.push({ico:'🍚',title:'Session fuel needed',col:'var(--amber)',
+      txt:`${d.lbl} today — add 40–50g carbs to breakfast. Oats or a banana will top up glycogen before your session.`});
+  }
+  else if(hr>=9&&hr<12) {
+    timing.push({ico:'☀️',title:'Mid-morning',col:'var(--green)',
+      txt:`Good time for a fibre hit if breakfast was protein-heavy. Apple, berries or avocado keeps blood sugar stable until lunch.`});
+    if(t.p<30) timing.push({ico:'⚠️',title:'Protein check',col:'var(--rose)',
+      txt:`Only ${Math.round(t.p)}g protein so far — try to hit 30g before midday. A WPI shake or tuna can is quick and easy.`});
+  }
+  else if(hr>=12&&hr<14) {
+    timing.push({ico:'🍽',title:'Lunch window',col:'var(--rose)',
+      txt:`Aim for your biggest protein meal now — 40–50g. Prime muscle synthesis window. Mince, chicken or steak with veg and a carb portion.`});
+    if(d.key==='quality'||d.key==='long') timing.push({ico:'⚡',title:'Pre-session carbs',col:'var(--amber)',
+      txt:`Session coming up — make sure lunch has 50–60g carbs (rice or sweet potato) to fuel your ${d.lbl.toLowerCase()}.`});
+  }
+  else if(hr>=14&&hr<17) {
+    timing.push({ico:'🔋',title:'Afternoon snack window',col:'var(--amber)',
+      txt:`Good window for a snack if you have a session this afternoon. Protein bar or Chobani + fruit — protein + carbs together is ideal pre-training.`});
+    const protLeft=d.p-Math.round(t.p);
+    if(protLeft>60) timing.push({ico:'💪',title:'Protein pace check',col:'var(--rose)',
+      txt:`${protLeft}g protein still to hit today — that's a lot to eat in the evening. Consider a shake now to spread the load.`});
+  }
+  else if(hr>=17&&hr<20) {
+    timing.push({ico:'🍳',title:'Dinner window',col:'var(--rose)',
+      txt:`Best time for your second big protein meal — 175–200g lean mince or chicken. Pair with broccolini and sweet potato for fibre and carbs.`});
+    if(tomorrow.key==='long'||tomorrow.key==='quality') timing.push({ico:'🍚',title:`Tomorrow is a ${tomorrow.lbl}`,col:'var(--purple)',
+      txt:`Load up on carbs at dinner tonight — 60–80g rice or sweet potato. Your glycogen stores fill overnight, this is the most underrated performance hack.`});
+  }
+  else if(hr>=20) {
+    const protLeft=d.p-Math.round(t.p);
+    if(protLeft>20) timing.push({ico:'🌙',title:'Evening protein',col:'var(--rose)',
+      txt:`Still ${protLeft}g protein to go — cottage cheese before bed is ideal. Casein protein digests slowly overnight, feeding muscle repair while you sleep.`});
+    else timing.push({ico:'✅',title:'Evening wind-down',col:'var(--green)',
+      txt:`Strong day. Make sure you\'re hydrated and tomorrow\'s ${tomorrow.lbl} is set up — carbs topped up, protein hit.`});
+    if(tomorrow.key==='long'||tomorrow.key==='quality') timing.push({ico:'🏃',title:`Tomorrow: ${tomorrow.lbl}`,col:'var(--purple)',
+      txt:`${tomorrow.lbl} tomorrow — your last meal tonight should include 50–70g carbs. Don\'t go to bed in a glycogen deficit.`});
+  }
+
+  if(hr<20&&(tomorrow.key==='long'||tomorrow.key==='quality')) {
+    timing.push({ico:'📅',title:`Tomorrow: ${tomorrow.lbl}`,col:'var(--purple)',
+      txt:`Hit your carb target tonight — rice or sweet potato with dinner. Glycogen loading starts the night before, not on race morning.`});
+  }
+
+  if((d.key==='long'||d.key==='quality')&&hr>=10&&t.kcal<300) {
+    timing.push({ico:'🚨',title:'Post-session nutrition?',col:'var(--rose)',
+      txt:`It\'s a ${d.lbl} and you\'ve barely eaten. The 30–45 min post-session window is critical — protein + carbs now accelerates recovery and reduces next-day soreness.`});
+  }
+
+  if(hr>=12&&t.p>0){
+    const mealCount=Math.max(1,Math.floor(hr/6));
+    const actualPerMeal=Math.round(t.p/mealCount);
+    if(actualPerMeal>45) timing.push({ico:'📊',title:'Spread your protein',col:'var(--amber)',
+      txt:`Averaging ~${actualPerMeal}g protein per meal. Your body can only synthesise muscle from ~35–40g per sitting — aim for 4 meals of ~${Math.round(d.p/4)}g rather than 2 big hits.`});
+  }
+
+  document.getElementById('mealTiming').innerHTML = timing.length
+    ? timing.map(tm=>`
+        <div class="card" style="padding:14px;margin-bottom:8px;border-left:4px solid ${tm.col}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="font-size:18px">${tm.ico}</div>
+            <div style="font-size:12px;font-weight:700;color:var(--slate)">${tm.title}</div>
+          </div>
+          <div style="font-size:12px;color:var(--slate2);line-height:1.6">${tm.txt}</div>
+        </div>`).join('')
+    : `<div class="card" style="padding:14px;color:var(--slate3);font-size:13px">Check back throughout the day for timing guidance.</div>`;
 
   // 7-day macro averages
   let avgs={p:0,c:0,fat:0,kcal:0,n:0};
