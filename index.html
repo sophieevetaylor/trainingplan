@@ -354,25 +354,44 @@ dhtml+='<div class="dash-section"><div class="dash-title">Week at a Glance</div>
 $("dashboard").innerHTML=dhtml;loadStrava();
 }
 
-let stravaData=null,stravaLoaded=false;
+let stravaData=null,stravaLoaded=false,stravaError=null;
 async function loadStrava(){
   if(stravaLoaded)return renderStravaWidgets();
+  stravaError=null;
   try{
     const res=await fetch("https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/strava");
     const text=await res.text();
     let data;
     try{data=JSON.parse(text);}catch(e){
-      console.error("Strava parse error:",text.slice(0,200));return;
+      console.error("Strava parse error:",text.slice(0,200));
+      showStravaError("Strava returned an unreadable response (HTTP "+res.status+"). The backend may be down.");return;
     }
-    if(data.error){console.error("Strava error:",data.error,data.detail);return;}
+    if(data.error){
+      console.error("Strava error:",data.error,data.detail);
+      showStravaError("Strava connection error: "+data.error+(data.detail?" \u00B7 "+data.detail:"")+". This usually means the access token expired \u2014 re-authorise Strava in your Netlify function.");return;
+    }
     if(data.activities){
       stravaData=data.activities;
       stravaLoaded=true;
       console.log("Strava loaded:",stravaData.length,"activities");
       renderStravaWidgets();
       if(viewMode==="coach")renderCoachTab();
+    }else{
+      showStravaError("Strava replied but with no activities. Connection may be live but unauthorised.");
     }
-  }catch(e){console.error("Strava fetch error:",e.message);}
+  }catch(e){console.error("Strava fetch error:",e.message);showStravaError("Couldn't reach Strava: "+e.message+". Check your connection, then tap refresh.");}
+}
+function showStravaError(msg){
+  stravaError=msg;
+  var box='<div style="background:rgba(220,38,38,0.06);border:0.5px solid rgba(220,38,38,0.2);border-radius:12px;padding:14px 16px;margin:8px 0"><div style="color:#DC2626;font-weight:600;font-size:13px;margin-bottom:4px">\u26A0\uFE0F Strava not pulling</div><div style="color:#7A6B8A;font-size:12px;line-height:1.45">'+msg+'</div><div onclick="refreshStrava()" style="margin-top:10px;display:inline-block;cursor:pointer;font-size:12px;font-weight:600;color:#FC4C02;background:rgba(252,76,2,0.08);padding:6px 12px;border-radius:8px">\u21BB Try again</div></div>';
+  var d=$("strava-daily");if(d)d.innerHTML=box;
+  var c=document.getElementById("coachView");if(c&&viewMode==="coach")c.innerHTML=box;
+}
+function refreshStrava(){
+  stravaLoaded=false;stravaData=null;stravaError=null;
+  var d=$("strava-daily");if(d)d.innerHTML='<div style="color:#A898B0;font-size:12px;padding:8px 0">\u21BB Re-pulling from Strava\u2026</div>';
+  var c=document.getElementById("coachView");if(c&&viewMode==="coach")c.innerHTML='<div style="text-align:center;padding:40px 20px;color:#A898B0;font-size:14px">\u21BB Re-pulling from Strava\u2026</div>';
+  loadStrava();
 }
 function renderStravaWidgets(){
 if(!stravaData)return;
@@ -581,7 +600,7 @@ function renderCoachTab(){
   var longRuns=allRuns.filter(function(a){return(a.distance_km||0)>=10;}).slice(0,8).reverse();
 
   var html='<div style="padding:2px 0">';
-  html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin-bottom:14px">COACHING ANALYSIS</div>';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0">COACHING ANALYSIS</span><span onclick="refreshStrava()" style="cursor:pointer;font-size:11px;font-weight:600;color:#FC4C02">\u21BB Refresh</span></div>';
 
   // \u2500\u2500 Weekly Volume \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
