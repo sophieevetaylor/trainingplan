@@ -279,7 +279,7 @@ return '<div class="run-card '+(isRace?"race":"normal")+'"><div class="run-heade
 }
 
 function renderStrength(s){if(!s)return"";return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderTreadmill()}
-function renderTreadmill(){return'<div class="treadmill-card"><div class="treadmill-left"><div class="treadmill-header">\uD83D\uDEB6\u200d\u2640\uFE0F Incline Walk \u2014 30 min</div><span class="treadmill-spec">10\u201312% incline \u00B7 5.5\u20136.5 km/h</span><div class="treadmill-note">Don\'t hold the rails. Strong glute drive every step.</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label" style="font-size:12px">Done</div></div></div>'}
+function renderTreadmill(){return'<div class="treadmill-card"><div class="treadmill-left"><div class="treadmill-header" style="white-space:normal">\uD83D\uDEB6\u200d\u2640\uFE0F Incline Walk 30 min <span style="font-weight:600;color:#C7A86A">or</span> \uD83E\uDE9C Stairmaster 20 min</div><span class="treadmill-spec">Walk 10\u201312% @ 5.5\u20136.5 km/h \u00B7 Stairs steady moderate</span><div class="treadmill-note">Either one counts. Don\'t hold the rails \u2014 strong glute drive throughout.</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label" style="font-size:12px">Done</div></div></div>'}
 
 let currentDate=new Date();currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
 const $=id=>document.getElementById(id);
@@ -302,15 +302,20 @@ for(let i=0;i<7;i++){
 const d=new Date(monday);d.setDate(d.getDate()+i);
 const isToday=d.getDate()===todayNorm.getDate()&&d.getMonth()===todayNorm.getMonth();
 const isPast=d<todayNorm;let status="";
-try{const s=localStorage.getItem("tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());if(s){const st=JSON.parse(s);const dp=getPlan(d);let needed=[];if(dp.run)needed.push(st.run);if(dp.str){needed.push(st.str);needed.push(st.tm)}if(dp.spin)needed.push(st.spin);if(dp.other&&dp.other.toLowerCase().includes("pilates"))needed.push(st.pil);if(ggArmsActive(d))needed.push(st.ba);needed.push(st.steps);needed.push(st.water);const allDone=needed.every(v=>v===true);const doneCt=needed.filter(Boolean).length;const totalCt=needed.length;if(allDone&&totalCt>=3)status="perfect";else if(doneCt>=Math.floor(totalCt*0.6))status="partial";else if(isPast&&doneCt>=1)status="concern";else if(doneCt>=1)status="partial";}else if(isPast&&!isToday){status="missed"}}catch(e){}
+try{const s=localStorage.getItem("tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());if(s){const st=JSON.parse(s);const needed=getNeededForDay(d,st);const allDone=needed.every(v=>v===true);const doneCt=needed.filter(Boolean).length;const totalCt=needed.length;if(allDone&&totalCt>=3)status="perfect";else if(doneCt>=Math.floor(totalCt*0.6))status="partial";else if(isPast&&doneCt>=1)status="concern";else if(doneCt>=1)status="partial";}else if(isPast&&!isToday){status="missed"}}catch(e){}
 let dotsHtml="";
 try{
 const s=localStorage.getItem("tp-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate());
 if(s||(!isPast&&isToday)){
 const st=s?JSON.parse(s):{};
 const dp=getPlan(d);
-const hasTrain=!!(dp.run||dp.str||dp.spin);
-const trainDone=(dp.run&&st.run)||(dp.str&&st.str&&st.tm)||(dp.spin&&st.spin);
+const mOut=getMovedOut(d);
+const mIn=getMovedIn(d);
+const hasRun=(!!dp.run&&!mOut.includes('run'))||mIn.some(x=>x.type==='run');
+const hasStr=(!!dp.str&&!mOut.includes('str'))||mIn.some(x=>x.type==='str');
+const hasSpin=(!!dp.spin&&!mOut.includes('spin'))||mIn.some(x=>x.type==='spin');
+const hasTrain=hasRun||hasStr||hasSpin;
+const trainDone=(hasRun&&st.run)||(hasStr&&st.str&&st.tm)||(hasSpin&&st.spin);
 const armsDone=!!st.ba&&ggArmsActive(d);
 const lifeDone=!!(st.steps&&st.water);
 const dotColor=status==="perfect"?"rgba(91,138,94,0.9)":status==="partial"?"rgba(184,136,62,0.7)":"rgba(180,160,190,0.3)";
@@ -359,7 +364,7 @@ async function loadStrava(){
   if(stravaLoaded)return renderStravaWidgets();
   stravaError=null;
   try{
-    const res=await fetch("https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/strava");
+    const res=await fetch("https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/strava?t="+Date.now(),{cache:"no-store"});
     const text=await res.text();
     let data;
     try{data=JSON.parse(text);}catch(e){
@@ -402,7 +407,7 @@ const runMatch=dayActivities.find(a=>a.type==="Run"||a.sport_type==="Run");
 const rideMatch=dayActivities.find(a=>a.type==="Ride"||a.sport_type==="Ride"||a.sport_type==="Spinning");
 const weightMatch=dayActivities.find(a=>a.type==="WeightTraining"||a.sport_type==="WeightTraining");
 const pilatesMatch=dayActivities.find(a=>{var st=a.sport_type||"";var nm=(a.name||"").toLowerCase();var isPilatesType=st==="Pilates"||st==="Yoga";var isPilatesName=nm.includes("pilates")||nm.includes("reformer")||nm.includes("mat class")||nm.includes("barre");return isPilatesType||isPilatesName;});
-const walkMatch=dayActivities.find(a=>a.type==="Walk"||a.sport_type==="Walk");
+const walkMatch=dayActivities.find(a=>a.type==="Walk"||a.sport_type==="Walk"||a.sport_type==="StairStepper"||(a.name||"").toLowerCase().includes("stair"));
 const svg='<svg width="11" height="11" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:3px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>';
 function injectStrava(sel,html,ck,cl,saveFn){const card=document.querySelector(sel);if(!card)return;const cr=card.querySelector(".run-check-row");const ex=card.querySelector(".strava-inline");if(ex)ex.remove();const div=document.createElement("div");div.className="strava-inline";div.innerHTML=html;try{if(cr&&cr.parentNode===card)card.insertBefore(div,cr);else card.appendChild(div);}catch(e){card.appendChild(div);}if(ck){const ch=$(ck),lb=$(cl);if(ch&&!ch.classList.contains("done")){ch.classList.add("done");if(lb){lb.classList.add("done");lb.textContent=lb.textContent.replace("Mark ","")+" (auto)"}if(saveFn)saveFn();}}}
 if(runMatch){const m=runMatch;injectStrava(".run-card",'<div style="margin-top:8px;padding:8px 10px;background:rgba(252,76,2,0.05);border-radius:8px;border:0.5px solid rgba(252,76,2,0.12);font-size:11px"><div style="color:#FC4C02;font-weight:600">'+(svg)+' '+(m.name)+'</div><div style="color:#7A6B8A;margin-top:2px">'+(m.distance_km)+' km \u00B7 '+(m.pace_per_km)+'/km \u00B7 '+(m.moving_time_min)+' min'+(m.avg_hr?" \u00B7 \u2764\uFE0F"+Math.round(m.avg_hr):"")+'</div></div>',"run-check","run-label",()=>saveRun(true))}
@@ -477,23 +482,29 @@ pairs.forEach(([ck,cl,text],i)=>{const ch=$(ck),lb=$(cl);if(ch&&s[stateKeys[i]])
 checkPerfectDay();
 }
 
+// Single source of truth for what a day requires + whether it's done.
+// Honours sessions moved OUT (no longer required) and moved IN (now required).
+function getNeededForDay(d,st){
+  st=st||{};
+  const plan=getPlan(d);
+  const mOut=getMovedOut(d);
+  const mIn=getMovedIn(d);
+  const needRun=(!!plan.run&&!mOut.includes('run'))||mIn.some(x=>x.type==='run');
+  const needStr=(!!plan.str&&!mOut.includes('str'))||mIn.some(x=>x.type==='str');
+  const needSpin=(!!plan.spin&&!mOut.includes('spin'))||mIn.some(x=>x.type==='spin');
+  const needPil=(!!(plan.other&&plan.other.toLowerCase().includes('pilates'))&&!mOut.includes('pilates'))||mIn.some(x=>x.type==='pilates');
+  const needed=[];
+  if(needRun)needed.push(!!st.run);
+  if(needStr){needed.push(!!st.str);needed.push(!!st.tm);}
+  if(needSpin)needed.push(!!st.spin);
+  if(needPil)needed.push(!!st.pil);
+  if(ggArmsActive(d))needed.push(!!st.ba);
+  needed.push(!!st.steps);needed.push(!!st.water);
+  return needed;
+}
 function isPerfectDay(){
-  const s=getState();
-  const plan=getPlan(currentDate);
-  const movedIn=getMovedIn(currentDate);
-  const movedOut=getMovedOut(currentDate);
-  // What's actually required today (original plan minus moved-out, plus moved-in)
-  const needRun=plan.run&&!movedOut.includes('run') || movedIn.some(x=>x.type==='run');
-  const needStr=plan.str&&!movedOut.includes('str') || movedIn.some(x=>x.type==='str');
-  const needPil=(plan.other&&plan.other.toLowerCase().includes('pilates')&&!movedOut.includes('pilates')) || movedIn.some(x=>x.type==='pilates');
-  const needSpin=plan.spin&&!movedOut.includes('spin') || movedIn.some(x=>x.type==='spin');
-  if(needRun&&!s.run)return false;
-  if(needStr&&!s.str)return false;
-  if(needPil&&!s.pil)return false;
-  if(needSpin&&!s.spin)return false;
-  if(!s.steps||!s.water)return false;
-  if(ggArmsActive(currentDate)&&!s.ba)return false;
-  return true;
+  const needed=getNeededForDay(currentDate,getState());
+  return needed.length>=3&&needed.every(v=>v===true);
 }
 function checkPerfectDay(){
   const allDone=isPerfectDay();
