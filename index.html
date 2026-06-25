@@ -240,7 +240,7 @@ let formHtml="";
 if(f){formHtml='<div class="ex-form"><div class="ex-form-text">\uD83D\uDCD0 '+f.form+'</div>'+(f.link?'<a href="'+f.link+'" target="_blank" rel="noopener" class="ex-video-link">\u25B6 Watch form video</a>':'')+'</div>';}
 const isBodyweight=!ex.load||ex.load.toLowerCase().includes("bodyweight")||["plank","bird dog","dead bug","banded","frog","nordic"].some(k=>ex.name.toLowerCase().includes(k));
 let trackerHtml="";
-if(!isBodyweight){trackerHtml='<div class="ex-tracker" style="grid-column:2/-1;margin-top:4px;display:flex;gap:6px;align-items:center"><span style="font-size:10px;color:#A898B0">Log:</span><input type="number" placeholder="kg" id="exw-'+(i)+'" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog('+(i)+')"><span style="font-size:10px;color:#A898B0">\u00D7</span><input type="number" placeholder="reps" id="exr-'+(i)+'" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog('+(i)+')"></div>'}
+if(!isBodyweight){trackerHtml='<div class="ex-tracker" style="grid-column:2/-1;margin-top:4px;display:flex;gap:6px;align-items:center"><span style="font-size:10px;color:#A898B0">Log:</span><input type="number" placeholder="kg" id="exw-'+(i)+'" data-exn="'+encodeURIComponent(ex.name)+'" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog('+(i)+')"><span style="font-size:10px;color:#A898B0">\u00D7</span><input type="number" placeholder="reps" id="exr-'+(i)+'" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog('+(i)+')"></div>'}
 return'<div class="exercise" id="ex-'+i+'"><div class="ex-check" onclick="toggleEx('+i+')"></div><div class="ex-name">'+ex.name+'</div><div class="ex-sets">'+ex.sets+' \u00D7 '+ex.reps+'</div>'+(tags?'<div class="ex-tags">'+tags+'</div>':'')+trackerHtml+formHtml+'</div>';
 }
 
@@ -530,8 +530,8 @@ function toggleBridalArms(){const ch=$("ba-check"),lb=$("ba-label");if(!ch)retur
 
 function exLogKey(date){return"tp-exlog-"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()}
 function getExLog(){try{const s=localStorage.getItem(exLogKey(currentDate));return s?JSON.parse(s):{}}catch(e){return{}}}
-function saveExLog(i){const w=$("exw-"+i),r=$("exr-"+i);if(!w||!r)return;const log=getExLog();log[i]={w:w.value,r:r.value};try{localStorage.setItem(exLogKey(currentDate),JSON.stringify(log))}catch(e){}}
-function restoreExLogs(){const log=getExLog();Object.keys(log).forEach(i=>{const w=$("exw-"+i),r=$("exr-"+i);if(w&&log[i].w)w.value=log[i].w;if(r&&log[i].r)r.value=log[i].r})}
+function saveExLog(i){const w=$("exw-"+i),r=$("exr-"+i);if(!w||!r)return;var nm=decodeURIComponent(w.getAttribute("data-exn")||"");if(!nm)return;const log=getExLog();log[nm]={w:w.value,r:r.value};try{localStorage.setItem(exLogKey(currentDate),JSON.stringify(log))}catch(e){}}
+function restoreExLogs(){const log=getExLog();var ws=document.querySelectorAll('input[id^="exw-"]');Array.prototype.forEach.call(ws,function(w){var nm=decodeURIComponent(w.getAttribute("data-exn")||"");if(!nm||!log[nm])return;var i=w.id.replace("exw-","");var r=$("exr-"+i);if(log[nm].w)w.value=log[nm].w;if(r&&log[nm].r)r.value=log[nm].r;});}
 
 let moveTarget=null,moveSourceDate=null;
 function showToast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add("show"),10);setTimeout(()=>{t.classList.remove("show");setTimeout(()=>t.remove(),300)},2000)}
@@ -575,11 +575,139 @@ function renderAddedSessions(){const added=getAddedSessions(currentDate);const p
 function waistKey(d){return"tp-waist-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function getMondayOf(d){const day=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);const dow=day.getDay();const diff=dow===0?6:dow-1;day.setDate(day.getDate()-diff);return day}
 
+function getMeasurements(){try{return JSON.parse(localStorage.getItem("tp-measure")||"[]")}catch(e){return[]}}
+function setMeasurements(a){try{localStorage.setItem("tp-measure",JSON.stringify(a))}catch(e){}}
+function saveMeasurement(){
+  var g=function(id){var el=$(id);return el&&el.value!==""?parseFloat(el.value):null;};
+  var rec={waist:g("m-waist"),hips:g("m-hips"),thigh:g("m-thigh"),weight:g("m-weight")};
+  if(rec.waist===null&&rec.hips===null&&rec.thigh===null&&rec.weight===null){showToast("Enter at least one number");return;}
+  var today=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
+  var arr=getMeasurements();
+  var ex=arr.filter(function(e){return e.d===today;})[0];
+  if(ex){["waist","hips","thigh","weight"].forEach(function(k){if(rec[k]!==null)ex[k]=rec[k];});}
+  else{rec.d=today;arr.push(rec);}
+  arr.sort(function(a,b){return a.d<b.d?-1:1;});
+  setMeasurements(arr);
+  showToast("\u2705 Measurements saved");
+  renderCoachTab();
+}
+function deleteMeasurement(d){
+  if(!confirm("Remove measurements from "+d+"?"))return;
+  setMeasurements(getMeasurements().filter(function(e){return e.d!==d;}));
+  renderCoachTab();
+}
+function mFirstWith(arr,k){for(var i=0;i<arr.length;i++)if(arr[i][k]!=null)return arr[i];return null;}
+function mLastWith(arr,k){for(var i=arr.length-1;i>=0;i--)if(arr[i][k]!=null)return arr[i];return null;}
+function mLastBoth(arr,a,b){for(var i=arr.length-1;i>=0;i--)if(arr[i][a]!=null&&arr[i][b]!=null)return arr[i];return null;}
+function mFirstBoth(arr,a,b){for(var i=0;i<arr.length;i++)if(arr[i][a]!=null&&arr[i][b]!=null)return arr[i];return null;}
+function mFmtDate(s){var d=new Date(s+"T12:00:00");var M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];return d.getDate()+" "+M[d.getMonth()];}
+
+function renderMeasurements(){
+  var arr=getMeasurements();
+  var last=arr.length?arr[arr.length-1]:{};
+  var ph=function(k){return last[k]!=null?(' placeholder="'+last[k]+'"'):' placeholder="\u2013"';};
+  function fieldCol(id,label,unit,k){
+    return '<div style="flex:1;min-width:64px"><div style="font-size:10px;font-weight:600;color:#A898B0;margin-bottom:3px">'+label+'</div>'
+      +'<div style="display:flex;align-items:center;gap:3px"><input type="number" inputmode="decimal" id="'+id+'"'+ph(k)+' style="width:100%;padding:7px 8px;border-radius:8px;border:0.5px solid rgba(180,160,190,0.3);font-size:14px;background:rgba(255,255,255,0.7);color:#3D2E4A"><span style="font-size:10px;color:#A898B0">'+unit+'</span></div></div>';
+  }
+  var html='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:0 0 8px">BODY \u00B7 RECOMP</div>';
+  html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+    +'<div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:3px">Log measurements</div>'
+    +'<div style="font-size:11px;color:#A898B0;margin-bottom:12px;line-height:1.45">Every 2\u20134 weeks is plenty. Relaxed, same time of day, leave any blank. The tape matters more than the scale for recomp.</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:2px">'
+    +fieldCol("m-waist","Waist","cm","waist")+fieldCol("m-hips","Hips","cm","hips")+fieldCol("m-thigh","Thigh","cm","thigh")+fieldCol("m-weight","Weight","kg","weight")
+    +'</div>'
+    +'<button onclick="saveMeasurement()" style="margin-top:12px;width:100%;background:#C4607A;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;-webkit-appearance:none">Save</button>'
+    +'</div>';
+
+  if(!arr.length){
+    html+='<div style="background:rgba(255,255,255,0.4);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15);font-size:12px;color:#A898B0;line-height:1.5">Log your first set above. Once you\u2019ve got two readings a few weeks apart, you\u2019ll see waist-to-hip ratio and recomp trends here \u2014 framed as feedback on your training, not a scorecard.</div>';
+    return html;
+  }
+
+  // --- insights ---
+  function row(label,val,note,col){return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)"><span style="font-size:13px;color:#3D2E4A">'+label+'</span><span style="font-size:13px;color:#7A6B8A"><b style="color:#3D2E4A">'+val+'</b> <span style="font-size:11px;color:'+col+';font-weight:600">'+note+'</span></span></div>';}
+  function trend(label,k,unit,goodDir){
+    var fw=mFirstWith(arr,k),lw=mLastWith(arr,k);
+    if(!lw)return"";
+    if(fw&&fw!==lw){
+      var d=Math.round((lw[k]-fw[k])*10)/10;
+      var ar=d>0?"\u2197":d<0?"\u2198":"\u2192";
+      var good=goodDir==="down"?d<0:goodDir==="up"?d>0:Math.abs(d)<0.5;
+      var col=d===0?"#7A6B8A":(good?"#2D6A4F":"#B8883E");
+      return row(label,lw[k]+" "+unit,ar+" "+(d>0?"+":"")+d+" "+unit,col);
+    }
+    return row(label,lw[k]+" "+unit,"first log","#7A6B8A");
+  }
+  var snap=mLastWith(arr,"waist")||mLastWith(arr,"hips")||mLastWith(arr,"thigh")||mLastWith(arr,"weight");
+  html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><div style="font-size:13px;font-weight:700;color:#3D2E4A">Trends</div><div style="font-size:11px;color:#A898B0">since first log \u00B7 '+arr.length+' entr'+(arr.length===1?"y":"ies")+'</div></div>';
+  html+=trend("Waist","waist","cm","down");
+  html+=trend("Hips / glutes","hips","cm","up");
+  html+=trend("Thigh","thigh","cm","flat");
+  html+=trend("Weight","weight","kg","any");
+  // waist-to-hip ratio
+  var whL=mLastBoth(arr,"waist","hips"),whF=mFirstBoth(arr,"waist","hips");
+  if(whL){
+    var now=whL.waist/whL.hips;
+    var note="single reading";var col="#7A6B8A";
+    if(whF&&whF!==whL){var dd=Math.round((now-(whF.waist/whF.hips))*1000)/1000;note=(dd<0?"\u2198 ":dd>0?"\u2197 ":"\u2192 ")+(dd>0?"+":"")+dd;col=dd<0?"#2D6A4F":dd>0?"#B8883E":"#7A6B8A";}
+    html+=row("Waist-to-hip ratio",now.toFixed(2),note,col);
+  }
+  html+='</div>';
+
+  // recomp verdict
+  var wF=mFirstWith(arr,"waist"),wL=mLastWith(arr,"waist"),hF=mFirstWith(arr,"hips"),hL=mLastWith(arr,"hips"),tF=mFirstWith(arr,"thigh"),tL=mLastWith(arr,"thigh");
+  var waistD=(wF&&wL&&wF!==wL)?Math.round((wL.waist-wF.waist)*10)/10:null;
+  var hipsD=(hF&&hL&&hF!==hL)?Math.round((hL.hips-hF.hips)*10)/10:null;
+  var thighD=(tF&&tL&&tF!==tL)?Math.round((tL.thigh-tF.thigh)*10)/10:null;
+  if(waistD!=null||hipsD!=null){
+    var title,body,col="#2D6A4F",bg="rgba(45,106,79,0.08)",bd="rgba(45,106,79,0.2)",ic="\u2705";
+    if(waistD!=null&&waistD<0&&(hipsD==null||hipsD>=0)){
+      title="Textbook recomp";
+      body="Waist is down"+(hipsD!=null&&hipsD>0?" and hips are up":hipsD!=null?" while hips hold":"")+" \u2014 exactly the shape change you\u2019re training for. The scale can sit still while this happens, so trust the tape over bodyweight.";
+    }else if(waistD!=null&&waistD<0&&hipsD!=null&&hipsD<0){
+      title="Leaning out \u2014 protect the glutes";
+      body="Waist is down (fat loss working) but hips have dropped a little too. Keep protein high and keep driving hip-thrust load so you hold glute while you lean out.";
+      col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\uD83D\uDCA1";
+    }else if(hipsD!=null&&hipsD>0&&(waistD==null||waistD>=0)){
+      title="Glutes building";
+      body="Hips are up"+(waistD!=null&&waistD>0?" and so is the waist \u2014 normal in a build phase; watch the training-day extras if you want the waist to follow":", waist holding")+". Glute growth is on track.";
+      if(waistD!=null&&waistD>0){col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\uD83D\uDCA1";}
+    }else if(waistD!=null&&waistD>0){
+      title="Waist trending up";
+      body="Waist has crept up over this window. Often it\u2019s the small training-day extras adding up. Worth a look \u2014 no drama, just a nudge.";
+      col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\u26A0\uFE0F";
+    }else{
+      title="Holding steady";
+      body="Not much movement yet. Recomp is slow \u2014 give it a few more weeks of consistent training and protein before reading into it.";
+      col="#6B5B8A";bg="rgba(107,91,138,0.07)";bd="rgba(107,91,138,0.2)";ic="\u2192";
+    }
+    if(thighD!=null&&thighD>=1){body+=" Thigh is up ~"+thighD+" cm \u2014 if that\u2019s not wanted, keep spin resistance moderate and favour glute-isolation over quad-driven patterns.";}
+    html+='<div style="background:'+bg+';border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid '+bd+'">'
+      +'<div style="font-size:13px;font-weight:700;color:'+col+';margin-bottom:6px">'+ic+' '+title+'</div>'
+      +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+body+'</div></div>';
+  }
+
+  // history (most recent 6)
+  var recent=arr.slice(-6).reverse();
+  var rowsH=recent.map(function(e){
+    var parts=[];
+    if(e.waist!=null)parts.push("W "+e.waist);
+    if(e.hips!=null)parts.push("H "+e.hips);
+    if(e.thigh!=null)parts.push("T "+e.thigh);
+    if(e.weight!=null)parts.push(e.weight+"kg");
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)"><span style="font-size:12px;color:#7A6B8A">'+mFmtDate(e.d)+'</span><span style="font-size:12px;color:#3D2E4A">'+parts.join(" \u00B7 ")+'</span><span onclick="deleteMeasurement(\''+e.d+'\')" style="cursor:pointer;color:#C4607A;font-size:14px;padding:0 4px">\u00D7</span></div>';
+  }).join("");
+  html+='<div style="background:rgba(255,255,255,0.4);border-radius:14px;padding:10px 16px 6px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:11px;font-weight:600;color:#A898B0;margin-bottom:2px">History</div>'+rowsH+'</div>';
+  return html;
+}
+
 function renderCoachTab(){
   var cv=document.getElementById("coachView");
   if(!cv)return;
   if(!stravaData||!stravaData.length){
-    cv.innerHTML='<div style="text-align:center;padding:40px 20px;color:#A898B0;font-size:14px">\uD83D\uDCCA Connecting to Strava...</div>';
+    cv.innerHTML='<div style="padding:2px 0">'+renderMeasurements()+'<div style="text-align:center;padding:24px 20px;color:#A898B0;font-size:13px">\uD83D\uDCCA Connecting to Strava for your running insights\u2026</div></div>';
     return;
   }
 
@@ -612,6 +740,7 @@ function renderCoachTab(){
 
   var html='<div style="padding:2px 0">';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0">COACHING ANALYSIS</span><span onclick="refreshStrava()" style="cursor:pointer;font-size:11px;font-weight:600;color:#FC4C02">\u21BB Refresh</span></div>';
+  html+=renderMeasurements();
 
   // \u2500\u2500 Weekly Volume \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
@@ -640,11 +769,13 @@ function renderCoachTab(){
       var pn=parsePace(run.pace_per_km);
       if(pn>0)paceNums.push(pn);
       var inZ=pn>0&&inZone(pn);
+      var hr=run.avg_hr?Math.round(run.avg_hr):null;
       var dot=inZ?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2D6A4F;margin-left:6px;vertical-align:middle"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#DC2626;margin-left:6px;vertical-align:middle"></span>';
       html+='<div style="display:flex;align-items:center;padding:7px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)">'
-        +'<div style="flex:2;font-size:12px;color:#7A6B8A">'+fmtDate(run.date)+'</div>'
-        +'<div style="flex:1.5;font-size:12px;color:#3D2E4A;text-align:center">'+run.distance_km+' km</div>'
-        +'<div style="flex:1.5;display:flex;align-items:center;justify-content:flex-end;font-size:13px;font-weight:700;color:'+(inZ?"#2D6A4F":"#DC2626")+'">'+run.pace_per_km+'/km'+dot+'</div></div>';
+        +'<div style="flex:1.7;font-size:12px;color:#7A6B8A">'+fmtDate(run.date)+'</div>'
+        +'<div style="flex:1;font-size:12px;color:#3D2E4A;text-align:center">'+run.distance_km+' km</div>'
+        +'<div style="flex:1;font-size:12px;text-align:center;color:'+(hr?"#C4607A":"#C8B8D0")+'">'+(hr?("\u2764\uFE0F"+hr):"\u2013")+'</div>'
+        +'<div style="flex:1.4;display:flex;align-items:center;justify-content:flex-end;font-size:13px;font-weight:700;color:'+(inZ?"#2D6A4F":"#DC2626")+'">'+run.pace_per_km+'/km'+dot+'</div></div>';
     });
     if(paceNums.length>0){
       var avg=paceNums.reduce(function(a,b){return a+b;},0)/paceNums.length;
@@ -674,6 +805,35 @@ function renderCoachTab(){
       html+='<div style="background:rgba(45,106,79,0.08);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(45,106,79,0.2)">'
         +'<div style="font-size:13px;font-weight:700;color:#2D6A4F;margin-bottom:6px">\u2705 Easy paces are on point</div>'
         +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">Most of your easy runs are hitting the 5:50\u20136:10/km target zone. This is exactly right \u2014 the aerobic base you\u2019re building now is what will carry you to sub-2:00. Keep doing this.</div></div>';
+    }
+    // aerobic efficiency (HR-aware): distance covered per heartbeat, trended over time
+    var effRuns=easyRuns.filter(function(r){return r.avg_hr&&r.moving_time_min&&r.distance_km;});
+    if(effRuns.length>=2){
+      var chrono=effRuns.slice().reverse();
+      var effOf=function(r){var spd=r.distance_km/(r.moving_time_min/60);return spd/r.avg_hr*1000;};
+      var effs=chrono.map(effOf);
+      var hrsE=chrono.map(function(r){return Math.round(r.avg_hr);});
+      var half=Math.max(1,Math.floor(effs.length/2));
+      var oldA=effs.slice(0,half).reduce(function(a,b){return a+b;},0)/half;
+      var newA=effs.slice(effs.length-half).reduce(function(a,b){return a+b;},0)/half;
+      var dPct=Math.round((newA-oldA)/oldA*1000)/10;
+      var medHR=hrsE.slice().sort(function(a,b){return a-b;})[Math.floor(hrsE.length/2)];
+      var eTitle,eBody,eCol="#2D6A4F",eBg="rgba(45,106,79,0.08)",eBd="rgba(45,106,79,0.2)",eIc="\u2705";
+      if(dPct>=2){eTitle="Aerobic engine is growing";eBody="Across your recent easy runs you\u2019re covering more ground per heartbeat \u2014 efficiency up about "+dPct+"%. Same effort, more speed. That\u2019s the quiet signal the base work is paying off toward sub-2:00.";}
+      else if(dPct<=-2){eTitle="Efficiency dipped recently";eBody="You\u2019re getting a little less pace per heartbeat lately (down ~"+Math.abs(dPct)+"%). One-off causes are usual \u2014 heat, a hard block, poor sleep, under-fuelling. If it persists over a couple of weeks, an easier week usually resets it.";eCol="#B8883E";eBg="rgba(184,136,62,0.1)";eBd="rgba(184,136,62,0.3)";eIc="\uD83D\uDCA1";}
+      else{eTitle="Aerobic efficiency steady";eBody="Pace-per-heartbeat is holding roughly flat across your recent easy runs. Keep the easy days genuinely easy and it should trend up over the block.";eCol="#6B5B8A";eBg="rgba(107,91,138,0.07)";eBd="rgba(107,91,138,0.2)";eIc="\u2192";}
+      var lr=effRuns[0],others=effRuns.slice(1);
+      if(lr.avg_hr&&others.length){
+        var omed=others.map(function(r){return r.avg_hr;}).sort(function(a,b){return a-b;})[Math.floor(others.length/2)];
+        var lrPn=parsePace(lr.pace_per_km);
+        if(lr.avg_hr-omed>=6&&!(lrPn>0&&lrPn<5.83)){eBody+=" Heads-up: your most recent easy run\u2019s HR (\u2764\uFE0F"+Math.round(lr.avg_hr)+") ran high for the pace versus your usual ~\u2764\uFE0F"+Math.round(omed)+" \u2014 more likely fatigue, heat or under-recovery than slacking. An extra easy or rest day can help.";}
+      }
+      html+='<div style="background:'+eBg+';border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid '+eBd+'">'
+        +'<div style="font-size:13px;font-weight:700;color:'+eCol+';margin-bottom:6px">'+eIc+' '+eTitle+'</div>'
+        +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+eBody+'</div>'
+        +'<div style="font-size:11px;color:#A898B0;margin-top:8px">Typical easy-run HR \u2764\uFE0F'+medHR+' \u00B7 from your last '+effRuns.length+' easy runs with HR data</div></div>';
+    } else {
+      html+='<div style="background:rgba(107,91,138,0.05);border-radius:14px;padding:12px 16px;margin-bottom:10px;border:0.5px dashed rgba(107,91,138,0.2)"><div style="font-size:12px;color:#7A6B8A;line-height:1.5">\u2764\uFE0F Wear your HR monitor on easy runs and you\u2019ll get an aerobic-efficiency trend here \u2014 the best single signal that your engine is improving (more pace at the same heart rate).</div></div>';
     }
   }
 
@@ -760,52 +920,61 @@ function renderCoachTab(){
       +'</div>';
   }
 
-  // Strength Progression
-  var exMap={1:{0:"Hip Thrust",2:"Cable Kickback",3:"Machine Chest Press",4:"DB Shoulder Press"},3:{0:"Hip Thrust (Wed)",1:"Donkey Kick",2:"Glute Abductor Machine",3:"Lat Pulldown",4:"Machine Row",5:"Face Pulls"},5:{2:"Bicep + Hammer Curl",3:"Tricep Extension",4:"Pallof Press"}};
+  // Strength insights — each weight is stored against its exercise NAME (never a slot index),
+  // so a number can never appear under the wrong lift. Legacy index-keyed logs are ignored.
   var exData={};
   var sd2=new Date(currentDate);
-  for(var di=0;di<56;di++){
+  for(var di=0;di<120;di++){
     var dk2=sd2.getFullYear()+"-"+(sd2.getMonth()+1)+"-"+sd2.getDate();
-    var sdow=sd2.getDay();var dayMap=exMap[sdow];
-    if(dayMap){try{var lg=JSON.parse(localStorage.getItem("tp-exlog-"+dk2)||"{}");var ds3=("0"+sd2.getDate()).slice(-2)+"/"+(sd2.getMonth()+1);Object.keys(dayMap).forEach(function(idx2){var exName=dayMap[idx2];if(lg[idx2]&&lg[idx2].w&&parseFloat(lg[idx2].w)>0){if(!exData[exName])exData[exName]=[];exData[exName].unshift({d:ds3,w:parseFloat(lg[idx2].w)||0});}});}catch(e2){}}
+    try{
+      var lg=JSON.parse(localStorage.getItem("tp-exlog-"+dk2)||"{}");
+      var ds3=("0"+sd2.getDate()).slice(-2)+"/"+(sd2.getMonth()+1);
+      Object.keys(lg).forEach(function(nm){
+        if(/^\d+$/.test(nm))return;
+        var rec=lg[nm];if(!rec)return;
+        var w=parseFloat(rec.w);if(!(w>0))return;
+        if(!exData[nm])exData[nm]=[];
+        exData[nm].unshift({d:ds3,w:w,r:rec.r});
+      });
+    }catch(e2){}
     sd2.setDate(sd2.getDate()-1);
   }
-  function renderExSection2(sessionName,exList,color){
-    var hasData=exList.filter(function(n){return exData[n]&&exData[n].length>0;});
-    if(!hasData.length)return"";
-    var h2='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:14px">'+sessionName+'</div>';
-    hasData.forEach(function(exName){
-      var data=exData[exName];if(!data||!data.length)return;
-      var maxW=Math.max.apply(null,data.map(function(d){return d.w;}));
-      var minW=Math.min.apply(null,data.map(function(d){return d.w;}));
-      var rng=maxW-minW||1;
-      var latest=data[data.length-1];
-      var gain=data.length>1?Math.round((latest.w-data[0].w)*10)/10:0;
-      var W=260,H=52,pad=4;
-      var pts=data.map(function(d,i){var x=pad+i*(W-pad*2)/(data.length===1?1:data.length-1);var y=H-pad-(H-pad*2)*((d.w-minW)/rng);return[Math.round(x),Math.round(y)];});
-      var poly=pts.map(function(p){return p[0]+","+p[1];}).join(" ");
-      var area=poly+" "+pts[pts.length-1][0]+","+(H-pad)+" "+pts[0][0]+","+(H-pad);
-      var svg='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="overflow:visible"><polygon points="'+area+'" fill="'+color+'" opacity="0.1"/><polyline points="'+poly+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
-      pts.forEach(function(p,i){var isL=(i===data.length-1);svg+=isL?'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+color+'" stroke="white" stroke-width="2"/>'+'<text x="'+p[0]+'" y="'+(p[1]-7)+'" text-anchor="middle" font-size="9" fill="'+color+'" font-weight="700">'+data[i].w+'</text>':'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2" fill="'+color+'" opacity="0.4"/>';});
-      if(data.length>1){svg+='<text x="'+pts[0][0]+'" y="'+(H+2)+'" text-anchor="middle" font-size="8" fill="#C0B0CC">'+data[0].d+'</text><text x="'+pts[pts.length-1][0]+'" y="'+(H+2)+'" text-anchor="end" font-size="8" fill="#A898B0" font-weight="600">'+data[data.length-1].d+'</text>';}
-      svg+='</svg>';
-      h2+='<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div style="font-size:13px;font-weight:600;color:#3D2E4A">'+exName+'</div><div style="font-size:12px;color:'+(gain>0?color:gain<0?"#DC2626":"#A898B0")+'">'+latest.w+' kg'+(data.length>1?' ('+(gain>0?"+":"")+gain+' kg)':'')+'</div></div>'+svg+'</div>';
-    });
-    return h2+'</div>';
+  var sessionDefs=[["\uD83D\uDCAA Strength A \u2014 Mon",SA,"#8B5CF6"],["\uD83D\uDCAA Strength B \u2014 Wed",SB,"#2D6A4F"],["\uD83D\uDCAA Strength C \u2014 Fri",SC,"#6B5B8A"]];
+  var nameToSession={},sessionOrder={};
+  sessionDefs.forEach(function(sd,si){try{var def=sd[1]("base");def.exercises.forEach(function(ex,xi){nameToSession[ex.name]=si;sessionOrder[ex.name]=xi;});}catch(e){}});
+  function insightFor(nm){
+    var data=exData[nm];
+    var latest=data[data.length-1],first=data[0],n=data.length;
+    var maxW=Math.max.apply(null,data.map(function(d){return d.w;}));
+    var head='<div style="font-size:13px;font-weight:600;color:#3D2E4A">'+nm+'</div>';
+    var sub='Last: <b>'+latest.w+' kg</b>'+(latest.r?' \u00D7 '+latest.r+' reps':'')+' \u00B7 '+latest.d;
+    var verdict='';
+    if(n>=2){
+      var gain=Math.round((latest.w-first.w)*10)/10;
+      if(gain>0)verdict='\u2197\uFE0F Up '+gain+' kg across '+n+' logged sessions \u2014 progressive overload on track.';
+      else if(gain<0)verdict='\u2198\uFE0F Down '+Math.abs(gain)+' kg since your first logged session. Fine if it was a deload or a higher-rep day; otherwise work back up.';
+      else verdict='\u2192 Steady at '+latest.w+' kg over '+n+' sessions. If the last set felt easy, add 1\u20132.5 kg next time.';
+      if(latest.w<maxW)verdict+=' Peak so far: '+maxW+' kg.';
+    }else{
+      verdict='First logged session \u2014 one more and you\u2019ll see the trend.';
+    }
+    return '<div style="padding:9px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)">'+head+'<div style="font-size:12px;color:#7A6B8A;margin-top:2px">'+sub+'</div><div style="font-size:12px;color:#4A3D5A;margin-top:4px;line-height:1.5">'+verdict+'</div></div>';
   }
-  var saEx=["Hip Thrust","Cable Kickback","Machine Chest Press","DB Shoulder Press"];
-  var sbEx=["Hip Thrust (Wed)","Donkey Kick","Glute Abductor Machine","Lat Pulldown","Machine Row","Face Pulls"];
-  var scEx=["Bicep + Hammer Curl","Tricep Extension","Pallof Press"];
-  var hasStr=saEx.concat(sbEx).concat(scEx).some(function(n){return exData[n]&&exData[n].length>0;});
-  if(hasStr){
-    html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:14px 0 8px">STRENGTH PROGRESSION</div>'
-    +'';
-    html+=renderExSection2("\uD83D\uDCAA Strength A \u2014 Mon",saEx,"#8B5CF6");
-    html+=renderExSection2("\uD83D\uDCAA Strength B \u2014 Wed",sbEx,"#2D6A4F");
-    html+=renderExSection2("\uD83D\uDCAA Strength C \u2014 Fri",scEx,"#6B5B8A");
-    html+='<div style="text-align:center;margin:2px 0 6px"><button onclick="clearExLogs()" style="background:none;border:1px dashed rgba(196,96,122,0.4);border-radius:8px;padding:7px 14px;font-size:11px;color:#C4607A;cursor:pointer;-webkit-appearance:none">\uD83D\uDDD1\uFE0F Reset weight history</button><div style="font-size:10px;color:#A898B0;margin-top:5px;line-height:1.4">Older entries logged against a previous exercise line-up can show against the wrong lift. Reset to start clean \u2014 new logs map correctly.</div></div>';
+  var loggedNames=Object.keys(exData);
+  if(loggedNames.length){
+    html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:14px 0 8px">STRENGTH INSIGHTS</div>';
+    sessionDefs.forEach(function(sd,si){
+      var names=loggedNames.filter(function(nm){return nameToSession[nm]===si;}).sort(function(a,b){return (sessionOrder[a]||0)-(sessionOrder[b]||0);});
+      if(!names.length)return;
+      html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:'+sd[2]+';margin-bottom:4px">'+sd[0]+'</div>'+names.map(insightFor).join("")+'</div>';
+    });
+    var orphans=loggedNames.filter(function(nm){return nameToSession[nm]===undefined;}).sort();
+    if(orphans.length){
+      html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#A898B0;margin-bottom:4px">Other logged lifts</div>'+orphans.map(insightFor).join("")+'</div>';
+    }
+    html+='<div style="text-align:center;margin:2px 0 6px"><button onclick="clearExLogs()" style="background:none;border:1px dashed rgba(196,96,122,0.4);border-radius:8px;padding:7px 14px;font-size:11px;color:#C4607A;cursor:pointer;-webkit-appearance:none">\uD83D\uDDD1\uFE0F Reset weight history</button></div>';
   } else {
-    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:6px">Strength Progression</div><div style="font-size:12px;color:#A898B0">Log weights in your daily gym sessions to see progressive overload charts here.</div></div>';
+    html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:6px">Strength Insights</div><div style="font-size:12px;color:#A898B0">Log a weight in any gym session (the \u201CLog: kg \u00D7 reps\u201D field) and insights appear here. Each weight is tied to its exercise by name, so it can never show under the wrong lift.</div></div>';
   }
   cv.innerHTML=html;
 }
