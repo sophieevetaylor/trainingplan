@@ -761,7 +761,7 @@ function renderCoachTab(){
   }
 
   // Strength Progression
-  var exMap={1:{1:"Hip Thrust",2:"DB Sumo Squat",3:"Adductor Machine",4:"Chest Press",5:"Shoulder Press"},3:{1:"Romanian Deadlift",2:"Cable Kickback",3:"Abductor Machine",5:"Lat Pulldown",6:"Machine Row"},5:{1:"Hip Thrust (Fri)",2:"Single-leg Hip Thrust",3:"DB Lateral Lunge",4:"Face Pulls",5:"Bicep Curl"}};
+  var exMap={1:{0:"Hip Thrust",2:"Cable Kickback",3:"Machine Chest Press",4:"DB Shoulder Press"},3:{0:"Hip Thrust (Wed)",1:"Donkey Kick",2:"Glute Abductor Machine",3:"Lat Pulldown",4:"Machine Row",5:"Face Pulls"},5:{2:"Bicep + Hammer Curl",3:"Tricep Extension",4:"Pallof Press"}};
   var exData={};
   var sd2=new Date(currentDate);
   for(var di=0;di<56;di++){
@@ -793,9 +793,9 @@ function renderCoachTab(){
     });
     return h2+'</div>';
   }
-  var saEx=["Hip Thrust","DB Sumo Squat","Adductor Machine","Chest Press","Shoulder Press"];
-  var sbEx=["Romanian Deadlift","Cable Kickback","Abductor Machine","Lat Pulldown","Machine Row"];
-  var scEx=["Hip Thrust (Fri)","Single-leg Hip Thrust","DB Lateral Lunge","Face Pulls","Bicep Curl"];
+  var saEx=["Hip Thrust","Cable Kickback","Machine Chest Press","DB Shoulder Press"];
+  var sbEx=["Hip Thrust (Wed)","Donkey Kick","Glute Abductor Machine","Lat Pulldown","Machine Row","Face Pulls"];
+  var scEx=["Bicep + Hammer Curl","Tricep Extension","Pallof Press"];
   var hasStr=saEx.concat(sbEx).concat(scEx).some(function(n){return exData[n]&&exData[n].length>0;});
   if(hasStr){
     html+='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:14px 0 8px">STRENGTH PROGRESSION</div>'
@@ -803,6 +803,7 @@ function renderCoachTab(){
     html+=renderExSection2("\uD83D\uDCAA Strength A \u2014 Mon",saEx,"#8B5CF6");
     html+=renderExSection2("\uD83D\uDCAA Strength B \u2014 Wed",sbEx,"#2D6A4F");
     html+=renderExSection2("\uD83D\uDCAA Strength C \u2014 Fri",scEx,"#6B5B8A");
+    html+='<div style="text-align:center;margin:2px 0 6px"><button onclick="clearExLogs()" style="background:none;border:1px dashed rgba(196,96,122,0.4);border-radius:8px;padding:7px 14px;font-size:11px;color:#C4607A;cursor:pointer;-webkit-appearance:none">\uD83D\uDDD1\uFE0F Reset weight history</button><div style="font-size:10px;color:#A898B0;margin-top:5px;line-height:1.4">Older entries logged against a previous exercise line-up can show against the wrong lift. Reset to start clean \u2014 new logs map correctly.</div></div>';
   } else {
     html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:6px">Strength Progression</div><div style="font-size:12px;color:#A898B0">Log weights in your daily gym sessions to see progressive overload charts here.</div></div>';
   }
