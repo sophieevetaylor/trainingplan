@@ -579,12 +579,12 @@ function getMeasurements(){try{return JSON.parse(localStorage.getItem("tp-measur
 function setMeasurements(a){try{localStorage.setItem("tp-measure",JSON.stringify(a))}catch(e){}}
 function saveMeasurement(){
   var g=function(id){var el=$(id);return el&&el.value!==""?parseFloat(el.value):null;};
-  var rec={waist:g("m-waist"),hips:g("m-hips"),thigh:g("m-thigh"),weight:g("m-weight")};
-  if(rec.waist===null&&rec.hips===null&&rec.thigh===null&&rec.weight===null){showToast("Enter at least one number");return;}
+  var rec={waist:g("m-waist"),hips:g("m-hips"),thigh:g("m-thigh"),weight:g("m-weight"),bodyfat:g("m-bf"),muscle:g("m-muscle")};
+  if(["waist","hips","thigh","weight","bodyfat","muscle"].every(function(k){return rec[k]===null;})){showToast("Enter at least one number");return;}
   var today=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
   var arr=getMeasurements();
   var ex=arr.filter(function(e){return e.d===today;})[0];
-  if(ex){["waist","hips","thigh","weight"].forEach(function(k){if(rec[k]!==null)ex[k]=rec[k];});}
+  if(ex){["waist","hips","thigh","weight","bodyfat","muscle"].forEach(function(k){if(rec[k]!==null)ex[k]=rec[k];});}
   else{rec.d=today;arr.push(rec);}
   arr.sort(function(a,b){return a.d<b.d?-1:1;});
   setMeasurements(arr);
@@ -614,8 +614,11 @@ function renderMeasurements(){
   html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
     +'<div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:3px">Log measurements</div>'
     +'<div style="font-size:11px;color:#A898B0;margin-bottom:12px;line-height:1.45">Every 2\u20134 weeks is plenty. Relaxed, same time of day, leave any blank. The tape matters more than the scale for recomp.</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:8px">'
+    +fieldCol("m-waist","Waist","cm","waist")+fieldCol("m-hips","Hips","cm","hips")+fieldCol("m-thigh","Thigh","cm","thigh")
+    +'</div>'
     +'<div style="display:flex;gap:8px;margin-bottom:2px">'
-    +fieldCol("m-waist","Waist","cm","waist")+fieldCol("m-hips","Hips","cm","hips")+fieldCol("m-thigh","Thigh","cm","thigh")+fieldCol("m-weight","Weight","kg","weight")
+    +fieldCol("m-weight","Weight","kg","weight")+fieldCol("m-bf","Body fat","%","bodyfat")+fieldCol("m-muscle","Muscle","kg","muscle")
     +'</div>'
     +'<button onclick="saveMeasurement()" style="margin-top:12px;width:100%;background:#C4607A;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;-webkit-appearance:none">Save</button>'
     +'</div>';
@@ -645,6 +648,8 @@ function renderMeasurements(){
   html+=trend("Waist","waist","cm","down");
   html+=trend("Hips / glutes","hips","cm","up");
   html+=trend("Thigh","thigh","cm","flat");
+  html+=trend("Body fat","bodyfat","%","down");
+  html+=trend("Muscle","muscle","kg","up");
   html+=trend("Weight","weight","kg","any");
   // waist-to-hip ratio
   var whL=mLastBoth(arr,"waist","hips"),whF=mFirstBoth(arr,"waist","hips");
@@ -656,37 +661,35 @@ function renderMeasurements(){
   }
   html+='</div>';
 
-  // recomp verdict
-  var wF=mFirstWith(arr,"waist"),wL=mLastWith(arr,"waist"),hF=mFirstWith(arr,"hips"),hL=mLastWith(arr,"hips"),tF=mFirstWith(arr,"thigh"),tL=mLastWith(arr,"thigh");
-  var waistD=(wF&&wL&&wF!==wL)?Math.round((wL.waist-wF.waist)*10)/10:null;
-  var hipsD=(hF&&hL&&hF!==hL)?Math.round((hL.hips-hF.hips)*10)/10:null;
-  var thighD=(tF&&tL&&tF!==tL)?Math.round((tL.thigh-tF.thigh)*10)/10:null;
-  if(waistD!=null||hipsD!=null){
-    var title,body,col="#2D6A4F",bg="rgba(45,106,79,0.08)",bd="rgba(45,106,79,0.2)",ic="\u2705";
-    if(waistD!=null&&waistD<0&&(hipsD==null||hipsD>=0)){
-      title="Textbook recomp";
-      body="Waist is down"+(hipsD!=null&&hipsD>0?" and hips are up":hipsD!=null?" while hips hold":"")+" \u2014 exactly the shape change you\u2019re training for. The scale can sit still while this happens, so trust the tape over bodyweight.";
-    }else if(waistD!=null&&waistD<0&&hipsD!=null&&hipsD<0){
-      title="Leaning out \u2014 protect the glutes";
-      body="Waist is down (fat loss working) but hips have dropped a little too. Keep protein high and keep driving hip-thrust load so you hold glute while you lean out.";
-      col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\uD83D\uDCA1";
-    }else if(hipsD!=null&&hipsD>0&&(waistD==null||waistD>=0)){
-      title="Glutes building";
-      body="Hips are up"+(waistD!=null&&waistD>0?" and so is the waist \u2014 normal in a build phase; watch the training-day extras if you want the waist to follow":", waist holding")+". Glute growth is on track.";
-      if(waistD!=null&&waistD>0){col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\uD83D\uDCA1";}
-    }else if(waistD!=null&&waistD>0){
-      title="Waist trending up";
-      body="Waist has crept up over this window. Often it\u2019s the small training-day extras adding up. Worth a look \u2014 no drama, just a nudge.";
-      col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\u26A0\uFE0F";
-    }else{
-      title="Holding steady";
-      body="Not much movement yet. Recomp is slow \u2014 give it a few more weeks of consistent training and protein before reading into it.";
-      col="#6B5B8A";bg="rgba(107,91,138,0.07)";bd="rgba(107,91,138,0.2)";ic="\u2192";
-    }
-    if(thighD!=null&&thighD>=1){body+=" Thigh is up ~"+thighD+" cm \u2014 if that\u2019s not wanted, keep spin resistance moderate and favour glute-isolation over quad-driven patterns.";}
+  // recomp verdict — body-comp (fat/muscle) leads when available; tape is the backup
+  var mD=function(k){var f=mFirstWith(arr,k),l=mLastWith(arr,k);return(f&&l&&f!==l)?Math.round((l[k]-f[k])*10)/10:null;};
+  var bfD=mD("bodyfat"),muD=mD("muscle"),waistD=mD("waist"),hipsD=mD("hips"),thighD=mD("thigh");
+  var title=null,body="",col="#2D6A4F",bg="rgba(45,106,79,0.08)",bd="rgba(45,106,79,0.2)",ic="\u2705",scaleNote=false;
+  function vAmber(){col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\uD83D\uDCA1";}
+  function vWarn(){col="#B8883E";bg="rgba(184,136,62,0.1)";bd="rgba(184,136,62,0.3)";ic="\u26A0\uFE0F";}
+  function vInfo(){col="#6B5B8A";bg="rgba(107,91,138,0.07)";bd="rgba(107,91,138,0.2)";ic="\u2192";}
+  if(bfD!=null||muD!=null){
+    scaleNote=true;
+    if((bfD!=null&&bfD<0)&&(muD==null||muD>=0)){title="Textbook recomp";body="Body fat is down"+(muD!=null&&muD>0?" and muscle is up":muD!=null?" with muscle held":"")+" \u2014 the exact change you\u2019re training for. Expect the scale to barely move while this happens; that\u2019s the point.";}
+    else if(bfD!=null&&bfD<0&&muD!=null&&muD<0){title="Leaning out \u2014 guard your muscle";body="Body fat is dropping (great) but muscle has slipped a little too. Keep protein high and keep progressing strength loads so you hold lean mass while the fat comes off.";vAmber();}
+    else if(muD!=null&&muD>0&&(bfD==null||bfD>=0)){title="Building \u2014 muscle up";body="Muscle is up"+(bfD!=null&&bfD>0?", and so is body fat \u2014 a mild surplus, fine if you\u2019re prioritising glute growth right now":", body fat holding")+". Strength work is doing its job.";if(bfD!=null&&bfD>0)vAmber();}
+    else if(bfD!=null&&bfD>0){title="Body fat trending up";body="Body fat has crept up over this window \u2014 usually the small training-day extras adding up. No drama, just worth a glance.";vWarn();}
+    else{title="Holding steady";body="Not much movement in fat or muscle yet. Body-comp shifts are slow \u2014 give it a few consistent weeks before reading into it.";vInfo();}
+    if(waistD!=null&&waistD!==0)body+=" Waist "+(waistD<0?"down "+Math.abs(waistD):"up "+waistD)+" cm backs it up.";
+  } else if(waistD!=null||hipsD!=null){
+    if(waistD!=null&&waistD<0&&(hipsD==null||hipsD>=0)){title="Textbook recomp";body="Waist is down"+(hipsD!=null&&hipsD>0?" and hips are up":hipsD!=null?" while hips hold":"")+" \u2014 exactly the shape change you\u2019re training for. The scale can sit still while this happens, so trust the tape over bodyweight.";}
+    else if(waistD!=null&&waistD<0&&hipsD!=null&&hipsD<0){title="Leaning out \u2014 protect the glutes";body="Waist is down (fat loss working) but hips have dropped a little too. Keep protein high and keep driving hip-thrust load so you hold glute while you lean out.";vAmber();}
+    else if(hipsD!=null&&hipsD>0&&(waistD==null||waistD>=0)){title="Glutes building";body="Hips are up"+(waistD!=null&&waistD>0?" and so is the waist \u2014 normal in a build phase; watch the training-day extras if you want the waist to follow":", waist holding")+". Glute growth is on track.";if(waistD!=null&&waistD>0)vAmber();}
+    else if(waistD!=null&&waistD>0){title="Waist trending up";body="Waist has crept up over this window. Often it\u2019s the small training-day extras adding up. Worth a look \u2014 no drama, just a nudge.";vWarn();}
+    else{title="Holding steady";body="Not much movement yet. Recomp is slow \u2014 give it a few more weeks of consistent training and protein before reading into it.";vInfo();}
+  }
+  if(title){
+    if(thighD!=null&&thighD>=1)body+=" Thigh is up ~"+thighD+" cm \u2014 if that\u2019s not wanted, keep spin resistance moderate and favour glute-isolation over quad-driven patterns.";
     html+='<div style="background:'+bg+';border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid '+bd+'">'
       +'<div style="font-size:13px;font-weight:700;color:'+col+';margin-bottom:6px">'+ic+' '+title+'</div>'
-      +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+body+'</div></div>';
+      +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">'+body+'</div>'
+      +(scaleNote?'<div style="font-size:11px;color:#A898B0;margin-top:8px;line-height:1.4">Scale fat/muscle readings drift with hydration \u2014 read the multi-week trend, measured the same time of day each time.</div>':'')
+      +'</div>';
   }
 
   // history (most recent 6)
@@ -697,6 +700,8 @@ function renderMeasurements(){
     if(e.hips!=null)parts.push("H "+e.hips);
     if(e.thigh!=null)parts.push("T "+e.thigh);
     if(e.weight!=null)parts.push(e.weight+"kg");
+    if(e.bodyfat!=null)parts.push(e.bodyfat+"% fat");
+    if(e.muscle!=null)parts.push(e.muscle+"kg musc");
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(180,160,190,0.08)"><span style="font-size:12px;color:#7A6B8A">'+mFmtDate(e.d)+'</span><span style="font-size:12px;color:#3D2E4A">'+parts.join(" \u00B7 ")+'</span><span onclick="deleteMeasurement(\''+e.d+'\')" style="cursor:pointer;color:#C4607A;font-size:14px;padding:0 4px">\u00D7</span></div>';
   }).join("");
   html+='<div style="background:rgba(255,255,255,0.4);border-radius:14px;padding:10px 16px 6px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:11px;font-weight:600;color:#A898B0;margin-bottom:2px">History</div>'+rowsH+'</div>';
@@ -734,13 +739,13 @@ function renderCoachTab(){
   function parsePace(p){if(!p)return 0;var parts=p.split(":");return parts.length>=2?parseFloat(parts[0])+(parseFloat(parts[1])/60):0;}
   function fmtDate(dateStr){var d=new Date(dateStr+"T12:00:00");var days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];return days[d.getDay()]+" "+d.getDate()+" "+months[d.getMonth()];}
   function inZone(pn){return pn>=5.83&&pn<=6.17;}
+  function paceColor(pn){if(!(pn>0))return "#C8B8D0";if(pn<5.83)return "#DC2626";if(pn>6.17)return "#4A7A9E";return "#2D6A4F";}
 
   var easyRuns=allRuns.filter(function(a){return(a.distance_km||0)<14&&(a.distance_km||0)>2;}).slice(0,5);
   var longRuns=allRuns.filter(function(a){return(a.distance_km||0)>=10;}).slice(0,8).reverse();
 
   var html='<div style="padding:2px 0">';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0">COACHING ANALYSIS</span><span onclick="refreshStrava()" style="cursor:pointer;font-size:11px;font-weight:600;color:#FC4C02">\u21BB Refresh</span></div>';
-  html+=renderMeasurements();
 
   // \u2500\u2500 Weekly Volume \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
   html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
@@ -770,12 +775,13 @@ function renderCoachTab(){
       if(pn>0)paceNums.push(pn);
       var inZ=pn>0&&inZone(pn);
       var hr=run.avg_hr?Math.round(run.avg_hr):null;
-      var dot=inZ?'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2D6A4F;margin-left:6px;vertical-align:middle"></span>':'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#DC2626;margin-left:6px;vertical-align:middle"></span>';
+      var pcol=paceColor(pn);
+      var dot='<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+pcol+';margin-left:6px;vertical-align:middle"></span>';
       html+='<div style="display:flex;align-items:center;padding:7px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)">'
         +'<div style="flex:1.7;font-size:12px;color:#7A6B8A">'+fmtDate(run.date)+'</div>'
         +'<div style="flex:1;font-size:12px;color:#3D2E4A;text-align:center">'+run.distance_km+' km</div>'
         +'<div style="flex:1;font-size:12px;text-align:center;color:'+(hr?"#C4607A":"#C8B8D0")+'">'+(hr?("\u2764\uFE0F"+hr):"\u2013")+'</div>'
-        +'<div style="flex:1.4;display:flex;align-items:center;justify-content:flex-end;font-size:13px;font-weight:700;color:'+(inZ?"#2D6A4F":"#DC2626")+'">'+run.pace_per_km+'/km'+dot+'</div></div>';
+        +'<div style="flex:1.4;display:flex;align-items:center;justify-content:flex-end;font-size:13px;font-weight:700;color:'+pcol+'">'+run.pace_per_km+'/km'+dot+'</div></div>';
     });
     if(paceNums.length>0){
       var avg=paceNums.reduce(function(a,b){return a+b;},0)/paceNums.length;
@@ -789,10 +795,10 @@ function renderCoachTab(){
         +'<div style="text-align:center"><div style="font-size:9px;font-weight:600;letter-spacing:1px;color:#A898B0;margin-bottom:4px">SLOWEST</div><div style="font-size:22px;font-weight:700;color:#2D6A4F">'+toStr(slowest)+'</div><div style="font-size:10px;color:#A898B0">/km</div></div>'
         +'</div>'
         +'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-bottom:4px">'
-        +'<div style="font-size:11px;color:#A898B0">Target zone: 5:50\u20136:10/km</div>'
-        +'<div style="font-size:11px;font-weight:600;color:'+(inZoneCount>=paceNums.length*0.6?"#2D6A4F":"#B8883E")+'">'+inZoneCount+'/'+paceNums.length+' in zone</div></div>'
+        +'<div style="font-size:11px;color:#A898B0">Target 5:50\u20136:10/km</div>'
+        +'<div style="font-size:11px;font-weight:600"><span style="color:#2D6A4F">'+inZoneCount+' in</span> \u00B7 <span style="color:#DC2626">'+paceNums.filter(function(p){return p<5.83;}).length+' fast</span> \u00B7 <span style="color:#4A7A9E">'+paceNums.filter(function(p){return p>6.17;}).length+' slow</span></div></div>'
         +'<div style="display:flex;gap:3px">';
-      paceNums.forEach(function(p){html+='<div style="flex:1;height:5px;border-radius:3px;background:'+(inZone(p)?"#2D6A4F":"#DC2626")+'"></div>';});
+      paceNums.forEach(function(p){html+='<div style="flex:1;height:5px;border-radius:3px;background:'+paceColor(p)+'"></div>';});
       html+='</div>';
     }
     html+='</div>';
@@ -976,6 +982,7 @@ function renderCoachTab(){
   } else {
     html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:6px">Strength Insights</div><div style="font-size:12px;color:#A898B0">Log a weight in any gym session (the \u201CLog: kg \u00D7 reps\u201D field) and insights appear here. Each weight is tied to its exercise by name, so it can never show under the wrong lift.</div></div>';
   }
+  html+=renderMeasurements();
   cv.innerHTML=html;
 }
 
