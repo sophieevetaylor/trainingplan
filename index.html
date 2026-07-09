@@ -298,7 +298,70 @@ return '<div class="run-card '+(isRace?"race":"normal")+'"><div class="run-heade
   +'</div>';
 }
 
-function renderStrength(s){if(!s)return"";return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderTreadmill()}
+function renderStrength(s){if(!s)return"";return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderWhy(s)+renderTreadmill()}
+var _whyN=0;
+const WHY={
+"Heavy Glute + Push":{
+  teaser:"Builds the shelf \u2014 glute max thickness plus the upper-glute cap that creates the round top.",
+  rows:[
+    ["Hip thrust","Glute max","The heaviest thing you do all week. Load here is what actually thickens the muscle \u2014 the shelf comes from the hip thrust column climbing over months, not from any one session."],
+    ["Abductor, torso forward","Upper glute / medius","That ~30\u00B0 lean shifts tension to the upper-outer glute. This is the fibre that fills the dip at the side of the hip and gives the top of the glute its rounded cap."],
+    ["Angled cable kickback","Upper-outer fibres","Kicking back and slightly out finishes the same region the abductor started, under a longer stretch."],
+    ["Bench + shoulder press","Shoulder width","Delts and chest widen the frame at the top. A wider top makes the same waist read smaller \u2014 the taper is built from both ends."],
+    ["Frog pumps","Lower glute","Short-range squeeze work for the underbutt fold, with no thigh involvement."]
+  ],
+  signal:"Watch the hip thrust load. If it goes up 2.5 kg every 2\u20133 weeks with clean reps, the shelf is being built \u2014 that number is your real progress bar."
+},
+"Glute Width + Pull":{
+  teaser:"Builds width \u2014 glute medius at the hip, lat width at the back. Both narrow the waist by comparison.",
+  rows:[
+    ["Clamshells + single-leg thrust","Glute med / min","Unilateral work loads the side glute harder than any bilateral lift, and evens out the side you favour without you noticing."],
+    ["Slow abductor, 20 reps","Hip width","High-rep, controlled, long time-under-tension. This shapes the medius rather than bulking it \u2014 exactly what fills a hip dip."],
+    ["Frog pumps","Lower glute fold","Builds the crease where glute meets hamstring. This line is what makes the glute read as separate from the leg."],
+    ["Lat pulldown + wide row","Back width","The V-taper. Lats flare out from the waist, so widening them shrinks the waist visually with no change to the waist itself."],
+    ["Face pulls","Rear delt / posture","Pulls the shoulders back. Standing taller changes your silhouette faster than any single exercise here."]
+  ],
+  signal:"Hips measurement climbing while waist holds flat. That divergence, tracked in the Coach tab, is the whole goal of this block."
+},
+"Glute Pump + Delts":{
+  teaser:"Different stimulus \u2014 metabolic volume for the glutes, side delts for the waist-narrowing illusion.",
+  rows:[
+    ["Hip thrust, 15 reps","Glute max (volume)","Lighter and constant-tension. Muscle responds to heavy load and to accumulated volume through different pathways \u2014 Monday gives one, Friday gives the other."],
+    ["Donkey kick","Glute max isolation","Pure hip extension with zero quad or hamstring. Keeps the growth stimulus on the glute only."],
+    ["Abductor burnout","Medius","Third medius exposure of the week. Frequency, not any single set, is what grows this muscle."],
+    ["DB lateral raise","Side delts","The single highest-leverage exercise for waist illusion. Widening the shoulders changes shoulder-to-waist ratio without touching the waist."],
+    ["Rear delt fly","Delt cap","Rounds the shoulder from behind so it reads full from every angle, not just the front."],
+    ["Cable crunch","Core","Controlled ab work. Definition here follows body fat, not crunch volume \u2014 this is for strength and posture."]
+  ],
+  signal:"Lateral raise creeping from 5 kg to 7 kg over a block does more for your waist-to-shoulder ratio than any amount of ab work."
+}};
+function whyKeyFor(name){for(const k in WHY){if(name.indexOf(k)>-1)return k}return null}
+function toggleWhy(id){const b=$("why-body-"+id),c=$("why-chev-"+id);if(!b)return;const open=b.style.display!=="none";b.style.display=open?"none":"block";if(c)c.textContent=open?"\u25BE":"\u25B4"}
+function renderWhy(s){
+if(!s)return"";
+const k=whyKeyFor(s.name||"");if(!k)return"";
+const w=WHY[k];const id=++_whyN;
+let rows="";
+w.rows.forEach(function(r){
+  rows+='<div style="display:flex;gap:10px;padding:8px 0;border-bottom:0.5px solid rgba(196,96,122,0.1)">'
+    +'<div style="flex:0 0 96px"><div style="font-size:11px;font-weight:700;color:#3D2E4A;line-height:1.3">'+r[0]+'</div>'
+    +'<div style="font-size:10px;font-weight:600;color:#C4607A;margin-top:2px">'+r[1]+'</div></div>'
+    +'<div style="flex:1;font-size:11.5px;color:#6B5B7A;line-height:1.55">'+r[2]+'</div></div>';
+});
+return '<div style="background:linear-gradient(135deg,rgba(196,96,122,0.07),rgba(184,136,62,0.04));border-radius:14px;padding:13px 16px;border:0.5px solid rgba(196,96,122,0.18);margin-top:10px">'
+  +'<div onclick="toggleWhy('+id+')" style="cursor:pointer;display:flex;align-items:flex-start;gap:8px">'
+  +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:#C4607A;letter-spacing:0.3px">\uD83C\uDFAF What this session is building</div>'
+  +'<div style="font-size:12px;color:#7A6B8A;line-height:1.5;margin-top:3px">'+w.teaser+'</div></div>'
+  +'<div id="why-chev-'+id+'" style="font-size:13px;color:#C4607A;padding-top:2px">\u25BE</div></div>'
+  +'<div id="why-body-'+id+'" style="display:none;margin-top:8px;padding-top:6px;border-top:0.5px solid rgba(196,96,122,0.15)">'
+  +rows
+  +'<div style="margin-top:10px;padding:9px 11px;background:rgba(45,106,79,0.07);border-radius:8px;border-left:3px solid rgba(45,106,79,0.35)">'
+  +'<div style="font-size:10px;font-weight:700;color:#2D6A4F;letter-spacing:0.5px;margin-bottom:3px">SIGNAL TO WATCH</div>'
+  +'<div style="font-size:11.5px;color:#4A3D5A;line-height:1.55">'+w.signal+'</div></div>'
+  +'<div style="font-size:10.5px;color:#A898B0;line-height:1.5;margin-top:8px">Shape is training plus body fat plus the frame you were born with. Training decides where muscle goes; it can\u2019t choose where fat leaves. Both take months \u2014 the loads above are the part you control.</div>'
+  +'</div></div>';
+}
+
 function renderTreadmill(){return'<div class="treadmill-card"><div class="treadmill-left"><div class="treadmill-header" style="white-space:normal">\uD83E\uDE9C StairMaster 20 min <span style="font-weight:600;color:#C7A86A">or</span> \uD83D\uDEB6\u200d\u2640\uFE0F Incline Walk 30 min</div><span class="treadmill-spec">Stairs steady moderate \u00B7 Walk 10\u201312% @ 5.5\u20136.5 km/h</span><div class="treadmill-note">StairMaster is the default \u2014 glute-biased and easy on the calves. Incline walk is the backup (it does load calves, so keep it occasional). Don\'t hold the rails \u2014 strong glute drive throughout.</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleTreadmill()"><div class="run-check-box" id="tm-check"></div><div class="run-check-label" id="tm-label" style="font-size:12px">Done</div></div></div>'}
 
 let currentDate=new Date();currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
@@ -423,11 +486,20 @@ if(!stravaData)return;
 const dailyEl=$("strava-daily");if(dailyEl)dailyEl.innerHTML="";
 const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
 const dayActivities=stravaData.filter(a=>a.date.startsWith(dateStr));
-const runMatch=dayActivities.find(a=>a.type==="Run"||a.sport_type==="Run");
-const rideMatch=dayActivities.find(a=>a.type==="Ride"||a.sport_type==="Ride"||a.sport_type==="Spinning");
-const weightMatch=dayActivities.find(a=>a.type==="WeightTraining"||a.sport_type==="WeightTraining");
-const pilatesMatch=dayActivities.find(a=>{var st=a.sport_type||"";var nm=(a.name||"").toLowerCase();var isPilatesType=st==="Pilates"||st==="Yoga";var isPilatesName=nm.includes("pilates")||nm.includes("reformer")||nm.includes("mat class")||nm.includes("barre");return isPilatesType||isPilatesName;});
-const walkMatch=dayActivities.find(a=>a.type==="Walk"||a.sport_type==="Walk"||a.sport_type==="StairStepper"||(a.name||"").toLowerCase().includes("stair"));
+// Strava labels vary a lot (VirtualRide, Workout, StairStepper, studio-app names).
+// Match on substrings of sport_type AND the activity name, and claim each activity once.
+const sType=a=>String(a.sport_type||a.type||"").toLowerCase();
+const sName=a=>String(a.name||"").toLowerCase();
+const anyIn=(s,arr)=>arr.some(k=>s.indexOf(k)>-1);
+const claimed=[];
+function pick(fn){const a=dayActivities.find(x=>claimed.indexOf(x)===-1&&fn(x));if(a)claimed.push(a);return a}
+// Order matters: most specific first, generic "Workout" catch-alls last.
+const runMatch=pick(a=>anyIn(sType(a),["run"]));
+const pilatesMatch=pick(a=>anyIn(sType(a),["pilates","yoga"])||anyIn(sName(a),["pilates","reformer","barre","lagree","mat class","yoga"]));
+const rideMatch=pick(a=>anyIn(sType(a),["ride","spin","cycl"])||anyIn(sName(a),["spin","peloton","cycle","rpm","bike","ride"]));
+const walkMatch=pick(a=>anyIn(sType(a),["walk","hike","stair","elliptical"])||anyIn(sName(a),["stair","incline","treadmill","stepper","walk"]));
+const weightMatch=pick(a=>anyIn(sType(a),["weight","strength","workout","crossfit","hiit"])||anyIn(sName(a),["gym","lift","strength","glute","upper","push","pull","legs","weights"]));
+if(dayActivities.length){const un=dayActivities.filter(a=>claimed.indexOf(a)===-1);if(un.length)console.log("Strava: unmatched today \u2192",un.map(a=>({name:a.name,sport_type:a.sport_type,type:a.type})));}
 const svg='<svg width="11" height="11" viewBox="0 0 64 64" style="vertical-align:-1px;margin-right:3px"><path d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18" fill="#F9B797"/><path d="M27.898 21.944l7.564 14.928h11.124L27.898 0 9.234 36.876H20.35" fill="#FC4C02"/></svg>';
 function injectStrava(sel,html,ck,cl,saveFn){const card=document.querySelector(sel);if(!card)return;const cr=card.querySelector(".run-check-row");const ex=card.querySelector(".strava-inline");if(ex)ex.remove();const div=document.createElement("div");div.className="strava-inline";div.innerHTML=html;try{if(cr&&cr.parentNode===card)card.insertBefore(div,cr);else card.appendChild(div);}catch(e){card.appendChild(div);}if(ck){const ch=$(ck),lb=$(cl);if(ch&&!ch.classList.contains("done")){ch.classList.add("done");if(lb){lb.classList.add("done");lb.textContent=lb.textContent.replace("Mark ","")+" (auto)"}if(saveFn)saveFn();}}}
 if(runMatch){const m=runMatch;injectStrava(".run-card",'<div style="margin-top:8px;padding:8px 10px;background:rgba(252,76,2,0.05);border-radius:8px;border:0.5px solid rgba(252,76,2,0.12);font-size:11px"><div style="color:#FC4C02;font-weight:600">'+(svg)+' '+(m.name)+'</div><div style="color:#7A6B8A;margin-top:2px">'+(m.distance_km)+' km \u00B7 '+(m.pace_per_km)+'/km \u00B7 '+(m.moving_time_min)+' min'+(m.avg_hr?" \u00B7 \u2764\uFE0F"+Math.round(m.avg_hr):"")+'</div></div>',"run-check","run-label",()=>saveRun(true))}
