@@ -334,6 +334,27 @@ rd.readAsText(file);
 ev.target.value="";
 }
 
+function sessionWhy(kind,o){
+var txt="";
+if(kind==="str"&&o){
+var nm=(o.name||"");
+if(nm.indexOf("Strength A")>=0)txt="Glute shelf (heavy hip thrust) + hip width \u00B7 press work shapes the taper";
+else if(nm.indexOf("Strength B")>=0)txt="Hip width (medius) + underbutt lift \u00B7 back width makes the waist look smaller";
+else if(nm.indexOf("Strength C")>=0)txt="Glute fullness (pump day) \u00B7 side + rear delts \u2014 the waist-shrinking illusion";
+else txt="Glute-led strength \u00B7 lean muscle, zero leg bulk";
+}else if(kind==="run"&&o){
+var ty=(o.type||"").toLowerCase();
+if(ty.indexOf("race")>=0)return"";
+if(ty.indexOf("stride")>=0||ty.indexOf("opener")>=0||ty.indexOf("recovery")>=0||ty.indexOf("shakeout")>=0)txt="Freshness \u2014 keeping the legs awake without any training cost";
+else if(ty.indexOf("hill")>=0)txt="Hill strength for Heartbreak Hill \u2014 City2Surf specific power";
+else if(ty.indexOf("tempo")>=0||ty.indexOf("interval")>=0||ty.indexOf("speed")>=0||ty.indexOf("rehearsal")>=0||ty.indexOf("moderate")>=0)txt="Threshold speed \u2014 this session is what gets you under 2:00";
+else if(ty.indexOf("long")>=0)txt="Endurance to hold pace for 21.1 km \u00B7 biggest fat-burn session of the week";
+else txt="Aerobic base + fat oxidation \u2014 the leanness engine. Easy pace builds zero leg bulk";
+}
+if(!txt)return"";
+return'<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 11px;background:rgba(107,91,138,0.06);border:0.5px solid rgba(107,91,138,0.13);border-radius:8px;margin-bottom:8px"><span style="font-size:13px;line-height:1.4">\uD83C\uDFAF</span><div style="flex:1"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#6B5B8A;margin-bottom:1px">What this builds</div><div style="font-size:11.5px;color:#71618A;line-height:1.5">'+txt+'</div></div></div>';
+}
+
 function fuelTip(kind,r){
 var v=currentDate.getDate();
 function pick(a){return a[v%a.length];}
@@ -545,14 +566,14 @@ var noteHtml=r.note?'<div class="run-note">'+r.note+'</div>':"";
 var icon=isRace?"\uD83C\uDFC1":"\uD83C\uDFC3\u200D\u2640\uFE0F";
 return '<div class="run-card '+(isRace?"race":"normal")+'"><div class="run-header"><div class="run-icon-chip '+(isRace?"race":"normal")+'">'+icon+'</div><div class="run-title-wrap"><div class="run-type '+(isRace?"race":"normal")+'">'+r.type+'</div>'
   +subHtml
-  +'</div><div class="run-km">'+r.km+' km</div></div>'+fuelTip("run",r)+'<div class="run-stats"><div class="run-stat"><div class="run-label">Pace</div><div class="run-value">'+r.pace+'</div></div><div class="run-stat"><div class="run-label">Zone</div><div class="run-value">'+r.int+'</div></div></div>'
+  +'</div><div class="run-km">'+r.km+' km</div></div>'+sessionWhy("run",r)+fuelTip("run",r)+'<div class="run-stats"><div class="run-stat"><div class="run-label">Pace</div><div class="run-value">'+r.pace+'</div></div><div class="run-stat"><div class="run-label">Zone</div><div class="run-value">'+r.int+'</div></div></div>'
   +noteHtml
   +'<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>'
   +(isRace?"":moveBtn("run",r.type))
   +'</div>';
 }
 
-function renderStrength(s){if(!s)return"";var _wi=_woReg.length;_woReg.push(s);return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div>'+fuelTip("str",null)+'<button onclick="startWorkout('+_wi+')" style="width:100%;background:#6B5B8A;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:12px;-webkit-appearance:none">\u25B6 Start workout</button><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderWhy(s)+renderTreadmill()}
+function renderStrength(s){if(!s)return"";var _wi=_woReg.length;_woReg.push(s);return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div>'+sessionWhy("str",s)+fuelTip("str",null)+'<button onclick="startWorkout('+_wi+')" style="width:100%;background:#6B5B8A;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:12px;-webkit-appearance:none">\u25B6 Start workout</button><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderWhy(s)+renderTreadmill()}
 var _whyN=0;
 const WHY={
 "Heavy Glute + Push":{
