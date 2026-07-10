@@ -261,7 +261,276 @@ if(f){formHtml='<div class="ex-form"><div class="ex-form-text">\uD83D\uDCD0 '+f.
 const isBodyweight=!ex.load||ex.load.toLowerCase().includes("bodyweight")||["plank","bird dog","dead bug","banded","frog","nordic"].some(k=>ex.name.toLowerCase().includes(k));
 let trackerHtml="";
 if(!isBodyweight){trackerHtml='<div class="ex-tracker" style="grid-column:2/-1;margin-top:4px;display:flex;gap:6px;align-items:center"><span style="font-size:10px;color:#A898B0">Log:</span><input type="number" placeholder="kg" id="exw-'+(i)+'" data-exn="'+encodeURIComponent(ex.name)+'" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog('+(i)+')"><span style="font-size:10px;color:#A898B0">\u00D7</span><input type="number" placeholder="reps" id="exr-'+(i)+'" style="width:50px;padding:3px 6px;border-radius:4px;border:0.5px solid rgba(180,160,190,0.3);font-size:11px;background:rgba(255,255,255,0.5);color:#3D2E4A" onchange="saveExLog('+(i)+')"></div>'}
-return'<div class="exercise" id="ex-'+i+'"><div class="ex-check" onclick="toggleEx('+i+')"></div><div class="ex-name">'+ex.name+'</div><div class="ex-sets">'+ex.sets+' \u00D7 '+ex.reps+'</div>'+(tags?'<div class="ex-tags">'+tags+'</div>':'')+trackerHtml+formHtml+'</div>';
+return'<div class="exercise" id="ex-'+i+'"><div class="ex-check" onclick="toggleEx('+i+')"></div><div class="ex-name">'+ex.name+'</div><div class="ex-sets">'+ex.sets+' \u00D7 '+ex.reps+'</div>'+(tags?'<div class="ex-tags">'+tags+'</div>':'')+trackerHtml+(isBodyweight?"":progressionHint(ex))+formHtml+'</div>';
+}
+
+function getLastLog(exName){
+var d=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
+for(var i=1;i<=90;i++){
+d.setDate(d.getDate()-1);
+try{
+var lg=JSON.parse(localStorage.getItem("tp-exlog-"+d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate())||"{}");
+var rec=lg[exName];
+if(rec&&parseFloat(rec.w)>0){return{w:parseFloat(rec.w),r:parseInt(rec.r)||0,daysAgo:i};}
+}catch(e){}
+}
+return null;
+}
+function repTop(reps){var m=String(reps).match(/(\d+)\s*[^\d]*(\d+)?/);if(!m)return 0;return parseInt(m[2]||m[1])||0;}
+function progressionHint(ex){
+var last=getLastLog(ex.name);
+if(!last)return"";
+var isDB=(ex.load||"").indexOf("DB")>=0||ex.name.indexOf("DB")>=0;
+var inc=isDB?1:2.5;
+var top=repTop(ex.reps);
+var hitTop=last.r>0&&top>0&&last.r>=top;
+var msg,col,bg;
+if(hitTop){
+var target=Math.round((last.w+inc)*10)/10;
+msg="\uD83C\uDFAF Target today: <b>"+target+" kg</b> \u2014 you hit "+last.w+" kg \u00D7 "+last.r+" last time. Time to go up.";
+col="#2D6A4F";bg="rgba(45,106,79,0.08)";
+}else if(last.r>0){
+msg="\uD83C\uDFAF Target today: <b>"+last.w+" kg</b> \u2014 last time "+last.w+" kg \u00D7 "+last.r+". Chase "+(top>0?top:"more")+" clean reps, then add weight.";
+col="#6B5B8A";bg="rgba(107,91,138,0.07)";
+}else{
+msg="\uD83C\uDFAF Last: <b>"+last.w+" kg</b> ("+last.daysAgo+"d ago). Match it, log your reps and the app will tell you when to go up.";
+col="#6B5B8A";bg="rgba(107,91,138,0.07)";
+}
+return'<div style="grid-column:2/-1;margin-top:4px;padding:6px 9px;background:'+bg+';border-radius:6px;font-size:11px;line-height:1.45;color:'+col+'">'+msg+'</div>';
+}
+function exportData(){
+var out={exported:new Date().toISOString(),app:"training-plan",data:{}};
+for(var i=0;i<localStorage.length;i++){
+var k=localStorage.key(i);
+if(k&&k.indexOf("tp-")===0)out.data[k]=localStorage.getItem(k);
+}
+var n=Object.keys(out.data).length;
+var blob=new Blob([JSON.stringify(out.data?out:out,null,1)],{type:"application/json"});
+var a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+var d=new Date();
+a.download="training-backup-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".json";
+document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+showToast("\u2705 Backed up "+n+" records");
+}
+function importData(ev){
+var file=ev.target.files&&ev.target.files[0];
+if(!file)return;
+var rd=new FileReader();
+rd.onload=function(){
+try{
+var obj=JSON.parse(rd.result);
+if(!obj.data)throw new Error("no data key");
+var n=0;
+Object.keys(obj.data).forEach(function(k){
+if(k.indexOf("tp-")===0){localStorage.setItem(k,obj.data[k]);n++;}
+});
+showToast("\u2705 Restored "+n+" records");
+render();
+}catch(e){alert("That file doesn\u2019t look like a training backup ("+e.message+")");}
+};
+rd.readAsText(file);
+ev.target.value="";
+}
+
+function fuelTip(kind,r){
+var v=currentDate.getDate();
+function pick(a){return a[v%a.length];}
+var tip="",when="";
+if(kind==="str"){
+when="60\u201390 min before lifting";
+tip=pick([
+"Toast + peanut butter + banana \u2014 carbs power heavier hip thrust sets",
+"Chobani + berries + drizzle of honey \u2014 protein early, carbs for the big lifts",
+"Vita-Weats + PB + banana slices \u2014 easy carbs so the key lift feels strong",
+"Oats + berries + spoonful of Chobani \u2014 slow carbs, strong sets"
+])+". After: Chobani + berries within the hour.";
+}else if(r){
+var ty=(r.type||"").toLowerCase();var km=parseFloat(r.km)||0;
+if(ty.indexOf("race")>=0)return"";
+if(ty.indexOf("tempo")>=0||ty.indexOf("interval")>=0||ty.indexOf("hill")>=0||ty.indexOf("speed")>=0||ty.indexOf("rehearsal")>=0||ty.indexOf("moderate")>=0){
+when="60\u201390 min before";
+tip=pick([
+"Toast + banana + honey \u2014 this session runs on carbs, don\u2019t start empty",
+"Vita-Weats + honey + half a banana \u2014 quick carbs for quick legs",
+"Banana + a few spoons of Chobani \u2014 light but fuelled for the hard stuff"
+]);
+}else if(ty.indexOf("long")>=0||km>=12){
+when="2\u20133 hrs before";
+tip=pick([
+"Oats + banana + honey \u2014 the classic long-run breakfast for a reason",
+"Toast + peanut butter + banana \u2014 slow fuel that lasts the distance",
+"Oats made thick + berries + honey \u2014 top up with water on the way out"
+]);
+}else if(km>0&&km<=5){
+when="optional";
+tip=pick([
+"Coffee + half a banana if you feel like it \u2014 this distance needs nothing",
+"Nothing needed \u2014 short and easy. Coffee counts as fuel today"
+]);
+}else{
+when="30\u201360 min before";
+tip=pick([
+"Banana or toast + honey \u2014 small and easy, keep the run conversational",
+"Half a banana + a few Vita-Weats \u2014 just enough, this run stays easy",
+"Chobani + berries if it\u2019s been a while since a meal"
+]);
+}
+}
+if(!tip)return"";
+return'<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 11px;background:rgba(200,160,80,0.08);border:0.5px solid rgba(200,160,80,0.16);border-radius:8px;margin-bottom:12px"><span style="font-size:14px;line-height:1.3">\uD83C\uDF4C</span><div style="flex:1"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#B8883E;margin-bottom:1px">Fuel \u00B7 '+when+'</div><div style="font-size:11.5px;color:#8A7350;line-height:1.5">'+tip+'</div></div></div>';
+}
+
+// ===== In-session workout mode =====
+var _woReg=[];
+var wo=null;
+function woKey(){return "tp-wo-"+currentDate.getFullYear()+"-"+(currentDate.getMonth()+1)+"-"+currentDate.getDate()}
+function woTargetW(ex){
+var last=getLastLog(ex.name);
+if(last){
+var isDB=(ex.load||"").indexOf("DB")>=0||ex.name.indexOf("DB")>=0;
+var top=repTop(ex.reps);
+if(last.r>0&&top>0&&last.r>=top)return Math.round((last.w+(isDB?1:2.5))*10)/10;
+return last.w;
+}
+var m=String(ex.load||"").match(/(\d+(?:\.\d+)?)/);
+return m?parseFloat(m[1]):"";
+}
+function woIsBW(ex){return !ex.load||ex.load.toLowerCase().indexOf("bodyweight")>=0||["plank","bird dog","dead bug","banded","frog","nordic","clamshell"].some(function(k){return ex.name.toLowerCase().indexOf(k)>=0});}
+function woRest(ex){
+var n=ex.name.toLowerCase();
+if(["warm","pump","burnout","frog","banded","clamshell","bridge"].some(function(k){return n.indexOf(k)>=0}))return 45;
+if(["raise","fly","face","kickback","donkey","crunch","abductor"].some(function(k){return n.indexOf(k)>=0}))return 60;
+return 90;
+}
+function woSave(){
+if(!wo)return;
+try{localStorage.setItem(woKey(),JSON.stringify({name:wo.s.name,ex:wo.ex,startTs:wo.startTs,sets:wo.sets}))}catch(e){}
+}
+function woSaveLog(exName){
+var arr=wo.sets[exName]||[];
+var best=null;
+arr.forEach(function(st){if(st.done&&parseFloat(st.w)>0&&(!best||parseFloat(st.w)>parseFloat(best.w)))best=st;});
+if(!best)return;
+var log=getExLog();
+log[exName]={w:String(best.w),r:String(best.r||""),sets:arr};
+try{localStorage.setItem(exLogKey(currentDate),JSON.stringify(log))}catch(e){}
+}
+function startWorkout(wi){
+var s=_woReg[wi];if(!s)return;
+var saved=null;
+try{var sv=localStorage.getItem(woKey());if(sv){var o=JSON.parse(sv);if(o.name===s.name)saved=o;}}catch(e){}
+var sets={};
+s.exercises.forEach(function(ex){
+if(saved&&saved.sets[ex.name]){sets[ex.name]=saved.sets[ex.name];return;}
+var n=parseInt(ex.sets)||3,a=[];
+for(var i=0;i<n;i++)a.push({w:"",r:"",done:false});
+sets[ex.name]=a;
+});
+wo={s:s,ex:saved?Math.min(saved.ex,s.exercises.length-1):0,startTs:saved?saved.startTs:Date.now(),sets:sets,restEnd:0,iv:null};
+var ov=document.createElement("div");
+ov.id="woOverlay";
+ov.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,#FDF2F5 0%,#EBE8F5 100%);z-index:150;overflow-y:auto;-webkit-overflow-scrolling:touch";
+document.body.appendChild(ov);
+renderWo();
+wo.iv=setInterval(woTimers,1000);
+woSave();
+}
+function woTimers(){
+if(!wo)return;
+var el=document.getElementById("wo-elapsed");
+if(el){var m=Math.floor((Date.now()-wo.startTs)/60000),s2=Math.floor((Date.now()-wo.startTs)/1000)%60;el.textContent=m+":"+(s2<10?"0":"")+s2;}
+var r=document.getElementById("wo-rest-num");
+if(r&&wo.restEnd>0){
+var left=Math.max(0,Math.ceil((wo.restEnd-Date.now())/1000));
+r.textContent=Math.floor(left/60)+":"+(left%60<10?"0":"")+(left%60);
+if(left<=0){wo.restEnd=0;var box=document.getElementById("wo-rest");if(box)box.style.display="none";}
+}
+}
+function renderWo(){
+var ov=document.getElementById("woOverlay");if(!ov||!wo)return;
+var ex=wo.s.exercises[wo.ex],n=wo.s.exercises.length;
+var arr=wo.sets[ex.name],bw=woIsBW(ex),tw=bw?"":woTargetW(ex);
+var bars="";
+for(var i=0;i<n;i++){
+var allDone=wo.sets[wo.s.exercises[i].name].every(function(x){return x.done});
+var c=allDone?"#5B8A5E":(i===wo.ex?"#6B5B8A":"rgba(180,160,190,0.25)");
+bars+='<div style="flex:1;height:4px;border-radius:2px;background:'+c+'"></div>';
+}
+var last=bw?null:getLastLog(ex.name);
+var hint="";
+if(!bw&&last){
+var top=repTop(ex.reps),up=last.r>0&&top>0&&last.r>=top;
+hint='<div style="background:'+(up?"rgba(45,106,79,0.1)":"rgba(107,91,138,0.08)")+';border-radius:8px;padding:8px 11px;margin-bottom:12px;font-size:12px;color:'+(up?"#2D6A4F":"#6B5B8A")+'">\uD83C\uDFAF Target: <b>'+tw+' kg</b> \u2014 last time '+last.w+' kg'+(last.r?' \u00D7 '+last.r:'')+(up?'. Time to go up.':'. Chase '+(top||'more')+' clean reps.')+'</div>';
+}
+var rows="";
+var activeSeen=false;
+arr.forEach(function(st,i){
+if(st.done){
+rows+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(91,138,94,0.07);border-radius:9px;margin-bottom:7px"><span style="color:#5B8A5E;font-size:16px">\u2714</span><span style="flex:1;font-size:13px;color:#7A6B8A">Set '+(i+1)+'</span><span style="font-size:13px;color:#7A6B8A">'+(bw?"done":st.w+" kg \u00D7 "+st.r)+'</span></div>';
+}else if(!activeSeen){
+activeSeen=true;
+if(bw){
+rows+='<div style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,0.7);border:1px solid rgba(107,91,138,0.3);border-radius:9px;margin-bottom:7px"><span style="flex:1;font-size:14px;font-weight:700;color:#3D2E4A">Set '+(i+1)+'</span><button onclick="woTick('+i+')" style="background:#6B5B8A;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;color:#fff;-webkit-appearance:none">Done \u2714</button></div>';
+}else{
+rows+='<div style="display:flex;align-items:center;gap:8px;padding:12px;background:rgba(255,255,255,0.7);border:1px solid rgba(107,91,138,0.3);border-radius:9px;margin-bottom:7px"><span style="flex:1;font-size:14px;font-weight:700;color:#3D2E4A">Set '+(i+1)+'</span><input type="number" inputmode="decimal" id="wow-'+i+'" value="'+(st.w||tw)+'" style="width:62px;padding:10px 6px;border-radius:8px;border:0.5px solid rgba(180,160,190,0.4);font-size:16px;text-align:center;background:#fff;color:#3D2E4A"><span style="font-size:12px;color:#A898B0">kg \u00D7</span><input type="number" inputmode="numeric" id="wor-'+i+'" value="'+(st.r||"")+'" placeholder="'+repTop(ex.reps)+'" style="width:52px;padding:10px 6px;border-radius:8px;border:0.5px solid rgba(180,160,190,0.4);font-size:16px;text-align:center;background:#fff;color:#3D2E4A"><button onclick="woTick('+i+')" style="background:#6B5B8A;border:none;border-radius:9px;padding:10px 14px;font-size:13px;font-weight:700;color:#fff;-webkit-appearance:none">\u2714</button></div>';
+}
+}else{
+rows+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.3);border-radius:9px;margin-bottom:7px;opacity:0.5"><span style="flex:1;font-size:13px;color:#A898B0">Set '+(i+1)+'</span></div>';
+}
+});
+var nextName=wo.ex<n-1?wo.s.exercises[wo.ex+1].name:null;
+var f=getForm(ex.name);
+ov.innerHTML='<div style="max-width:520px;margin:0 auto;padding:16px;padding-bottom:40px">'
++'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:11px;color:#A898B0;font-weight:600">'+wo.s.name+'</span><span style="display:flex;gap:12px;align-items:center"><span style="font-size:12px;color:#7A6B8A">\u23F1 <span id="wo-elapsed">0:00</span></span><span onclick="closeWorkout()" style="cursor:pointer;font-size:12px;color:#C4607A;font-weight:600;padding:4px 8px">\u2715 Exit</span></span></div>'
++'<div style="display:flex;gap:4px;margin-bottom:4px">'+bars+'</div>'
++'<div style="font-size:11px;color:#A898B0;margin-bottom:14px">Exercise '+(wo.ex+1)+' of '+n+'</div>'
++'<div style="font-size:19px;font-weight:800;color:#3D2E4A;line-height:1.25;margin-bottom:2px">'+ex.name+'</div>'
++'<div style="font-size:12px;color:#7A6B8A;margin-bottom:10px">'+ex.sets+' \u00D7 '+ex.reps+(ex.tempo?' \u00B7 '+ex.tempo:'')+'</div>'
++(ex.note?'<div style="font-size:11px;color:#A898B0;font-style:italic;margin-bottom:10px">'+ex.note+'</div>':'')
++hint
++rows
++'<div id="wo-rest" style="display:'+(wo.restEnd>Date.now()?"flex":"none")+';align-items:center;justify-content:space-between;background:rgba(107,91,138,0.1);border-radius:10px;padding:12px 14px;margin:12px 0"><div><div style="font-size:10px;color:#6B5B8A;font-weight:700;text-transform:uppercase;letter-spacing:0.8px">Rest</div><div id="wo-rest-num" style="font-size:26px;font-weight:800;color:#6B5B8A">\u2013</div></div><button onclick="woSkipRest()" style="background:rgba(255,255,255,0.6);border:0.5px solid rgba(107,91,138,0.3);border-radius:9px;padding:9px 16px;font-size:12px;font-weight:600;color:#6B5B8A;-webkit-appearance:none">Skip \u25B6</button></div>'
++(f?'<div style="background:rgba(74,122,78,0.07);border:0.5px solid rgba(74,122,78,0.14);border-radius:8px;padding:8px 11px;margin:10px 0"><div style="font-size:11px;color:#4A7A4E;line-height:1.5">\uD83D\uDCD0 '+f.form+'</div></div>':'')
++'<div style="display:flex;gap:8px;margin-top:16px">'
++(wo.ex>0?'<button onclick="woNav(-1)" style="flex:1;background:rgba(255,255,255,0.6);border:0.5px solid rgba(180,160,190,0.35);border-radius:11px;padding:13px;font-size:13px;font-weight:600;color:#7A6B8A;-webkit-appearance:none">\u2190 Back</button>':'')
++(nextName?'<button onclick="woNav(1)" style="flex:2;background:#6B5B8A;border:none;border-radius:11px;padding:13px;font-size:13px;font-weight:700;color:#fff;-webkit-appearance:none">Next: '+nextName.split("(")[0].trim()+' \u2192</button>':'<button onclick="woFinish()" style="flex:2;background:#5B8A5E;border:none;border-radius:11px;padding:13px;font-size:14px;font-weight:800;color:#fff;-webkit-appearance:none">\uD83C\uDFC1 Finish workout</button>')
++'</div></div>';
+window.scrollTo(0,0);
+}
+function woTick(i){
+if(!wo)return;
+var ex=wo.s.exercises[wo.ex],arr=wo.sets[ex.name],bw=woIsBW(ex);
+if(!bw){
+var w=document.getElementById("wow-"+i),r=document.getElementById("wor-"+i);
+arr[i].w=w?w.value:"";arr[i].r=r?r.value:"";
+}
+arr[i].done=true;
+if(!bw)woSaveLog(ex.name);
+wo.restEnd=Date.now()+woRest(ex)*1000;
+woSave();renderWo();
+var box=document.getElementById("wo-rest");if(box)box.style.display="flex";
+woTimers();
+}
+function woSkipRest(){if(!wo)return;wo.restEnd=0;var box=document.getElementById("wo-rest");if(box)box.style.display="none";}
+function woNav(d){if(!wo)return;wo.ex=Math.max(0,Math.min(wo.s.exercises.length-1,wo.ex+d));wo.restEnd=0;woSave();renderWo();}
+function woFinish(){
+if(!wo)return;
+wo.s.exercises.forEach(function(ex){woSaveLog(ex.name);});
+var st=getState();st.str=true;
+wo.s.exercises.forEach(function(ex,i){st.ex[i]=true;});
+setState(st);
+try{localStorage.removeItem(woKey())}catch(e){}
+closeWorkout(true);
+showToast("\uD83D\uDCAA Session logged \u2014 nice work");
+render();
+}
+function closeWorkout(noSave){
+if(wo&&wo.iv)clearInterval(wo.iv);
+if(!noSave)woSave();
+wo=null;
+var ov=document.getElementById("woOverlay");if(ov)ov.remove();
 }
 
 function getFuel(r){
@@ -290,7 +559,7 @@ var noteHtml=r.note?'<div class="run-note">'+r.note+'</div>':"";
 var icon=isRace?"\uD83C\uDFC1":"\uD83C\uDFC3\u200D\u2640\uFE0F";
 return '<div class="run-card '+(isRace?"race":"normal")+'"><div class="run-header"><div class="run-icon-chip '+(isRace?"race":"normal")+'">'+icon+'</div><div class="run-title-wrap"><div class="run-type '+(isRace?"race":"normal")+'">'+r.type+'</div>'
   +subHtml
-  +'</div><div class="run-km">'+r.km+' km</div></div><div class="run-stats"><div class="run-stat"><div class="run-label">Pace</div><div class="run-value">'+r.pace+'</div></div><div class="run-stat"><div class="run-label">Zone</div><div class="run-value">'+r.int+'</div></div></div>'
+  +'</div><div class="run-km">'+r.km+' km</div></div>'+fuelTip("run",r)+'<div class="run-stats"><div class="run-stat"><div class="run-label">Pace</div><div class="run-value">'+r.pace+'</div></div><div class="run-stat"><div class="run-label">Zone</div><div class="run-value">'+r.int+'</div></div></div>'
   +noteHtml
   +fuelHtml
   +'<div class="run-check-row" onclick="toggleRun()"><div class="run-check-box" id="run-check"></div><div class="run-check-label" id="run-label">Mark run complete</div></div>'
@@ -298,7 +567,7 @@ return '<div class="run-card '+(isRace?"race":"normal")+'"><div class="run-heade
   +'</div>';
 }
 
-function renderStrength(s){if(!s)return"";return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderWhy(s)+renderTreadmill()}
+function renderStrength(s){if(!s)return"";var _wi=_woReg.length;_woReg.push(s);return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div>'+fuelTip("str",null)+'<button onclick="startWorkout('+_wi+')" style="width:100%;background:#6B5B8A;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:12px;-webkit-appearance:none">\u25B6 Start workout</button><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderWhy(s)+renderTreadmill()}
 var _whyN=0;
 const WHY={
 "Heavy Glute + Push":{
@@ -515,7 +784,7 @@ const dash=$("dashboard"),coach=$("coachView"),content=$("content");
 if(viewMode==="home"){renderDashboard();dash.style.display="block";coach.style.display="none";content.style.display="none";const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83C\uDFE0 Home";return}
 if(viewMode==="coach"){dash.style.display="none";coach.style.display="block";content.style.display="none";$("headerLabel").textContent="\uD83D\uDCCA Coach";if(!stravaLoaded){document.getElementById("coachView").innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">Connecting to Strava...</div></div>';loadStrava();}else{renderCoachTab();}return}
 dash.style.display="none";coach.style.display="none";content.style.display="flex";
-$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83D\uDCCD Daily View";
+$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83D\uDCCD Daily View";_woReg=[];
 const plan=getPlan(currentDate);const bi=$("blockInfo");
 if(plan.block){bi.style.display="block";bi.style.background=plan.block.color+"22";bi.style.border="1px solid "+plan.block.color+"44";bi.innerHTML='<div class="block-name" style="color:'+(plan.block.color)+'">'+(plan.block.name)+'</div><div class="block-detail">Week '+(plan.week)+' of '+(plan.block.weeks)+' \u2022 '+(plan.block.weeklyKm)+' km/week \u2022 '+(plan.block.focus)+'</div>'}else{bi.style.display="none"}
 let html="";
@@ -702,7 +971,7 @@ function renderMeasurements(){
     return '<div style="flex:1;min-width:64px"><div style="font-size:10px;font-weight:600;color:#A898B0;margin-bottom:3px">'+label+'</div>'
       +'<div style="display:flex;align-items:center;gap:3px"><input type="number" inputmode="decimal" id="'+id+'"'+ph(k)+' style="width:100%;padding:7px 8px;border-radius:8px;border:0.5px solid rgba(180,160,190,0.3);font-size:14px;background:rgba(255,255,255,0.7);color:#3D2E4A"><span style="font-size:10px;color:#A898B0">'+unit+'</span></div></div>';
   }
-  var html='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:0 0 8px">BODY \u00B7 RECOMP</div>';
+  var html='<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:0 0 8px">DATA</div>'+'<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:12px 16px;margin-bottom:14px;border:0.5px solid rgba(180,160,190,0.15)">'+'<div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:3px">Backup &amp; restore</div>'+'<div style="font-size:11px;color:#A898B0;line-height:1.45;margin-bottom:10px">Everything (lift logs, ticks, measurements) lives only on this phone \u2014 iOS can clear it. Back up monthly.</div>'+'<div style="display:flex;gap:8px">'+'<button onclick="exportData()" style="flex:1;background:#6B5B8A;border:none;border-radius:10px;padding:9px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;-webkit-appearance:none">\u2B07\uFE0F Back up</button>'+'<button onclick="document.getElementById(&quot;importFile&quot;).click()" style="flex:1;background:rgba(107,91,138,0.1);border:0.5px solid rgba(107,91,138,0.3);border-radius:10px;padding:9px;font-size:12px;font-weight:700;color:#6B5B8A;cursor:pointer;-webkit-appearance:none">\u2B06\uFE0F Restore</button>'+'<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">'+'</div></div>'+'<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0;margin:0 0 8px">BODY \u00B7 RECOMP</div>';
   html+='<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
     +'<div style="font-size:13px;font-weight:700;color:#3D2E4A;margin-bottom:3px">Log measurements</div>'
     +'<div style="font-size:11px;color:#A898B0;margin-bottom:12px;line-height:1.45">Every 2\u20134 weeks is plenty. Relaxed, same time of day, leave any blank. The tape matters more than the scale for recomp.</div>'
