@@ -61,7 +61,7 @@ function renderBridalArms(){
     +'</div>'
     +'<div style="font-size:13px;color:#9D4070;line-height:1.6;margin-bottom:12px">'
     +'7 min \u00B7 1\u20133 lb weights or bodyweight \u00B7 high rep, no rest.'
-    +'<br>Open Gabby George on TikTok and follow along with Day '+d+'.</div>'
+    +'<br>Open Gabby George on TikTok and follow along with Day '+d+'.</div>'+'<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 11px;background:rgba(236,72,153,0.06);border:0.5px solid rgba(236,72,153,0.15);border-radius:8px;margin-bottom:12px"><span style="font-size:13px">\uD83C\uDFAF</span><div style="flex:1"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#DB2777;margin-bottom:1px">What this builds</div><div style="font-size:11.5px;color:#9D4070;line-height:1.5">Toned arms without size \u2014 light high-rep work firms and defines but can\u2019t add bulk. Owning all arm work keeps gym sessions free for glutes + delts.</div></div></div>'
     +'<a href="https://www.tiktok.com/@gabbylgeorge" target="_blank" rel="noopener" class="ba-link" style="display:block;text-align:center;padding:10px;font-size:13px">'
     +'\u25B6 Open Gabby George on TikTok</a>'
     +'<div class="run-check-row" onclick="toggleBridalArms()">'
@@ -573,7 +573,7 @@ return '<div class="run-card '+(isRace?"race":"normal")+'"><div class="run-heade
   +'</div>';
 }
 
-function renderStrength(s){if(!s)return"";var _wi=_woReg.length;_woReg.push(s);return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div>'+sessionWhy("str",s)+fuelTip("str",null)+'<button onclick="startWorkout('+_wi+')" style="width:100%;background:#6B5B8A;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:12px;-webkit-appearance:none">\u25B6 Start workout</button><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderWhy(s)+renderTreadmill()}
+function renderStrength(s){if(!s)return"";var _wi=_woReg.length;_woReg.push(s);return'<div class="strength-card"><div class="strength-header"><div class="str-icon-chip">\uD83D\uDCAA</div><div class="str-title-wrap"><div class="strength-name">'+(s.name)+'</div></div><div class="str-dur-pill">'+(s.duration)+'</div></div>'+fuelTip("str",null)+renderWhy(s)+'<button onclick="startWorkout('+_wi+')" style="width:100%;background:#6B5B8A;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:12px;-webkit-appearance:none">\u25B6 Start workout</button><div style="display:flex;flex-direction:column;gap:3px">'+(s.exercises.map((e,i)=>renderExercise(e,i)).join(""))+'<div class="run-check-row" onclick="toggleStrength()"><div class="run-check-box" id="str-check"></div><div class="run-check-label" id="str-label">Mark session complete</div></div></div>'+(moveBtn("str","Strength session"))+'</div>'+renderTreadmill()}
 var _whyN=0;
 const WHY={
 "Heavy Glute + Push":{
@@ -623,7 +623,7 @@ w.rows.forEach(function(r){
     +'<div style="font-size:10px;font-weight:600;color:#C4607A;margin-top:2px">'+r[1]+'</div></div>'
     +'<div style="flex:1;font-size:11.5px;color:#6B5B7A;line-height:1.55">'+r[2]+'</div></div>';
 });
-return '<div style="background:linear-gradient(135deg,rgba(196,96,122,0.07),rgba(184,136,62,0.04));border-radius:14px;padding:13px 16px;border:0.5px solid rgba(196,96,122,0.18);margin-top:10px">'
+return '<div style="background:linear-gradient(135deg,rgba(196,96,122,0.07),rgba(184,136,62,0.04));border-radius:14px;padding:13px 16px;border:0.5px solid rgba(196,96,122,0.18);margin:0 0 12px">'
   +'<div onclick="toggleWhy('+id+')" style="cursor:pointer;display:flex;align-items:flex-start;gap:8px">'
   +'<div style="flex:1"><div style="font-size:12px;font-weight:700;color:#C4607A;letter-spacing:0.3px">\uD83C\uDFAF What this session is building</div>'
   +'<div style="font-size:12px;color:#7A6B8A;line-height:1.5;margin-top:3px">'+w.teaser+'</div></div>'
@@ -760,7 +760,8 @@ function renderStravaWidgets(){
 if(!stravaData)return;
 const dailyEl=$("strava-daily");if(dailyEl)dailyEl.innerHTML="";
 const dateStr=currentDate.getFullYear()+"-"+String(currentDate.getMonth()+1).padStart(2,"0")+"-"+String(currentDate.getDate()).padStart(2,"0");
-const dayActivities=stravaData.filter(a=>a.date.startsWith(dateStr));
+function actLocalDay(a){var d=new Date(a.date);if(isNaN(d.getTime()))return String(a.date).slice(0,10);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+const dayActivities=stravaData.filter(a=>actLocalDay(a)===dateStr);
 // Strava labels vary a lot (VirtualRide, Workout, StairStepper, studio-app names).
 // Match on substrings of sport_type AND the activity name, and claim each activity once.
 const sType=a=>String(a.sport_type||a.type||"").toLowerCase();
@@ -807,7 +808,7 @@ const labelClass="other-label"+(isPilates?" pilates":"");
 const textClass="other-text"+(isPilates?" pilates":"");
 const labelText=isPilates?"\uD83E\uDDD8\u200d\u2640\uFE0F Pilates":"Also today";
 const pilCheck=isPilates?('<div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>'+moveBtn("pilates","Pilates")):"";
-html+='<div class="'+otherClass+'"><div class="'+labelClass+'">'+labelText+'</div><div class="'+textClass+'">'+plan.other+'</div>'+pilCheck+'</div>';
+var pilWhy=isPilates?'<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 11px;background:rgba(220,140,170,0.08);border:0.5px solid rgba(220,140,170,0.2);border-radius:8px;margin-top:8px"><span style="font-size:13px">\uD83C\uDFAF</span><div style="flex:1"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#C4607A;margin-bottom:1px">What this builds</div><div style="font-size:11.5px;color:#9E4060;line-height:1.5">Core control + posture \u2014 a strong, quiet core stabilises every heavy hip thrust and sharpens the waistline. Lengthens and strengthens with zero leg loading.</div></div></div>':"";html+='<div class="'+otherClass+'"><div class="'+labelClass+'">'+labelText+'</div><div class="'+textClass+'">'+plan.other+'</div>'+pilWhy+pilCheck+'</div>';
 }
 const seenTypes={};
 movedIn.forEach(item=>{if(seenTypes[item.type])return;seenTypes[item.type]=true;let fromLabel="another day";if(item.originY!==undefined){const orig=new Date(item.originY,item.originM,item.originD,12,0,0);fromLabel=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][orig.getDay()]+" "+orig.getDate()+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][orig.getMonth()]}const badge='<div style="font-size:10px;color:#C4607A;font-weight:600;margin-bottom:6px;padding:3px 8px;background:rgba(196,96,122,0.1);border-radius:4px;display:inline-block">\uD83D\uDCC5 Moved from '+(fromLabel)+'</div>';if(item.originY!==undefined){const op=getPlan(new Date(item.originY,item.originM,item.originD,12,0,0));if(item.type==="run"&&op.run)html+=badge+renderRun(op.run);else if(item.type==="str"&&op.str)html+=badge+renderStrength(op.str);else if(item.type==="spin")html+=badge+'<div class="spin-card"><div class="spin-left"><div class="spin-header">\uD83D\uDEB4\u200d\u2640\uFE0F Spin Class</div><div class="spin-detail">45 min \u00B7 Zone 2.</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleSpin()"><div class="run-check-box" id="spin-check"></div><div class="run-check-label" id="spin-label" style="font-size:12px">Done</div></div>'+moveBtn("spin","Spin Class")+'</div>';else if(item.type==="pilates")html+=badge+'<div class="other-card pilates"><div class="other-label pilates">\uD83E\uDDD8\u200d\u2640\uFE0F Pilates</div><div class="other-text pilates">Moved session</div><div class="run-check-row" onclick="togglePilates()"><div class="run-check-box" id="pil-check"></div><div class="run-check-label" id="pil-label">Mark Pilates complete</div></div>'+moveBtn("pilates","Pilates")+'</div>';}});
