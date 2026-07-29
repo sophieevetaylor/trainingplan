@@ -289,8 +289,10 @@ input{font-family:'Inter',sans-serif}
   </div>
 
   <!-- Add food -->
-  <div class="sec">
+  <div class="sec" id="addFoodSec">
     <div class="sec-hd"><div class="sec-t">Add Food</div></div>
+    <div id="swapBar" class="hidden"></div>
+    <div id="slotRow" style="margin-bottom:10px"></div>
     <!-- Search -->
     <div class="srch-wrap">
       <span class="srch-ico">🔍</span>
@@ -724,7 +726,7 @@ function sumF(arr) {
     {p:0,c:0,fat:0,fi:0,kcal:0});
 }
 function totals()      { return sumF(getLog().filter(counts)); }
-function extraTotals() { return sumF(getLog().filter(f=>!f.planned && counts(f))); }
+function extraTotals() { return sumF(getLog().filter(f=>!f.planned && counts(f))); } // adds + off-plan; swaps stay in plan
 function planTotals()  { return sumF(getLog().filter(f=>f.planned && counts(f))); }
 function logTotals(log){ return sumF(log.filter(counts)); }
 
@@ -751,7 +753,7 @@ function renderCal() {
     if (ex.kcal > 0) {
       const over = t.kcal - tgt;
       const col = ex.kcal>250?'var(--rose)':ex.kcal>120?'var(--amber)':'var(--slate3)';
-      h += `<br><span style="color:${col};font-weight:600">+ ${Math.round(ex.kcal)} kcal off-plan`
+      h += `<br><span style="color:${col};font-weight:600">+ ${Math.round(ex.kcal)} kcal beyond plan`
          + (over>0?` — ${Math.round(over)} over target`:` — still inside target`)+`</span>`;
     }
     exEl.innerHTML = h;
@@ -851,6 +853,64 @@ function checkPerfect() {
 }
 
 // ── FOOD LOG ──────────────────────────────────────────
+const SLOTS=['Breakfast','Coffee','Lunch','Pre-lift','Snack','Dinner','Off-plan'];
+let swapIdx = null;          // index of the planned item being swapped out
+let addSlot = null;          // null = auto by time of day
+
+function autoSlot(){
+  const h=new Date().getHours();
+  if(h<10)  return 'Breakfast';
+  if(h<12)  return 'Coffee';
+  if(h<14.5)return 'Lunch';
+  if(h<17)  return 'Pre-lift';
+  if(h<21)  return 'Dinner';
+  return 'Snack';
+}
+function currentSlot(){ return addSlot || autoSlot(); }
+function setSlot(v){ addSlot = (v==='auto'?null:v); renderSlotRow(); }
+
+function slotTime(slot){
+  const t=getLog().filter(f=>f.planned&&f.slot===slot&&f.time)[0];
+  if(t) return t.time;
+  return {Breakfast:'07:00',Coffee:'10:00',Lunch:'12:30','Pre-lift':'16:00',Snack:'16:00',Dinner:'19:00'}[slot]||'';
+}
+
+function startSwap(i){ swapIdx=i; renderSwapBar(); 
+  const el=document.getElementById('addFoodSec');
+  if(el && typeof el.scrollIntoView==='function') el.scrollIntoView({behavior:'smooth',block:'start'}); }
+function cancelSwap(){ swapIdx=null; renderSwapBar(); }
+
+function renderSwapBar(){
+  const bar=document.getElementById('swapBar');
+  if(!bar) return;
+  if(swapIdx===null){ bar.classList.add('hidden'); bar.innerHTML=''; return; }
+  const f=getLog()[swapIdx];
+  if(!f){ swapIdx=null; bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  bar.innerHTML=`<div style="display:flex;align-items:center;gap:10px;background:var(--amber-pale);border:1px solid rgba(184,136,62,.35);border-radius:10px;padding:10px 12px;margin-bottom:10px">
+    <div style="font-size:18px">⇄</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:700;color:#B8883E">Swapping out ${f.name}</div>
+      <div style="font-size:11px;color:var(--slate3);margin-top:1px">Pick a replacement below — it keeps the ${f.slot||'meal'} slot.</div>
+    </div>
+    <button onclick="cancelSwap()" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:600;padding:4px 6px">Cancel</button>
+  </div>`;
+}
+
+function renderSlotRow(){
+  const row=document.getElementById('slotRow');
+  if(!row) return;
+  const cur=currentSlot();
+  row.innerHTML='<div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--slate3);font-weight:600;margin:2px 0 6px">Add to</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:5px">'
+    + SLOTS.map(sl=>`<button onclick="setSlot('${sl}')" style="padding:5px 11px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;
+        border:1px solid ${sl===cur?'var(--rose)':'rgba(180,160,190,.28)'};
+        background:${sl===cur?'var(--rose)':'rgba(255,255,255,.5)'};
+        color:${sl===cur?'#fff':'var(--slate2)'}">${sl}</button>`).join('')
+    + `<button onclick="setSlot('auto')" style="padding:5px 11px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px dashed rgba(180,160,190,.4);background:none;color:var(--slate3)">Auto</button>`
+    + '</div>';
+}
+
 function renderLog() {
   const log=getLog(), el=document.getElementById('foodLog');
   const lbl = viewOffset===0?'today':viewOffset===1?'yesterday':`${viewOffset} days ago`;
@@ -863,34 +923,43 @@ function renderLog() {
     return;
   }
 
-  // group: planned items by meal slot (in order), extras last
+  // group by meal slot; genuinely un-slotted extras go last
   const groups=[];
   log.forEach((f,i)=>{
-    const key = f.planned ? (f.slot||'Meal') : '__extra';
+    const key = f.slot ? f.slot : '__extra';
     let g = groups.find(x=>x.key===key);
     if(!g){ g={key,time:f.time||'',items:[]}; groups.push(g); }
     g.items.push({f,i});
   });
-  groups.sort((a,b)=>(a.key==='__extra'?1:0)-(b.key==='__extra'?1:0));
+  const ord = k => k==='__extra' ? 99 : (SLOTS.indexOf(k)+1 || 50);
+  groups.sort((a,b)=>ord(a.key)-ord(b.key));
 
   let html='';
   groups.forEach(g=>{
     const ex = g.key==='__extra';
     const gt = sumF(g.items.map(x=>x.f).filter(counts));
+    const addedKcal = sumF(g.items.map(x=>x.f).filter(f=>counts(f)&&f.added)).kcal;
     html += `<div style="display:flex;align-items:baseline;gap:8px;margin:14px 2px 6px">
       <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:${ex?'var(--rose)':'var(--slate3)'}">${ex?'⚠️ Off-plan':g.key}</div>
       ${g.time?`<div style="font-size:11px;color:var(--slate3)">${g.time}</div>`:''}
+      ${addedKcal>0&&!ex?`<div style="font-size:10px;color:var(--amber);font-weight:600">+${Math.round(addedKcal)} added</div>`:''}
       <div style="margin-left:auto;font-size:11px;color:${ex?'var(--rose)':'var(--slate3)'};font-weight:600">${Math.round(gt.kcal)} kcal · P${Math.round(gt.p)}g</div>
     </div>`;
     g.items.forEach(({f,i})=>{
       const sk = !!f.skipped;
-      html += `<div class="food-item" style="${sk?'opacity:.4':''}${ex?';border-left:3px solid var(--rose)':''}">
-        <div class="fi-em" ${f.planned?`onclick="toggleSkip(${i})" style="cursor:pointer"`:''}>${sk?'⊘':(f.emoji||'🍽')}</div>
-        <div class="fi-info" ${f.planned?`onclick="toggleSkip(${i})" style="cursor:pointer"`:''}>
-          <div class="fi-name" style="${sk?'text-decoration:line-through':''}">${f.name}</div>
+      const tap = f.planned ? `onclick="toggleSkip(${i})" style="cursor:pointer"` : '';
+      let tag='';
+      if(f.swapped) tag=`<span style="font-size:10px;color:var(--green);font-weight:600"> · swapped in</span>`;
+      else if(f.added) tag=`<span style="font-size:10px;color:var(--amber);font-weight:600"> · added</span>`;
+      html += `<div class="food-item" style="${sk?'opacity:.4':''}${ex?';border-left:3px solid var(--rose)':''}${f.added&&!ex?';border-left:3px solid rgba(184,136,62,.5)':''}">
+        <div class="fi-em" ${tap}>${sk?'⊘':(f.emoji||'🍽')}</div>
+        <div class="fi-info" ${tap}>
+          <div class="fi-name" style="${sk?'text-decoration:line-through':''}">${f.name}${tag}</div>
           <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g · Fi ${f.fi||0}g${f.planned&&!sk?' · tap to skip':''}</div>
+          ${f.was?`<div style="font-size:10px;color:var(--slate3);margin-top:2px">replaced ${f.was}</div>`:''}
         </div>
         <div class="fi-kcal">${f.kcal} kcal</div>
+        ${f.planned?`<button onclick="startSwap(${i})" title="Swap" style="background:none;border:none;color:var(--slate3);font-size:15px;padding:2px 5px;cursor:pointer">⇄</button>`:''}
         <button class="fi-del" onclick="delFood(${i})">✕</button>
       </div>`;
     });
@@ -898,16 +967,30 @@ function renderLog() {
   el.innerHTML = html;
 }
 
-function addFood(f) { const l=getLog(); l.push({...f}); saveLog(l); render(); }
+function addFood(f) {
+  const l=getLog();
+  if (swapIdx!==null && l[swapIdx]) {
+    const old=l[swapIdx];
+    l[swapIdx]={...f, planned:true, swapped:true, was:old.name, slot:old.slot, time:old.time};
+    swapIdx=null;
+  } else {
+    const sl=currentSlot();
+    if (sl==='Off-plan') l.push({...f});
+    else l.push({...f, slot:sl, time:slotTime(sl), added:true});
+  }
+  saveLog(l); render();
+}
 function delFood(i) { const l=getLog(); l.splice(i,1); saveLog(l); render(); }
 function toggleSkip(i){ const l=getLog(); if(!l[i]) return; l[i].skipped=!l[i].skipped; saveLog(l); render(); }
 function clearLog() {
+  swapIdx=null;
   const lbl = viewOffset===0?'today':viewOffset===1?"yesterday":`${viewOffset} days ago`;
   if(confirm(`Clear log for ${lbl}?`)){ saveLog([]); localStorage.setItem('planned_'+todayKey(),'skip'); render(); }
 }
 
 // ── PLAN AUTOLOAD ─────────────────────────────────────
 function loadPlan(force) {
+  swapIdx=null;
   const tpl = templateFor(sydDate());
   if (!tpl.length) return;
   const l = getLog();
@@ -1481,6 +1564,8 @@ function render() {
   renderRings();
   renderLog();
   renderHabits();
+  renderSlotRow();
+  renderSwapBar();
   checkPerfect();
 }
 
