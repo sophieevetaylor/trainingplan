@@ -158,15 +158,17 @@ return{name:"Strength D \u2013 Glute Pump (optional)",duration:m?"28 min":"35 mi
 function isDeloadWk(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);
   return c>=parseLocal("2026-08-17")&&c<=parseLocal("2026-08-23")}
 function stepTarget(){const b=getBlock(currentDate);const dow=currentDate.getDay();
-  if(!b)return"10,000 steps";
+  const wknd=(dow===0||dow===6);
+  if(!b)return wknd?"15,000 steps":"13,000 steps";
   if(b.id==="holiday")return"walk, don\u2019t count";
-  if(b.id==="cut")return(dow===0||dow===6)?"15,000 steps":"13,000 steps";
+  if(b.id==="restart")return"12,000 steps";
+  if(b.id==="cut"||b.id==="block3")return wknd?"15,000 steps":"13,000 steps";
   return"10,000 steps"}
 
 function parseLocal(s){const p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0)}
 function getBlock(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);for(const b of BLOCKS){if(c>=parseLocal(b.startDate)&&c<=parseLocal(b.endDate))return b}return null}
 function getWeek(d,b){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);return Math.floor((c-parseLocal(b.startDate))/(864e5*7))+1}
-function phase(id){if(id==="block6")return"hypertrophy";if(id==="block5"||id==="block9")return"maintenance";return"base"}
+function phase(id){if(id==="block6")return"hypertrophy";if(id==="block9")return"maintenance";if((id==="cut"||id==="block3")&&isDeloadWk(currentDate))return"maintenance";return"base"}
 
 function getPlan(date){
 const b=getBlock(date);if(!b)return{block:null,message:"No training scheduled."};
@@ -410,9 +412,9 @@ else txt="Glute-led strength \u00B7 lean muscle, zero leg bulk";
 var ty=(o.type||"").toLowerCase();
 if(ty.indexOf("race")>=0)return"";
 if(ty.indexOf("stride")>=0||ty.indexOf("opener")>=0||ty.indexOf("recovery")>=0||ty.indexOf("shakeout")>=0)txt="Freshness \u2014 keeping the legs awake without any training cost";
-else if(ty.indexOf("hill")>=0)txt="Hill strength for Heartbreak Hill \u2014 City2Surf specific power";
-else if(ty.indexOf("tempo")>=0||ty.indexOf("interval")>=0||ty.indexOf("speed")>=0||ty.indexOf("rehearsal")>=0||ty.indexOf("moderate")>=0)txt="Threshold speed \u2014 this session is what gets you under 2:00";
-else if(ty.indexOf("long")>=0)txt="Endurance to hold pace for 21.1 km \u00B7 biggest fat-burn session of the week";
+else if(ty.indexOf("hill")>=0)txt="Hill strength \u00B7 note this loads quads more than flat running";
+else if(ty.indexOf("tempo")>=0||ty.indexOf("interval")>=0||ty.indexOf("speed")>=0||ty.indexOf("rehearsal")>=0||ty.indexOf("moderate")>=0)txt="Threshold work \u00B7 the cheapest way to hold fitness through a deficit";
+else if(ty.indexOf("long")>=0)txt="Aerobic endurance \u00B7 parked during the cut \u2014 returns in October";
 else txt="Aerobic base + fat oxidation \u2014 the leanness engine. Easy pace builds zero leg bulk";
 }
 if(!txt)return"";
@@ -1142,16 +1144,53 @@ function renderMeasurements(){
   return html;
 }
 
+function coachPhasePanel(){
+  var b=getBlock(currentDate);
+  var bid=b?b.id:"block1";
+
+    var dep=parseLocal("2026-08-31"), end=parseLocal("2026-08-30");
+    var c=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
+    var left=Math.round((dep-c)/864e5);
+    if(bid==="holiday")
+      return '<div style="background:linear-gradient(135deg,#0891b2,#0e7490);border-radius:16px;padding:16px 18px;margin-bottom:12px;color:#fff">'
+        +'<div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.65">Holiday mode</div>'
+        +'<div style="font-size:16px;font-weight:800;margin-top:4px">Hold the line</div>'
+        +'<div style="font-size:12px;opacity:.8;line-height:1.55;margin-top:6px">Three easy runs, two glute sessions, protein floor 100g. No deficit, no tracking. Expect the scale up 1.5\u20132.5 kg in week one \u2014 glycogen and sodium, not fat.</div></div>';
+    if(bid==="restart")
+      return '<div style="background:linear-gradient(135deg,#059669,#047857);border-radius:16px;padding:16px 18px;margin-bottom:12px;color:#fff">'
+        +'<div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.65">Rebuilding</div>'
+        +'<div style="font-size:16px;font-weight:800;margin-top:4px">Return to training</div>'
+        +'<div style="font-size:12px;opacity:.8;line-height:1.55;margin-top:6px">Volume before intensity. Expect roughly two weeks before paces feel normal \u2014 that is detraining, not lost fitness.</div></div>';
+    if(bid!=="cut"&&bid!=="block3") return "";
+    var dl=isDeloadWk(currentDate);
+    var ramp = c>=parseLocal("2026-08-30")?["Ramp \u00B7 maintenance","2,100 kcal. Full glycogen \u2014 you look fuller and harder, that is the point."]
+             : c>=parseLocal("2026-08-27")?["Ramp \u00B7 day 4\u20136","1,900 kcal. Last heavy lift Fri 28."]
+             : c>=parseLocal("2026-08-24")?["Ramp \u00B7 day 1\u20133","1,750 kcal. Costs ~200g of fat, buys a much smaller rebound."]
+             : dl?["Deload week","Sets down ~40%, loads unchanged. Food and steps do not change."]
+             : c<end?["Cut \u00B7 pre-holiday block","1,600 training / 1,500 rest. Hold loads, hold protein, zero off-plan days."]
+             : ["Cut complete","Block done. Ramp to maintenance before you fly."];
+    return '<div style="background:linear-gradient(135deg,#C4607A,#A04060);border-radius:16px;padding:16px 18px;margin-bottom:12px;color:#fff;position:relative;overflow:hidden">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'
+      +'<div style="flex:1"><div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.65">'+ramp[0]+'</div>'
+      +'<div style="font-size:12px;opacity:.85;line-height:1.55;margin-top:6px">'+ramp[1]+'</div></div>'
+      +'<div style="text-align:right;flex-shrink:0"><div style="font-size:40px;font-weight:800;line-height:1">'+(left>0?left:0)+'</div>'
+      +'<div style="font-size:10px;font-weight:600;opacity:.65;text-transform:uppercase;letter-spacing:1px">'+(left===1?'day':'days')+' to go</div></div></div>'
+      +'<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.18);font-size:11px;opacity:.8;line-height:1.5">'
+      +'Steps today: '+stepTarget()+' \u00B7 no long run until October \u2014 the walking replaces it.</div></div>';
+
+}
+
 function renderCoachTab(){
   var cv=document.getElementById("coachView");
   if(!cv)return;
   if(!stravaData||!stravaData.length){
-    cv.innerHTML='<div style="padding:2px 0">'+renderMeasurements()+'<div style="text-align:center;padding:24px 20px;color:#A898B0;font-size:13px">\uD83D\uDCCA Connecting to Strava for your running insights\u2026</div></div>';
+    cv.innerHTML='<div style="padding:2px 0">'+coachPhasePanel()+renderMeasurements()+'<div style="text-align:center;padding:24px 20px;color:#A898B0;font-size:13px">\uD83D\uDCCA Connecting to Strava for your running insights\u2026</div></div>';
     return;
   }
 
   var b=getBlock(currentDate);
   var bid=b?b.id:"block1";
+  var _phaseHtml=coachPhasePanel();
   var pr=b?(b.kmRange||b.weeklyKm||"15\u201325"):"15\u201325";
   var pMin=parseInt(pr)||15;
   var pMax=parseInt(pr.split("\u2013")[1]||pr.split("-")[1]||pMin+10)||25;
@@ -1178,7 +1217,7 @@ function renderCoachTab(){
   var easyRuns=allRuns.filter(function(a){return(a.distance_km||0)<14&&(a.distance_km||0)>2;}).slice(0,5);
   var longRuns=allRuns.filter(function(a){return(a.distance_km||0)>=10;}).slice(0,8).reverse();
 
-  var html='<div style="padding:2px 0">';
+  var html='<div style="padding:2px 0">'+_phaseHtml;
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0">COACHING ANALYSIS</span><span onclick="refreshStrava()" style="cursor:pointer;font-size:11px;font-weight:600;color:#FC4C02">\u21BB Refresh</span></div>';
 
   // \u2500\u2500 Weekly Volume \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -1244,7 +1283,7 @@ function renderCoachTab(){
     } else if(inZoneCount>=Math.ceil(paceNums.length*0.6)){
       html+='<div style="background:rgba(45,106,79,0.08);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(45,106,79,0.2)">'
         +'<div style="font-size:13px;font-weight:700;color:#2D6A4F;margin-bottom:6px">\u2705 Easy paces are on point</div>'
-        +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">Most of your easy runs are hitting the 5:50\u20136:10/km target zone. This is exactly right \u2014 the aerobic base you\u2019re building now is what will carry you to sub-2:00. Keep doing this.</div></div>';
+        +'<div style="font-size:13px;color:#4A3D5A;line-height:1.6">Most of your easy runs are hitting the 5:50\u20136:10/km target zone. This is exactly right \u2014 easy running at genuinely easy effort is what lets the deficit do its work without eating your glutes. Keep doing this.</div></div>';
     }
     // aerobic efficiency (HR-aware): distance covered per heartbeat, trended over time
     var effRuns=easyRuns.filter(function(r){return r.avg_hr&&r.moving_time_min&&r.distance_km;});
@@ -1259,7 +1298,7 @@ function renderCoachTab(){
       var dPct=Math.round((newA-oldA)/oldA*1000)/10;
       var medHR=hrsE.slice().sort(function(a,b){return a-b;})[Math.floor(hrsE.length/2)];
       var eTitle,eBody,eCol="#2D6A4F",eBg="rgba(45,106,79,0.08)",eBd="rgba(45,106,79,0.2)",eIc="\u2705";
-      if(dPct>=2){eTitle="Aerobic engine is growing";eBody="Across your recent easy runs you\u2019re covering more ground per heartbeat \u2014 efficiency up about "+dPct+"%. Same effort, more speed. That\u2019s the quiet signal the base work is paying off toward sub-2:00.";}
+      if(dPct>=2){eTitle="Aerobic engine is growing";eBody="Across your recent easy runs you\u2019re covering more ground per heartbeat \u2014 efficiency up about "+dPct+"%. Same effort, more speed. That\u2019s the quiet signal the base work is paying off \u2014 and it means you\u2019re holding fitness through the deficit, which is the whole game right now.";}
       else if(dPct<=-2){eTitle="Efficiency dipped recently";eBody="You\u2019re getting a little less pace per heartbeat lately (down ~"+Math.abs(dPct)+"%). One-off causes are usual \u2014 heat, a hard block, poor sleep, under-fuelling. If it persists over a couple of weeks, an easier week usually resets it.";eCol="#B8883E";eBg="rgba(184,136,62,0.1)";eBd="rgba(184,136,62,0.3)";eIc="\uD83D\uDCA1";}
       else{eTitle="Aerobic efficiency steady";eBody="Pace-per-heartbeat is holding roughly flat across your recent easy runs. Keep the easy days genuinely easy and it should trend up over the block.";eCol="#6B5B8A";eBg="rgba(107,91,138,0.07)";eBd="rgba(107,91,138,0.2)";eIc="\u2192";}
       var lr=effRuns[0],others=effRuns.slice(1);
@@ -1332,7 +1371,7 @@ function renderCoachTab(){
       // Race distance context bar
       +'<div style="background:rgba(107,91,138,0.06);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">'
       +'<span style="font-size:18px">\uD83C\uDFC1</span>'
-      +'<div><div style="font-size:12px;font-weight:600;color:#C4607A">Race distance: 21.1 km</div>'
+      +'<div><div style="font-size:12px;font-weight:600;color:#C4607A">Aerobic benchmark: 16 km</div>'
       +'<div style="font-size:11px;color:#7A6B8A">Longest run is '+pctOfRace+'% of a 16 km aerobic benchmark</div></div>'
       +'</div>'
       +'</div>';
@@ -1343,8 +1382,8 @@ function renderCoachTab(){
       lrInsightTitle="Aerobic base is strong";
       lrInsightBody="Longest run is "+pctOfRace+"% of a 16 km benchmark. Plenty of base banked. During the cut the long run is deliberately parked \u2014 the 13k steps replace its energy cost without the impact loading.";
     } else if(pctOfRace>=70){
-      lrInsightTitle="Long run endurance building nicely";
-      lrInsightBody="Your latest long run was "+(latestLR.distance_km||0)+" km at "+(latestLR.pace_per_km||"??")+"/km. This is strong prep for the half marathon. You're proving your body can handle the distance \u2014 now it's about sharpening the pace.";
+      lrInsightTitle="Base is holding";
+      lrInsightBody="Your longest recent run was "+(latestLR.distance_km||0)+" km. Enough base to hold through the cut \u2014 don\u2019t chase distance now, the deficit is the job until 30 Aug.";
     } else if(pctOfRace>=55){
       lrInsightTitle="Building the aerobic base";
       lrInsightBody="At "+pctOfRace+"% of a 16 km benchmark, the base is solid. No long run is scheduled until October \u2014 walking carries the load until then.";
