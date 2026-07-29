@@ -236,6 +236,19 @@ input{font-family:'Inter',sans-serif}
       <div class="cal-pill" id="calPill"></div>
     </div>
     <div class="cal-bar"><div class="cal-fill" id="calFill" style="width:0%"></div></div>
+    <div id="calExtra" style="font-size:11px;margin-top:8px;line-height:1.5"></div>
+  </div>
+
+  <!-- Phase banner -->
+  <div id="phaseBanner" class="card hidden" style="padding:12px 14px;margin-bottom:12px;border-left:4px solid var(--purple)">
+    <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--purple)" id="phaseLbl"></div>
+    <div style="font-size:12px;color:var(--slate2);line-height:1.55;margin-top:4px" id="phaseNote"></div>
+  </div>
+
+  <!-- Daily habits -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-t">Daily Non-Negotiables</div><div class="sec-a" id="habStreak"></div></div>
+    <div class="card" style="padding:12px" id="habGrid"></div>
   </div>
 
   <!-- Macro rings -->
@@ -320,8 +333,11 @@ input{font-family:'Inter',sans-serif}
   <!-- Food log -->
   <div class="sec" style="margin-bottom:16px">
     <div class="sec-hd">
-      <div class="sec-t">Today's Log</div>
-      <div class="sec-a" onclick="clearLog()">Clear</div>
+      <div class="sec-t">Today's Plan</div>
+      <div style="display:flex;gap:12px">
+        <div class="sec-a" onclick="loadPlan(true)">Reload plan</div>
+        <div class="sec-a" onclick="clearLog()">Clear</div>
+      </div>
     </div>
     <div id="foodLog"></div>
   </div>
@@ -452,6 +468,12 @@ input{font-family:'Inter',sans-serif}
     <div style="font-size:11px;color:var(--slate3);text-align:center;margin-top:5px" id="ccBarLbl"></div>
   </div>
 
+  <!-- Block progress -->
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-t">Pre-Holiday Block</div></div>
+    <div class="card" style="padding:16px" id="blockProg"></div>
+  </div>
+
   <!-- 7-day chart -->
   <div class="sec">
     <div class="sec-hd"><div class="sec-t">7-Day Calories</div></div>
@@ -468,7 +490,7 @@ input{font-family:'Inter',sans-serif}
       <div style="font-family:'Playfair Display',serif;font-size:48px;color:var(--rose);line-height:1" id="ccStreak">0</div>
       <div>
         <div style="font-size:14px;font-weight:600;color:var(--slate)" id="ccStreakLbl">days hitting protein</div>
-        <div style="font-size:11px;color:var(--slate3);margin-top:3px">130g+ consecutive</div>
+        <div style="font-size:11px;color:var(--slate3);margin-top:3px">145g+ consecutive</div>
       </div>
       <div style="margin-left:auto;font-size:30px" id="ccStreakEm">💤</div>
     </div>
@@ -510,11 +532,31 @@ input{font-family:'Inter',sans-serif}
 <script>
 // ── DATA ──────────────────────────────────────────────
 const DT = [
-  {key:'long',    lbl:'Long Run',        cal:2150,p:135,c:200,f:65,days:[0]},
-  {key:'quality', lbl:'Quality Session', cal:2000,p:135,c:185,f:60,days:[2]},
-  {key:'training',lbl:'Training Day',    cal:1825,p:135,c:170,f:58,days:[1,3,5,6]},
-  {key:'rest',    lbl:'Rest Day',        cal:1625,p:130,c:160,f:55,days:[4]},
+  {key:'training',lbl:'Training Day', cal:1600,p:150,c:138,f:50,days:[1,2,3,4,5]},
+  {key:'rest',    lbl:'Rest Day',     cal:1500,p:155,c:120,f:45,days:[0,6]},
 ];
+
+// ── BLOCK PHASES ──────────────────────────────────────
+// Cut block 3–23 Aug · deload 17–23 · ramp 24–30 · holiday from 1 Sep
+const BLOCK_START = '2026-08-03';
+const BLOCK_END   = '2026-08-30';
+const DEPART      = '2026-08-31';
+
+function phaseFor(ds) {
+  if (ds >= '2026-09-01') return {key:'holiday',lbl:'Holiday',cal:null,p:100,c:null,f:null,
+    note:'Holiday mode — no calorie target. Protein floor 100g, three easy runs, two glute sessions. Enjoy it.'};
+  if (ds >= '2026-08-30') return {key:'ramp3',lbl:'Ramp · Maintenance',cal:2100,p:150,c:262,f:50,
+    note:'Maintenance. Full glycogen makes you look fuller and harder — this is the point.'};
+  if (ds >= '2026-08-27') return {key:'ramp2',lbl:'Ramp · Day 4–6',cal:1900,p:150,c:212,f:50,
+    note:'Ramping up. Extra calories go to carbs, not fat. Last heavy lift Fri 28.'};
+  if (ds >= '2026-08-24') return {key:'ramp1',lbl:'Ramp · Day 1–3',cal:1750,p:150,c:175,f:50,
+    note:'Reverse ramp begins. Costs ~200g of fat, buys a much smaller rebound.'};
+  return null;
+}
+function daysTo(ds, target) {
+  return Math.round((new Date(target) - new Date(ds)) / 86400000);
+}
+function isDeload(ds) { return ds >= '2026-08-17' && ds <= '2026-08-23'; }
 
 const FAVS = [
   {emoji:'🥩',name:'200g Lean Mince Beef',p:42,c:0,fat:10,fi:0,kcal:240},
@@ -529,6 +571,8 @@ const FAVS = [
   {emoji:'🧀',name:'Cottage Cheese (100g)',p:14,c:4,fat:4,fi:0,kcal:110},
   {emoji:'☕',name:'Oat Flat White',p:2,c:14,fat:4,fi:1,kcal:100},
   {emoji:'🌾',name:'Psyllium Husk (1 tsp)',p:0,c:3,fat:0,fi:5,kcal:15},
+  {emoji:'🌾',name:'Psyllium Husk (2 tsp)',p:0,c:6,fat:0,fi:10,kcal:30},
+  {emoji:'🫘',name:'Chia Seeds (1 tbsp)',p:2,c:5,fat:4,fi:4,kcal:60},
   {emoji:'🍠',name:'Roast Sweet Potato (½)',p:2,c:20,fat:1,fi:3,kcal:95},
   {emoji:'🥑',name:'Avocado (½)',p:2,c:6,fat:12,fi:5,kcal:120},
   {emoji:'🍫',name:'KitKat Chunky',p:4,c:38,fat:13,fi:1,kcal:280},
@@ -554,6 +598,55 @@ const ALL_FOODS = [...FAVS,
   {emoji:'🥗',name:'Mixed Salad (large)',p:2,c:5,fat:0,fi:3,kcal:30},
   {emoji:'🥤',name:'Protein Shake (1 scoop)',p:25,c:3,fat:2,fi:0,kcal:130},
 ];
+
+// ── MEAL PLAN TEMPLATES ───────────────────────────────
+function F(name, time, slot) {
+  const f = ALL_FOODS.find(x => x.name === name);
+  if (!f) return null;
+  return {...f, planned:true, eaten:false, time, slot};
+}
+
+const PLAN_TRAINING = [
+  ['Chobani Fit Passionfruit','07:00','Breakfast'],
+  ['WPI 90 Protein (1 scoop)','07:00','Breakfast'],
+  ['Psyllium Husk (2 tsp)','07:00','Breakfast'],
+  ['Granny Smith Apple','07:00','Breakfast'],
+  ['Oat Flat White','10:00','Coffee'],
+  ['200g Minced Chicken','12:30','Lunch'],
+  ['Broccolini (1 bunch)','12:30','Lunch'],
+  ['Roast Sweet Potato (½)','12:30','Lunch'],
+  ['Avocado (½)','12:30','Lunch'],
+  ['Double Dark Choc Protein Bar','16:00','Pre-lift'],
+  ['200g Lean Mince Beef','19:00','Dinner'],
+  ['Broccolini (1 bunch)','19:00','Dinner'],
+  ['Roast Sweet Potato (½)','19:00','Dinner'],
+];
+
+const PLAN_REST = [
+  ['Chobani Fit Passionfruit','07:30','Breakfast'],
+  ['WPI 90 Protein (1 scoop)','07:30','Breakfast'],
+  ['Psyllium Husk (2 tsp)','07:30','Breakfast'],
+  ['Chia Seeds (1 tbsp)','07:30','Breakfast'],
+  ['Berries (100g)','07:30','Breakfast'],
+  ['Oat Flat White','10:30','Coffee'],
+  ['Canned Tuna','13:00','Lunch'],
+  ['Canned Tuna','13:00','Lunch'],
+  ['Mixed Salad (large)','13:00','Lunch'],
+  ['Roast Sweet Potato (½)','13:00','Lunch'],
+  ['Cottage Cheese (100g)','16:00','Snack'],
+  ['Cottage Cheese (100g)','16:00','Snack'],
+  ['Granny Smith Apple','16:00','Snack'],
+  ['Salmon','19:00','Dinner'],
+  ['Broccolini (1 bunch)','19:00','Dinner'],
+];
+
+function templateFor(ds) {
+  const ph = phaseFor(ds);
+  if (ph && ph.key === 'holiday') return [];
+  const dow = new Date(ds + 'T12:00:00').getDay();
+  const rows = (dow === 0 || dow === 6) ? PLAN_REST : PLAN_TRAINING;
+  return rows.map(r => F(r[0], r[1], r[2])).filter(Boolean);
+}
 
 // ── DATE NAVIGATION ───────────────────────────────────
 let viewOffset = 0; // 0 = today, 1 = yesterday, etc.
@@ -590,16 +683,19 @@ function changeDay(dir) {
 // ── DAY TYPE ──────────────────────────────────────────
 function inferDT() {
   const ov = localStorage.getItem('dt_'+todayKey());
-  if (ov) return DT.find(d=>d.key===ov)||DT[2];
   const dow = dateForOffset(viewOffset).getDay();
-  return DT.find(d=>d.days.includes(dow))||DT[2];
+  const base = ov ? (DT.find(d=>d.key===ov)||DT[0]) : (DT.find(d=>d.days.includes(dow))||DT[0]);
+  const ph = phaseFor(sydDate());
+  return ph ? {...base, ...ph, base:base.key} : {...base, note:null};
 }
+const isHoliday = () => cDT.key === 'holiday';
 let cDT = inferDT();
 
 function renderDTRow() {
+  const cur = cDT.base || cDT.key;
   document.getElementById('dtRow').innerHTML = DT.map(d=>
-    `<button class="dt-btn${d.key===cDT.key?' on':''}" onclick="selectDT('${d.key}')">${d.lbl}</button>`
-  ).join('');
+    `<button class="dt-btn${d.key===cur?' on':''}" onclick="selectDT('${d.key}')">${d.lbl}</button>`
+  ).join('') + (isDeload(sydDate())?`<button class="dt-btn" style="pointer-events:none;opacity:.85">Deload wk</button>`:'');
 }
 function selectDT(k) {
   cDT = DT.find(d=>d.key===k);
@@ -622,25 +718,101 @@ function renderHeader() {
 }
 
 // ── TOTALS ────────────────────────────────────────────
-function totals() {
-  return getLog().reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,fi:a.fi+(f.fi||0),kcal:a.kcal+f.kcal}),
+const counts = f => !f.skipped;
+function sumF(arr) {
+  return arr.reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,fi:a.fi+(f.fi||0),kcal:a.kcal+f.kcal}),
     {p:0,c:0,fat:0,fi:0,kcal:0});
 }
-function logTotals(log) {
-  return log.reduce((a,f)=>({p:a.p+f.p,c:a.c+f.c,fat:a.fat+f.fat,fi:a.fi+(f.fi||0),kcal:a.kcal+f.kcal}),
-    {p:0,c:0,fat:0,fi:0,kcal:0});
-}
+function totals()      { return sumF(getLog().filter(counts)); }
+function extraTotals() { return sumF(getLog().filter(f=>!f.planned && counts(f))); }
+function planTotals()  { return sumF(getLog().filter(f=>f.planned && counts(f))); }
+function logTotals(log){ return sumF(log.filter(counts)); }
 
 // ── CALORIE BANNER ────────────────────────────────────
 function renderCal() {
-  const t=totals(), tgt=cDT.cal, rem=tgt-t.kcal;
+  const t=totals(), tgt=cDT.cal, ex=extraTotals(), pl=planTotals();
   document.getElementById('calNum').textContent = Math.round(t.kcal);
-  document.getElementById('calPill').textContent = `Target: ${tgt} kcal`;
-  document.getElementById('calRem').textContent = rem>=0 ? `${rem} kcal remaining` : `${Math.abs(rem)} kcal over`;
-  const pct = Math.min(Math.round(t.kcal/tgt*100),100);
   const fill = document.getElementById('calFill');
-  fill.style.width = pct+'%';
-  fill.className = 'cal-fill'+(t.kcal>tgt?' over':'');
+  const exEl = document.getElementById('calExtra');
+
+  if (isHoliday()) {
+    document.getElementById('calPill').textContent = 'No target';
+    document.getElementById('calRem').textContent = 'Holiday — protein floor 100g';
+    fill.style.width = '0%'; fill.className = 'cal-fill';
+    exEl.innerHTML = '';
+  } else {
+    const rem = tgt - t.kcal;
+    document.getElementById('calPill').textContent = `Target: ${tgt} kcal`;
+    document.getElementById('calRem').textContent = rem>=0 ? `${rem} kcal remaining` : `${Math.abs(rem)} kcal over`;
+    fill.style.width = Math.min(Math.round(t.kcal/tgt*100),100)+'%';
+    fill.className = 'cal-fill'+(t.kcal>tgt?' over':'');
+
+    let h = `<span style="color:var(--slate3)">Plan ${Math.round(pl.kcal)} kcal · ${Math.round(pl.p)}g protein</span>`;
+    if (ex.kcal > 0) {
+      const over = t.kcal - tgt;
+      const col = ex.kcal>250?'var(--rose)':ex.kcal>120?'var(--amber)':'var(--slate3)';
+      h += `<br><span style="color:${col};font-weight:600">+ ${Math.round(ex.kcal)} kcal off-plan`
+         + (over>0?` — ${Math.round(over)} over target`:` — still inside target`)+`</span>`;
+    }
+    exEl.innerHTML = h;
+  }
+
+  // Phase banner
+  const pb = document.getElementById('phaseBanner');
+  const ds = sydDate(), ph = phaseFor(ds);
+  if (ph) {
+    pb.classList.remove('hidden');
+    document.getElementById('phaseLbl').textContent = ph.lbl;
+    document.getElementById('phaseNote').textContent = ph.note;
+  } else if (viewOffset===0 && ds >= BLOCK_START && ds <= BLOCK_END) {
+    pb.classList.remove('hidden');
+    const left = daysTo(ds, DEPART);
+    document.getElementById('phaseLbl').textContent =
+      `Cut — pre-holiday block · ${left} day${left===1?'':'s'} to go`;
+    document.getElementById('phaseNote').textContent = isDeload(ds)
+      ? 'Deload week. Lifting sets down ~40%, loads unchanged. Food and steps stay exactly the same.'
+      : 'Hold the line. Zero off-plan days is worth more than every other lever combined.';
+  } else {
+    pb.classList.add('hidden');
+  }
+}
+
+// ── DAILY HABITS ──────────────────────────────────────
+const HABITS = [
+  {k:'prelog', lbl:'Pre-logged the day',  auto:true},
+  {k:'steps',  lbl:'13,000 steps',        auto:false},
+  {k:'sleep',  lbl:'Slept 8h+',           auto:true},
+  {k:'dry',    lbl:'No alcohol',          auto:false},
+  {k:'psyl',   lbl:'Psyllium taken',      auto:true},
+  {k:'prot',   lbl:'Protein 145g+',       auto:true},
+];
+const habKey = () => 'hab_' + sydDate();
+const getHab = () => JSON.parse(localStorage.getItem(habKey())||'{}');
+function toggleHab(k){ const h=getHab(); h[k]=!h[k]; localStorage.setItem(habKey(), JSON.stringify(h)); renderHabits(); }
+
+function habState(k) {
+  const t = totals(), h = getHab();
+  if (k==='prelog') return getLog().some(f=>f.planned);
+  if (k==='psyl')   return getLog().some(f=>counts(f) && /psyllium/i.test(f.name));
+  if (k==='prot')   return t.p >= 145;
+  if (k==='sleep') {
+    const st = getHist('st'); if(!st.length) return !!h.sleep;
+    return st[st.length-1].date===sydDate() ? st[st.length-1].val>=8 : !!h.sleep;
+  }
+  return !!h[k];
+}
+
+function renderHabits() {
+  const done = HABITS.filter(x=>habState(x.k)).length;
+  document.getElementById('habGrid').innerHTML = HABITS.map(x=>{
+    const on = habState(x.k);
+    return `<div onclick="${x.auto?'':`toggleHab('${x.k}')`}" style="display:flex;align-items:center;gap:10px;padding:7px 2px;${x.auto?'':'cursor:pointer'}">
+      <div style="width:20px;height:20px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;background:${on?'var(--green)':'transparent'};border:1.5px solid ${on?'var(--green)':'var(--border)'}">${on?'✓':''}</div>
+      <div style="font-size:13px;color:${on?'var(--slate)':'var(--slate3)'};font-weight:${on?600:400}">${x.lbl}</div>
+      ${x.auto?'<div style="margin-left:auto;font-size:9px;color:var(--slate3);letter-spacing:.06em">AUTO</div>':''}
+    </div>`;
+  }).join('');
+  document.getElementById('habStreak').textContent = `${done}/6 today`;
 }
 
 // ── MACRO RINGS ───────────────────────────────────────
@@ -650,24 +822,30 @@ function setRing(id, pct) {
 }
 function renderRings() {
   const t=totals(), d=cDT;
-  setRing('rP',t.p/d.p); setRing('rC',t.c/d.c); setRing('rF',t.fat/d.f); setRing('rFi',t.fi/32);
+  const r=(v,g)=>g?v/g:0;
+  setRing('rP',r(t.p,d.p)); setRing('rC',r(t.c,d.c)); setRing('rF',r(t.fat,d.f)); setRing('rFi',t.fi/32);
   document.getElementById('vP').textContent=Math.round(t.p);
   document.getElementById('vC').textContent=Math.round(t.c);
   document.getElementById('vF').textContent=Math.round(t.fat);
   document.getElementById('vFi').textContent=Math.round(t.fi);
-  document.getElementById('tP').textContent=`/ ${d.p}g`;
-  document.getElementById('tC').textContent=`/ ${d.c}g`;
-  document.getElementById('tF').textContent=`/ ${d.f}g`;
+  document.getElementById('tP').textContent=d.p?`/ ${d.p}g`:'floor 100g';
+  document.getElementById('tC').textContent=d.c?`/ ${d.c}g`:'—';
+  document.getElementById('tF').textContent=d.f?`/ ${d.f}g`:'—';
   document.getElementById('tFi').textContent=`/ 32g`;
 }
 
 // ── PERFECT DAY ───────────────────────────────────────
 function checkPerfect() {
-  const t=totals(), d=cDT;
-  const ok = viewOffset===0 && t.p>=d.p*0.9 && t.kcal>=d.cal*0.85 && t.kcal<=d.cal*1.1;
+  const t=totals(), d=cDT, ex=extraTotals();
+  const ok = viewOffset===0 && !isHoliday()
+    && t.p>=145 && t.fi>=28
+    && t.kcal>=d.cal*0.85 && t.kcal<=d.cal*1.05
+    && ex.kcal<=120;
   document.getElementById('perfBanner').classList.toggle('hidden',!ok);
   if (ok) {
-    const msgs=['Protein ✓ · Calories ✓ · Recomp happening 🔥','Fuelled perfectly — muscles protected 💪','Nailed it. Body working for you ⭐'];
+    const msgs=['Protein ✓ Fibre ✓ Zero leaks ✓ — this is the day that works 🔥',
+                'Clean day. Fat off, glutes protected 💪',
+                'On plan, on target, no drift. Bank it ⭐'];
     document.getElementById('perfSub').textContent = msgs[new Date().getDay()%3];
   }
 }
@@ -676,28 +854,78 @@ function checkPerfect() {
 function renderLog() {
   const log=getLog(), el=document.getElementById('foodLog');
   const lbl = viewOffset===0?'today':viewOffset===1?'yesterday':`${viewOffset} days ago`;
+
   if (!log.length) {
-    el.innerHTML=`<div class="empty-log"><div style="font-size:26px;margin-bottom:8px">🍽</div>Nothing logged for ${lbl}</div>`;
+    const canPlan = templateFor(sydDate()).length > 0;
+    el.innerHTML=`<div class="empty-log"><div style="font-size:26px;margin-bottom:8px">🍽</div>Nothing logged for ${lbl}`
+      + (canPlan?`<div style="margin-top:12px"><button onclick="loadPlan(true)" style="background:var(--rose);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600">Load today's plan</button></div>`:'')
+      + `</div>`;
     return;
   }
-  el.innerHTML = log.map((f,i)=>
-    `<div class="food-item" style="animation:slideIn .2s ease">
-      <div class="fi-em">${f.emoji||'🍽'}</div>
-      <div class="fi-info">
-        <div class="fi-name">${f.name}</div>
-        <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g · Fi ${f.fi||0}g</div>
-      </div>
-      <div class="fi-kcal">${f.kcal} kcal</div>
-      <button class="fi-del" onclick="delFood(${i})">✕</button>
-    </div>`
-  ).join('');
+
+  // group: planned items by meal slot (in order), extras last
+  const groups=[];
+  log.forEach((f,i)=>{
+    const key = f.planned ? (f.slot||'Meal') : '__extra';
+    let g = groups.find(x=>x.key===key);
+    if(!g){ g={key,time:f.time||'',items:[]}; groups.push(g); }
+    g.items.push({f,i});
+  });
+  groups.sort((a,b)=>(a.key==='__extra'?1:0)-(b.key==='__extra'?1:0));
+
+  let html='';
+  groups.forEach(g=>{
+    const ex = g.key==='__extra';
+    const gt = sumF(g.items.map(x=>x.f).filter(counts));
+    html += `<div style="display:flex;align-items:baseline;gap:8px;margin:14px 2px 6px">
+      <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:${ex?'var(--rose)':'var(--slate3)'}">${ex?'⚠️ Off-plan':g.key}</div>
+      ${g.time?`<div style="font-size:11px;color:var(--slate3)">${g.time}</div>`:''}
+      <div style="margin-left:auto;font-size:11px;color:${ex?'var(--rose)':'var(--slate3)'};font-weight:600">${Math.round(gt.kcal)} kcal · P${Math.round(gt.p)}g</div>
+    </div>`;
+    g.items.forEach(({f,i})=>{
+      const sk = !!f.skipped;
+      html += `<div class="food-item" style="${sk?'opacity:.4':''}${ex?';border-left:3px solid var(--rose)':''}">
+        <div class="fi-em" ${f.planned?`onclick="toggleSkip(${i})" style="cursor:pointer"`:''}>${sk?'⊘':(f.emoji||'🍽')}</div>
+        <div class="fi-info" ${f.planned?`onclick="toggleSkip(${i})" style="cursor:pointer"`:''}>
+          <div class="fi-name" style="${sk?'text-decoration:line-through':''}">${f.name}</div>
+          <div class="fi-mac">P ${f.p}g · C ${f.c}g · F ${f.fat}g · Fi ${f.fi||0}g${f.planned&&!sk?' · tap to skip':''}</div>
+        </div>
+        <div class="fi-kcal">${f.kcal} kcal</div>
+        <button class="fi-del" onclick="delFood(${i})">✕</button>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
 }
 
 function addFood(f) { const l=getLog(); l.push({...f}); saveLog(l); render(); }
 function delFood(i) { const l=getLog(); l.splice(i,1); saveLog(l); render(); }
+function toggleSkip(i){ const l=getLog(); if(!l[i]) return; l[i].skipped=!l[i].skipped; saveLog(l); render(); }
 function clearLog() {
   const lbl = viewOffset===0?'today':viewOffset===1?"yesterday":`${viewOffset} days ago`;
-  if(confirm(`Clear log for ${lbl}?`)){ saveLog([]); render(); }
+  if(confirm(`Clear log for ${lbl}?`)){ saveLog([]); localStorage.setItem('planned_'+todayKey(),'skip'); render(); }
+}
+
+// ── PLAN AUTOLOAD ─────────────────────────────────────
+function loadPlan(force) {
+  const tpl = templateFor(sydDate());
+  if (!tpl.length) return;
+  const l = getLog();
+  if (force) {
+    const keep = l.filter(f=>!f.planned);          // preserve off-plan items
+    saveLog([...tpl, ...keep]);
+  } else {
+    if (l.length) return;
+    saveLog(tpl);
+  }
+  localStorage.setItem('planned_'+todayKey(),'1');
+  render();
+}
+function maybeAutoload() {
+  if (viewOffset !== 0) return;
+  if (localStorage.getItem('planned_'+todayKey())) return;
+  if (getLog().length) return;
+  loadPlan(false);
 }
 
 function addCustom() {
@@ -919,7 +1147,7 @@ function renderCoachTab() {
     const ago=6-i, log=getPastLog(ago), tot=logTotals(log);
     const dd=new Date(); dd.setDate(dd.getDate()-ago);
     const dow=dd.getDay();
-    const tgt=DT.find(dt=>dt.days.includes(dow))?.cal||1825;
+    const tgt=DT.find(dt=>dt.days.includes(dow))?.cal||1600;
     return{lbl:days[dd.getDay()],kcal:Math.round(tot.kcal),tgt,today:ago===0};
   });
   const maxK=Math.max(...week.map(w=>w.tgt),2200);
@@ -940,7 +1168,7 @@ function renderCoachTab() {
   let streak=0;
   for(let i=0;i<30;i++){
     const tot=logTotals(getPastLog(i));
-    if(tot.p>=130) streak++;
+    if(tot.p>=145) streak++;
     else if(i>0) break;
   }
   document.getElementById('ccStreak').textContent=streak;
@@ -985,65 +1213,65 @@ function renderCoachTab() {
   ).join('');
 
   // ── MEAL TIMING ───────────────────────────────────────
-  const tomorrow = DT.find(dt=>dt.days.includes(new Date(Date.now()+86400000).getDay()))||DT[2];
   const timing = [];
+  const protLeft = Math.max(0, d.p - Math.round(t.p));
+  const lifts = [1,3,5], isLift = lifts.includes(new Date().getDay());
 
-  if (hr>=5&&hr<9) {
-    timing.push({ico:'🌅',title:'Breakfast window',col:'var(--amber)',
-      txt:`Start with protein — aim for 30–40g now. Chobani + psyllium husk + WPI shake gets you ~42g and 10g fibre before 9am.`});
-    if(d.key==='quality'||d.key==='long') timing.push({ico:'🍚',title:'Session fuel needed',col:'var(--amber)',
-      txt:`${d.lbl} today — add 40–50g carbs to breakfast. Oats or a banana will top up glycogen before your session.`});
-  }
-  else if(hr>=9&&hr<12) {
-    timing.push({ico:'☀️',title:'Mid-morning',col:'var(--green)',
-      txt:`Good time for a fibre hit if breakfast was protein-heavy. Apple, berries or avocado keeps blood sugar stable until lunch.`});
-    if(t.p<30) timing.push({ico:'⚠️',title:'Protein check',col:'var(--rose)',
-      txt:`Only ${Math.round(t.p)}g protein so far — try to hit 30g before midday. A WPI shake or tuna can is quick and easy.`});
-  }
-  else if(hr>=12&&hr<14) {
-    timing.push({ico:'🍽',title:'Lunch window',col:'var(--rose)',
-      txt:`Aim for your biggest protein meal now — 40–50g. Prime muscle synthesis window. Mince, chicken or steak with veg and a carb portion.`});
-    if(d.key==='quality'||d.key==='long') timing.push({ico:'⚡',title:'Pre-session carbs',col:'var(--amber)',
-      txt:`Session coming up — make sure lunch has 50–60g carbs (rice or sweet potato) to fuel your ${d.lbl.toLowerCase()}.`});
-  }
-  else if(hr>=14&&hr<17) {
-    timing.push({ico:'🔋',title:'Afternoon snack window',col:'var(--amber)',
-      txt:`Good window for a snack if you have a session this afternoon. Protein bar or Chobani + fruit — protein + carbs together is ideal pre-training.`});
-    const protLeft=d.p-Math.round(t.p);
-    if(protLeft>60) timing.push({ico:'💪',title:'Protein pace check',col:'var(--rose)',
-      txt:`${protLeft}g protein still to hit today — that's a lot to eat in the evening. Consider a shake now to spread the load.`});
-  }
-  else if(hr>=17&&hr<20) {
-    timing.push({ico:'🍳',title:'Dinner window',col:'var(--rose)',
-      txt:`Best time for your second big protein meal — 175–200g lean mince or chicken. Pair with broccolini and sweet potato for fibre and carbs.`});
-    if(tomorrow.key==='long'||tomorrow.key==='quality') timing.push({ico:'🍚',title:`Tomorrow is a ${tomorrow.lbl}`,col:'var(--purple)',
-      txt:`Load up on carbs at dinner tonight — 60–80g rice or sweet potato. Your glycogen stores fill overnight, this is the most underrated performance hack.`});
-  }
-  else if(hr>=20) {
-    const protLeft=d.p-Math.round(t.p);
-    if(protLeft>20) timing.push({ico:'🌙',title:'Evening protein',col:'var(--rose)',
-      txt:`Still ${protLeft}g protein to go — cottage cheese before bed is ideal. Casein protein digests slowly overnight, feeding muscle repair while you sleep.`});
-    else timing.push({ico:'✅',title:'Evening wind-down',col:'var(--green)',
-      txt:`Strong day. Make sure you\'re hydrated and tomorrow\'s ${tomorrow.lbl} is set up — carbs topped up, protein hit.`});
-    if(tomorrow.key==='long'||tomorrow.key==='quality') timing.push({ico:'🏃',title:`Tomorrow: ${tomorrow.lbl}`,col:'var(--purple)',
-      txt:`${tomorrow.lbl} tomorrow — your last meal tonight should include 50–70g carbs. Don\'t go to bed in a glycogen deficit.`});
-  }
+  if (isHoliday()) {
+    timing.push({ico:'🌴',title:'Holiday mode',col:'var(--purple)',
+      txt:'No tracking. Two things only: protein at every main meal, and move most days. Everything else looks after itself.'});
+  } else {
+    if (hr<5) {
+      timing.push({ico:'🌙',title:'Go to sleep',col:'var(--purple)',
+        txt:'Nothing you can do with food right now beats being asleep. Eight hours is the difference between fat loss and lean-mass loss at the same deficit.'});
+    }
+    else if (hr>=5&&hr<9) {
+      timing.push({ico:'🌅',title:'Pre-log the day now',col:'var(--rose)',
+        txt:'Your plan should already be loaded. Glance at it, adjust anything you know will change, then eat it. Deciding at 7am beats deciding at 3pm when you\'re hungry.'});
+      timing.push({ico:'🌾',title:'Psyllium with breakfast',col:'var(--green)',
+        txt:'Two teaspoons into the Chobani. It is the single thing that makes 1,600 kcal feel tolerable — 10g fibre for 30 kcal.'});
+    }
+    else if (hr>=9&&hr<12) {
+      if (t.p<40) timing.push({ico:'⚠️',title:'Protein behind pace',col:'var(--rose)',
+        txt:`Only ${Math.round(t.p)}g by mid-morning. Breakfast should carry ~42g on its own — if you skipped the WPI scoop, add it now.`});
+      else timing.push({ico:'☕',title:'Second coffee — and that\'s the cap',col:'var(--amber)',
+        txt:'Two oat flat whites is 200 kcal. A third takes you to 300 and it is the most reliable leak in your day. Third one is black.'});
+    }
+    else if (hr>=12&&hr<14) {
+      timing.push({ico:'🍽',title:'Lunch — 40g+ protein',col:'var(--rose)',
+        txt:'Second of your four feeds. Each needs ~35–40g of complete protein to clear the leucine threshold; three big feeds instead of four wastes the tail end.'});
+    }
+    else if (hr>=14&&hr<17) {
+      if (isLift) timing.push({ico:'⚡',title:'Pre-lift carbs',col:'var(--amber)',
+        txt:'Protein bar 60–90 min before you lift. Carbs plus protein before a session is what lets you hold load in a deficit — and holding load is what protects the glutes.'});
+      if (protLeft>60) timing.push({ico:'💪',title:'Protein pace check',col:'var(--rose)',
+        txt:`${protLeft}g still to go — too much for one dinner. Add a WPI scoop now rather than trying to eat it all at 8pm.`});
+      timing.push({ico:'🥜',title:'The 3pm decision',col:'var(--amber)',
+        txt:'This is the hour the almond pack wins. Look at the calorie line above before you open anything — if it says you have 88 kcal spare, a 174 kcal pack puts you over.'});
+    }
+    else if (hr>=17&&hr<20) {
+      timing.push({ico:'🍳',title:'Dinner window',col:'var(--rose)',
+        txt:'200g lean mince or salmon with broccolini and sweet potato. If it\'s salmon tonight, skip the avocado at lunch — two fat-dense items in one day is what crowds out protein headroom.'});
+      if (isLift) timing.push({ico:'🥛',title:'Post-lift protein',col:'var(--green)',
+        txt:'Within 90 minutes of finishing. If dinner is later than that, a WPI scoop bridges the gap.'});
+    }
+    else if (hr>=20) {
+      if (protLeft>20) timing.push({ico:'🌙',title:'Evening protein',col:'var(--rose)',
+        txt:`${protLeft}g to go. Cottage cheese before bed — slow-digesting casein feeds overnight muscle repair, which matters more in a deficit than out of one.`});
+      else timing.push({ico:'✅',title:'Day closed out',col:'var(--green)',
+        txt:'Protein hit. Now the highest-value thing left is lights out — same-deficit studies show short sleep more than halves fat loss, with the shortfall coming out of lean mass.'});
+      if (new Date().getDay()===0) timing.push({ico:'😴',title:'Strength A tomorrow',col:'var(--purple)',
+        txt:'Monday is your heaviest glute session. 8 hours tonight is non-negotiable — this is the one night of the week where sleep directly buys you load on the bar.'});
+    }
 
-  if(hr<20&&(tomorrow.key==='long'||tomorrow.key==='quality')) {
-    timing.push({ico:'📅',title:`Tomorrow: ${tomorrow.lbl}`,col:'var(--purple)',
-      txt:`Hit your carb target tonight — rice or sweet potato with dinner. Glycogen loading starts the night before, not on race morning.`});
-  }
+    const exK = extraTotals().kcal;
+    if (exK>250) timing.push({ico:'🚨',title:'Off-plan today',col:'var(--rose)',
+      txt:`${Math.round(exK)} kcal off-plan. Three days like this a week cuts the month from ~3kg down to ~2kg. Don't compensate by cutting tomorrow — just get back on plan.`});
 
-  if((d.key==='long'||d.key==='quality')&&hr>=10&&t.kcal<300) {
-    timing.push({ico:'🚨',title:'Post-session nutrition?',col:'var(--rose)',
-      txt:`It\'s a ${d.lbl} and you\'ve barely eaten. The 30–45 min post-session window is critical — protein + carbs now accelerates recovery and reduces next-day soreness.`});
-  }
-
-  if(hr>=12&&t.p>0){
-    const mealCount=Math.max(1,Math.floor(hr/6));
-    const actualPerMeal=Math.round(t.p/mealCount);
-    if(actualPerMeal>45) timing.push({ico:'📊',title:'Spread your protein',col:'var(--amber)',
-      txt:`Averaging ~${actualPerMeal}g protein per meal. Your body can only synthesise muscle from ~35–40g per sitting — aim for 4 meals of ~${Math.round(d.p/4)}g rather than 2 big hits.`});
+    const hasAv = getLog().some(f=>counts(f)&&/avocado/i.test(f.name));
+    const hasSa = getLog().some(f=>counts(f)&&/salmon/i.test(f.name));
+    if (hasAv&&hasSa) timing.push({ico:'🥑',title:'Two fat-dense items',col:'var(--amber)',
+      txt:'Avocado and salmon in the same day — roughly 28g of fat between them. It\'s your known pattern for crowding out protein headroom. Fine occasionally, not as a default.'});
   }
 
   document.getElementById('mealTiming').innerHTML = timing.length
@@ -1055,7 +1283,51 @@ function renderCoachTab() {
           </div>
           <div style="font-size:12px;color:var(--slate2);line-height:1.6">${tm.txt}</div>
         </div>`).join('')
-    : `<div class="card" style="padding:14px;color:var(--slate3);font-size:13px">Check back throughout the day for timing guidance.</div>`;
+    : `<div class="card" style="padding:14px;color:var(--slate3);font-size:13px">Check back through the day for timing guidance.</div>`;
+
+  // ── BLOCK PROGRESS ──────────────────────────────────
+  const bpEl = document.getElementById('blockProg');
+  if (bpEl) {
+    const ds = sydDate();
+    if (ds > BLOCK_END) {
+      bpEl.innerHTML = `<div style="font-size:13px;color:var(--slate2);line-height:1.6">Block complete. ${isHoliday()?'Holiday mode — protein floor 100g, three easy runs, two glute sessions.':'Ramping to maintenance before you fly.'}</div>`;
+    } else {
+      const total = daysTo(BLOCK_START, DEPART);
+      const gone  = Math.max(0, daysTo(BLOCK_START, ds));
+      const left  = Math.max(0, daysTo(ds, DEPART));
+      // clean-day count over the block so far
+      let clean=0, leaks=0, logged=0;
+      for(let i=0;i<Math.min(gone+1,31);i++){
+        const lg=getPastLog(i); if(!lg.length) continue;
+        logged++;
+        const ek=sumF(lg.filter(f=>!f.planned&&counts(f))).kcal;
+        if(ek>250) leaks++; else clean++;
+      }
+      const adher = logged?Math.round(clean/logged*100):0;
+      const proj  = (2.5*(adher/100) + 1.8*(1-adher/100)).toFixed(1);
+      bpEl.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <div style="font-family:'Playfair Display',serif;font-size:36px;color:var(--rose);line-height:1">${left}</div>
+          <div style="font-size:12px;color:var(--slate3)">days to departure</div>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:12px">
+          <div style="height:100%;width:${Math.min(Math.round(gone/total*100),100)}%;background:var(--rose);border-radius:3px"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:rgba(255,255,255,.5);border-radius:10px;padding:11px">
+            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--slate3);margin-bottom:3px">Clean days</div>
+            <div style="font-size:19px;font-weight:700;color:${adher>=85?'var(--green)':adher>=70?'var(--amber)':'var(--rose)'}">${clean} / ${logged}</div>
+            <div style="font-size:10px;color:var(--slate3);margin-top:2px">${leaks} day${leaks===1?'':'s'} over 250 kcal off-plan</div>
+          </div>
+          <div style="background:rgba(255,255,255,.5);border-radius:10px;padding:11px">
+            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--slate3);margin-bottom:3px">Projected loss</div>
+            <div style="font-size:19px;font-weight:700;color:var(--slate)">${proj} kg</div>
+            <div style="font-size:10px;color:var(--slate3);margin-top:2px">fat, by 30 Aug at this rate</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--slate3);line-height:1.55;margin-top:10px">Clean = under 250 kcal off-plan. The gap between 100% and 70% adherence is about 1kg over the block — bigger than every other variable put together.</div>`;
+    }
+  }
 
   // 7-day macro averages
   let avgs={p:0,c:0,fat:0,kcal:0,n:0};
@@ -1098,16 +1370,16 @@ function renderCoachTab() {
   // Build 7-day protein history
   const p7 = Array.from({length:7},(_,i)=>logTotals(getPastLog(i)).p);
   const p7avg = Math.round(p7.reduce((a,b)=>a+b,0) / p7.filter(v=>v>0).length || 0);
-  const p7hit = p7.filter(v=>v>=130).length;
+  const p7hit = p7.filter(v=>v>=145).length;
 
   analysis.push({
     emoji:'🥩', title:'Protein', color:protColor, bg:protBg, status:protStatus,
     today:`${Math.round(t.p)}g of ${d.p}g target (${protPct}%)`,
     lines:[
-      `${protKcal} kcal from protein today — ${protOfTotal}% of total intake. Ideal range is 25–35% for recomposition.`,
-      p7avg > 0 ? `7-day average: ${p7avg}g/day. You hit 130g+ on ${p7hit} of the last 7 days.` : null,
+      `${protKcal} kcal from protein today — ${protOfTotal}% of total intake. Ideal range is 30–40% during a cut this deep.`,
+      p7avg > 0 ? `7-day average: ${p7avg}g/day. You hit 145g+ on ${p7hit} of the last 7 days.` : null,
       t.p < d.p ? `Still need ${d.p - Math.round(t.p)}g today. Each serve of mince, chicken or salmon adds ~34–42g.` : `Protein target hit — muscle synthesis active, fat loss preserved.`,
-      `Protein keeps you full, protects your 44.6kg muscle mass, and is hardest to overeat. Prioritise it at every meal.`,
+      `Protein keeps you full, protects your muscle mass, and is hardest to overeat. Prioritise it at every meal.`,
     ].filter(Boolean)
   });
 
@@ -1122,7 +1394,7 @@ function renderCoachTab() {
   } else if (t.c >= d.c * 0.85) {
     carbStatus='On target'; carbColor='var(--green)'; carbBg='var(--green-pale)';
     carbNote=`Carbs dialled in — your muscles have glycogen to fuel training and recover well.`;
-  } else if (d.key === 'long' || d.key === 'quality') {
+  } else if (false) {
     carbStatus='Too low for today'; carbColor='var(--rose)'; carbBg='var(--rose-pale)';
     carbNote=`It's a ${d.lbl.toLowerCase()} — you need ${d.c}g carbs to fuel performance. Under-fuelling hard sessions tanks pace and muscle.`;
   } else {
@@ -1137,9 +1409,9 @@ function renderCoachTab() {
     today:`${Math.round(t.c)}g of ${d.c}g target (${carbPct}%)`,
     lines:[
       `${carbKcal} kcal from carbs — ${carbOfTotal}% of intake. For a runner, 40–50% is typical on training days.`,
-      c7avg > 0 ? `7-day average: ${c7avg}g/day. Your target ranges from 160g (rest) to 200g (long run).` : null,
+      c7avg > 0 ? `7-day average: ${c7avg}g/day. Your target is 120g on rest days, 138g on training days.` : null,
       carbNote,
-      `Carbs before quality sessions and long runs are non-negotiable — they're your fuel, not your enemy.`,
+      `Carbs are what let you hold lifting load in a deficit. Holding load is what protects the glutes.`,
     ].filter(Boolean)
   });
 
@@ -1166,7 +1438,7 @@ function renderCoachTab() {
     today:`${Math.round(t.fat)}g of ${d.f}g target (${fatPct}%)`,
     lines:[
       `${fatKcal} kcal from fat — ${fatOfTotal}% of intake. Fat should sit around 25–30% of total calories.`,
-      f7avg > 0 ? `7-day average: ${f7avg}g/day. Your target is 55–65g across the week.` : null,
+      f7avg > 0 ? `7-day average: ${f7avg}g/day. Your target is 45–50g — deliberately low to leave room for protein.` : null,
       fatNote,
       `Fat doesn't make you fat — excess calories do. Focus fat intake on omega-3 sources like salmon and quality oils.`,
     ].filter(Boolean)
@@ -1208,6 +1480,7 @@ function render() {
   renderCal();
   renderRings();
   renderLog();
+  renderHabits();
   checkPerfect();
 }
 
@@ -1215,6 +1488,7 @@ function render() {
 renderHeader();
 renderDTRow();
 renderFavs();
+maybeAutoload();
 render();
 </script>
 </body>
