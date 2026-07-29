@@ -749,12 +749,13 @@ function renderCal() {
     fill.style.width = Math.min(Math.round(t.kcal/tgt*100),100)+'%';
     fill.className = 'cal-fill'+(t.kcal>tgt?' over':'');
 
-    let h = `<span style="color:var(--slate3)">Plan ${Math.round(pl.kcal)} kcal · ${Math.round(pl.p)}g protein</span>`;
-    if (ex.kcal > 0) {
-      const over = t.kcal - tgt;
-      const col = ex.kcal>250?'var(--rose)':ex.kcal>120?'var(--amber)':'var(--slate3)';
-      h += `<br><span style="color:${col};font-weight:600">+ ${Math.round(ex.kcal)} kcal beyond plan`
-         + (over>0?` — ${Math.round(over)} over target`:` — still inside target`)+`</span>`;
+    const over = t.kcal - tgt;
+    let h = `<span style="color:var(--slate3)">From plan ${Math.round(pl.kcal)} kcal`
+          + (ex.kcal>0?` · added ${Math.round(ex.kcal)} kcal`:``) + `</span>`;
+    if (over > 0) {
+      h += `<br><span style="color:var(--rose);font-weight:600">${Math.round(over)} kcal over target</span>`;
+    } else if (t.p >= 145) {
+      h += `<br><span style="color:var(--green);font-weight:600">Inside target, protein hit \u2014 clean day</span>`;
     }
     exEl.innerHTML = h;
   }
@@ -841,8 +842,7 @@ function checkPerfect() {
   const t=totals(), d=cDT, ex=extraTotals();
   const ok = viewOffset===0 && !isHoliday()
     && t.p>=145 && t.fi>=28
-    && t.kcal>=d.cal*0.85 && t.kcal<=d.cal*1.05
-    && ex.kcal<=120;
+    && t.kcal>=d.cal*0.85 && t.kcal<=d.cal*1.05;
   document.getElementById('perfBanner').classList.toggle('hidden',!ok);
   if (ok) {
     const msgs=['Protein ✓ Fibre ✓ Zero leaks ✓ — this is the day that works 🔥',
@@ -1383,8 +1383,10 @@ function renderCoachTab() {
       for(let i=0;i<Math.min(gone+1,31);i++){
         const lg=getPastLog(i); if(!lg.length) continue;
         logged++;
-        const ek=sumF(lg.filter(f=>!f.planned&&counts(f))).kcal;
-        if(ek>250) leaks++; else clean++;
+        const tt=sumF(lg.filter(counts));
+        const dow=new Date(keyForOffset(i).replace('nutr_','')+'T12:00:00').getDay();
+        const cap=((dow===0||dow===6)?1500:1600)*1.05;
+        if(tt.kcal>cap||tt.p<145) leaks++; else clean++;
       }
       const adher = logged?Math.round(clean/logged*100):0;
       const proj  = (2.5*(adher/100) + 1.8*(1-adher/100)).toFixed(1);
@@ -1400,7 +1402,7 @@ function renderCoachTab() {
           <div style="background:rgba(255,255,255,.5);border-radius:10px;padding:11px">
             <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--slate3);margin-bottom:3px">Clean days</div>
             <div style="font-size:19px;font-weight:700;color:${adher>=85?'var(--green)':adher>=70?'var(--amber)':'var(--rose)'}">${clean} / ${logged}</div>
-            <div style="font-size:10px;color:var(--slate3);margin-top:2px">${leaks} day${leaks===1?'':'s'} over 250 kcal off-plan</div>
+            <div style="font-size:10px;color:var(--slate3);margin-top:2px">${leaks} day${leaks===1?'':'s'} over target or short on protein</div>
           </div>
           <div style="background:rgba(255,255,255,.5);border-radius:10px;padding:11px">
             <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--slate3);margin-bottom:3px">Projected loss</div>
@@ -1408,7 +1410,7 @@ function renderCoachTab() {
             <div style="font-size:10px;color:var(--slate3);margin-top:2px">fat, by 30 Aug at this rate</div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--slate3);line-height:1.55;margin-top:10px">Clean = under 250 kcal off-plan. The gap between 100% and 70% adherence is about 1kg over the block — bigger than every other variable put together.</div>`;
+        <div style="font-size:11px;color:var(--slate3);line-height:1.55;margin-top:10px">Clean = inside your calorie target with protein at 145g+, whatever you actually ate. The gap between 100% and 70% adherence is about 1kg over the block — bigger than every other variable put together.</div>`;
     }
   }
 
