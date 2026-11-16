@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="header">
-  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v8.8</div>
+  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v9.0</div>
   <div class="nav">
     <button id="prev">&#8592;</button>
     <div class="date-display" id="dateDisplay"></div>
@@ -810,7 +810,7 @@ const block=getBlock(todayNorm);let dhtml="";
 if(block){const weekInBlock=getWeek(todayNorm,block);const pct=Math.min(Math.round((weekInBlock/block.weeks)*100),100);dhtml+='<div class="dash-section"><div class="dash-title">Current Block</div><div class="block-name" style="color:'+(block.color)+';font-size:15px">'+(block.name)+'</div><div class="progress-text">Week '+(weekInBlock)+' of '+(block.weeks)+' \u2022 '+(block.weeklyKm)+' km/week</div><div class="progress-wrap"><div class="progress-bar" style="width:'+(pct)+'%;background:'+(block.color)+'"></div></div></div>'}
 const races=[{name:"The push \u00B7 8 Dec",date:new Date(2026,11,8,12,0,0),goal:"18,000 steps a day, same food",dist:"Cut to 3 Jan"},{name:"Fly to NYC \u00B7 8 Jan",date:new Date(2027,0,8,12,0,0),goal:"Cut to 3 Jan, maintenance from 4 Jan",dist:"Arrive rested"},{name:"City2Surf 2027",date:new Date(2027,7,8,12,0,0),goal:"sub-70 min",dist:"14.4 km"}];
 const nextRace=races.find(r=>r.date>todayNorm);
-if(nextRace){const daysUntil=Math.ceil((nextRace.date-todayNorm)/(864e5));dhtml+='<div class="dash-section"><div class="race-countdown"><div class="race-countdown-left"><div class="race-countdown-eyebrow">Counting down to</div><div class="race-countdown-name">'+(nextRace.name)+'</div><div class="race-countdown-goal">'+(nextRace.goal)+' &nbsp;\u00B7&nbsp; '+(nextRace.dist)+'</div></div><div class="race-countdown-right"><div class="race-countdown-days">'+(daysUntil)+'</div><div class="race-countdown-days-label">days to go</div></div></div></div>'}
+if(nextRace){const daysUntil=Math.ceil((nextRace.date-todayNorm)/(864e5));dhtml+='<div class="dash-section">'+compactCard({grad:"#C4607A,#A04060",eyebrow:"Counting down to",title:nextRace.name,note:nextRace.goal+' \u00B7 '+nextRace.dist,count:daysUntil,countLabel:daysUntil===1?"day to go":"days to go",mb:0})+'</div>'}
 const monday=new Date(todayNorm);const dow=monday.getDay();const diff=dow===0?6:dow-1;monday.setDate(monday.getDate()-diff);
 const dayLabels=["M","T","W","T","F","S","S"];let stripHtml="";
 for(let i=0;i<7;i++){
@@ -1277,20 +1277,7 @@ function coachPhasePanel(){
     if(!tg)return String(stepTarget(c)).replace(" \u2014 ",", ");
     return pd?gN(pd.steps)+" / "+gN(tg)+" steps"+(pd.steps>=tg?" \u2713":""):gN(tg)+" steps";
   }
-  // Compact: title + small countdown badge, the plan as wrapping chips, one short "next" line
-  function card(grad,eyebrow,title,chips,note,count,countLabel){
-    var h='<div style="background:linear-gradient(135deg,'+grad+');border-radius:14px;padding:12px 14px;margin-bottom:12px;color:#fff">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'
-      +'<div style="flex:1;min-width:0"><div style="font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.7">'+eyebrow+'</div>'
-      +'<div style="font-size:15.5px;font-weight:800;margin-top:2px;line-height:1.2">'+title+'</div></div>'
-      +(count!=null?'<div style="flex-shrink:0;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border-radius:10px;padding:5px 9px">'
-        +'<span style="font-size:20px;font-weight:800;line-height:1">'+count+'</span>'
-        +'<span style="font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.85;line-height:1.2;max-width:58px">'+countLabel+'</span></div>':'')
-      +'</div>';
-    if(chips&&chips.length)h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:9px">'+chips.map(function(t){return'<span style="font-size:10.5px;font-weight:600;background:rgba(255,255,255,.16);padding:3px 7px;border-radius:9px;white-space:nowrap">'+t+'</span>';}).join("")+'</div>';
-    if(note)h+='<div style="margin-top:8px;font-size:11px;opacity:.85;line-height:1.4">'+note+'</div>';
-    return h+'</div>';
-  }
+  function card(grad,eyebrow,title,chips,note,count,countLabel){return compactCard({grad:grad,eyebrow:eyebrow,title:title,chips:chips,note:note,count:count,countLabel:countLabel});}
   var KCAL_CUT="1,700 / 1,600 kcal",PROT="Protein 150g+";
   if(bid==="p1"){
     var dl=isDeloadWk(currentDate),push=c>=parseLocal("2026-12-08"),n=push?daysTo("2027-01-04"):daysTo("2026-12-08");
@@ -1739,6 +1726,19 @@ function gCycleLine(cy){
 }
 function goHealthTab(){viewMode="health";render();setActiveTab("goHealth");window.scrollTo({top:0,behavior:"smooth"});}
 
+// Recovery card shared by Daily and Health. o: {level, ds, guidance, reasons[], extra[], link, wrap, side, mb}
+function gRecoveryCard(o){
+  var ls=gLevelStyle(o.level);
+  return'<div'+(o.link?' onclick="goHealthTab()"':'')+' style="display:flex;gap:10px;align-items:center;padding:10px 14px;background:'+ls.bg+';border:0.5px solid '+ls.bd+';border-radius:12px;margin-bottom:'+(o.mb||0)+'px'+(o.link?';cursor:pointer':'')+'">'
+    +'<span style="font-size:15px;align-self:flex-start;margin-top:1px">'+ls.ic+'</span>'
+    +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:'+ls.col+'">'+gLevelTitle(o.level,o.ds)+'</div>'
+    +'<div style="font-size:11.5px;color:#4A3D5A;line-height:1.45;margin-top:1px">'+o.guidance+'</div>'
+    +(o.reasons&&o.reasons.length?'<div style="font-size:10.5px;color:#A898B0;line-height:1.4;margin-top:2px'+(o.wrap?'':';white-space:nowrap;overflow:hidden;text-overflow:ellipsis')+'">'+gEsc(o.reasons.join(" \u00B7 "))+'</div>':'')
+    +(o.extra||[]).map(function(x){return'<div style="font-size:10.5px;color:#7A6B8A;line-height:1.4;margin-top:2px">'+x+'</div>';}).join("")
+    +'</div>'
+    +(o.link?'<span style="font-size:16px;color:#A898B0">\u203A</span>':o.side?'<span style="font-size:11px;font-weight:700;color:'+ls.col+';flex-shrink:0;align-self:flex-start;white-space:nowrap">'+o.side+'</span>':'')
+    +'</div>';
+}
 // ----- Daily view hooks -----
 function applyGarminDaily(){
   var d=garmin.data,ds=gDs(currentDate);
@@ -1759,14 +1759,9 @@ function applyGarminDaily(){
   var box=$("garmin-daily");
   if(box){
     if(d&&d.recovery&&d.date===ds&&ds===gDs()){
-      var r=d.recovery,ls=gLevelStyle(r.level);
+      var r=d.recovery;
       box.style.display="block";
-      box.innerHTML='<div onclick="goHealthTab()" style="display:flex;gap:10px;align-items:center;padding:10px 14px;background:'+ls.bg+';border:0.5px solid '+ls.bd+';border-radius:12px;cursor:pointer">'
-        +'<span style="font-size:15px">'+ls.ic+'</span>'
-        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:'+ls.col+'">'+gLevelTitle(r.level,ds)+'</div>'
-        +'<div style="font-size:11.5px;color:#4A3D5A;line-height:1.45;margin-top:1px">'+gGuidance(r.level,gSessions(currentDate),ds)+'</div>'
-        +(r.reasons.length?'<div style="font-size:10.5px;color:#A898B0;line-height:1.4;margin-top:2px">'+gEsc(r.reasons.join(" \u00B7 "))+'</div>':'')+'</div>'
-        +'<span style="font-size:16px;color:#A898B0">\u203A</span></div>';
+      box.innerHTML=gRecoveryCard({level:r.level,ds:ds,guidance:gGuidance(r.level,gSessions(currentDate),ds),reasons:r.reasons,link:true});
     }else{box.style.display="none";box.innerHTML="";}
   }
 }
@@ -1906,7 +1901,7 @@ function renderHealthTab(){
   if(e&&e.code!=="app_key_required"&&e.code!=="key_rejected")html+='<div style="font-size:11.5px;color:#B8883E;margin:-4px 0 10px">Last refresh failed ('+gEsc(e.msg)+'). Showing the last good sync.</div>';
 
   // Hero: recovery verdict + what it means for today's session
-  var lv=rec?rec.level:null,ls=gLevelStyle(lv),sess=gSessions(currentDate);
+  var lv=rec?rec.level:null,sess=gSessions(currentDate);
   var todayBits=[];if(sess.str)todayBits.push(gShort(sess.str));if(sess.run)todayBits.push(sess.run);
   var chips=rec?(rec.reasons.length?rec.reasons:["All signals in range"]):[];
   var tm=new Date(currentDate);tm.setDate(tm.getDate()+1);var ts=gSessions(tm),nudge="";
@@ -1917,14 +1912,9 @@ function renderHealthTab(){
   if(cy)foot.push(gCycleLine(cy));
   if(rec&&rec.context&&rec.context.length)foot.push(gEsc(rec.context.join(". "))+".");
   if(gTravel(d.date))foot.push("Flight week: sleep, HRV and resting HR will read worse for a few days. That\u2019s jet lag, not lost fitness.");
-  html+='<div style="background:linear-gradient(135deg,'+ls.grad+');border-radius:16px;padding:16px 18px;margin-bottom:12px;color:#fff">'
-    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div style="flex:1">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.7">Recovery \u00B7 '+fmt(parseLocal(d.date))+'</div>'
-    +'<div style="font-size:18px;font-weight:800;margin-top:4px">'+gLevelTitle(lv,d.date)+'</div>'
-    +'<div style="font-size:12.5px;opacity:.9;line-height:1.55;margin-top:6px">'+(lv?gGuidance(lv,sess,d.date):"Open Garmin Connect on your phone so the watch syncs, then refresh.")+'</div>'
-    +(chips.length?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">'+chips.map(function(c){return'<span style="font-size:11px;font-weight:600;background:rgba(255,255,255,0.18);padding:3px 9px;border-radius:12px">'+gEsc(c)+'</span>';}).join("")+'</div>':'')
-    +'</div>'+(rec?'<div style="text-align:right;flex-shrink:0"><div style="font-size:40px;font-weight:800;line-height:1">'+(rec.signals-rec.reasons.length)+'/'+rec.signals+'</div><div style="font-size:10px;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:1px">signals<br>in range</div></div>':'')
-    +'</div><div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2);font-size:11.5px;opacity:.88;line-height:1.55">'+foot.join("<br>")+'</div></div>';
+  html+=gRecoveryCard({level:lv,ds:d.date,guidance:lv?gGuidance(lv,sess,d.date):"Open Garmin Connect on your phone so the watch syncs, then refresh.",
+    reasons:rec?(rec.reasons.length?rec.reasons:["All signals in range"]):[],extra:foot,wrap:true,mb:12,
+    side:rec?(rec.signals-rec.reasons.length)+"/"+rec.signals+" in range":""});
 
   // Four headline tiles
   var sc=sl&&sl.score!=null?sl.score:null,scCol=sc==null?"#A898B0":sc>=80?"#2D6A4F":sc>=60?"#B8883E":"#C4607A";
@@ -2056,6 +2046,23 @@ function togglePhase(){
   var open=!bi.classList.contains("open");
   bi.classList.toggle("open",open);bi.setAttribute("aria-expanded",open?"true":"false");
   try{localStorage.setItem("ui-phase-open",open?"1":"0")}catch(e){}
+}
+
+// ===== Compact gradient card, shared by Home (countdown), Coach (phase) and Health (recovery) =====
+// o: {grad, eyebrow, title, sub, chips[], note, count, countLabel, mb}
+function compactCard(o){
+  var h='<div style="background:linear-gradient(135deg,'+o.grad+');border-radius:14px;padding:12px 14px;margin-bottom:'+(o.mb!=null?o.mb:12)+'px;color:#fff">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'
+    +'<div style="flex:1;min-width:0"><div style="font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.7">'+o.eyebrow+'</div>'
+    +'<div style="font-size:15.5px;font-weight:800;margin-top:2px;line-height:1.2">'+o.title+'</div></div>'
+    +(o.count!=null?'<div style="flex-shrink:0;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border-radius:10px;padding:5px 9px">'
+      +'<span style="font-size:20px;font-weight:800;line-height:1">'+o.count+'</span>'
+      +'<span style="font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.85;line-height:1.2;max-width:58px">'+o.countLabel+'</span></div>':'')
+    +'</div>';
+  if(o.sub)h+='<div style="margin-top:6px;font-size:12px;line-height:1.45;opacity:.92">'+o.sub+'</div>';
+  if(o.chips&&o.chips.length)h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">'+o.chips.map(function(t){return'<span style="font-size:10.5px;font-weight:600;background:rgba(255,255,255,.16);padding:3px 7px;border-radius:9px;white-space:nowrap">'+t+'</span>';}).join("")+'</div>';
+  if(o.note)h+='<div style="margin-top:8px;font-size:11px;opacity:.85;line-height:1.4">'+o.note+'</div>';
+  return h+'</div>';
 }
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){render();loadGarmin();loadPhoneSteps();});}else{render();loadGarmin();loadPhoneSteps();}
