@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="header">
-  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v8.6</div>
+  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v8.8</div>
   <div class="nav">
     <button id="prev">&#8592;</button>
     <div class="date-display" id="dateDisplay"></div>
@@ -1271,38 +1271,49 @@ function coachPhasePanel(){
   var bid=b?b.id:"block1";
   var c=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0);
   function daysTo(s){return Math.max(0,Math.round((parseLocal(s)-c)/864e5));}
-  function card(grad,eyebrow,title,body,count,countLabel){
-    return '<div style="background:linear-gradient(135deg,'+grad+');border-radius:16px;padding:16px 18px;margin-bottom:12px;color:#fff">'
-      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'
-      +'<div style="flex:1"><div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.65">'+eyebrow+'</div>'
-      +'<div style="font-size:16px;font-weight:800;margin-top:4px">'+title+'</div>'
-      +'<div style="font-size:12px;opacity:.82;line-height:1.55;margin-top:6px">'+body+'</div></div>'
-      +(count!=null?'<div style="text-align:right;flex-shrink:0"><div style="font-size:40px;font-weight:800;line-height:1">'+count+'</div>'
-        +'<div style="font-size:10px;font-weight:600;opacity:.65;text-transform:uppercase;letter-spacing:1px">'+countLabel+'</div></div>':'')
-      +'</div><div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.18);font-size:11px;opacity:.8;line-height:1.5">'
-      +'Steps today: '+stepTarget()+'</div></div>';
+  // Steps chip: phone count against the plan target when the Shortcut has sent one
+  function stepsChip(){
+    var tg=gTargetNum(c),pd=phoneDay(gDs(c));
+    if(!tg)return String(stepTarget(c)).replace(" \u2014 ",", ");
+    return pd?gN(pd.steps)+" / "+gN(tg)+" steps"+(pd.steps>=tg?" \u2713":""):gN(tg)+" steps";
   }
+  // Compact: title + small countdown badge, the plan as wrapping chips, one short "next" line
+  function card(grad,eyebrow,title,chips,note,count,countLabel){
+    var h='<div style="background:linear-gradient(135deg,'+grad+');border-radius:14px;padding:12px 14px;margin-bottom:12px;color:#fff">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.7">'+eyebrow+'</div>'
+      +'<div style="font-size:15.5px;font-weight:800;margin-top:2px;line-height:1.2">'+title+'</div></div>'
+      +(count!=null?'<div style="flex-shrink:0;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border-radius:10px;padding:5px 9px">'
+        +'<span style="font-size:20px;font-weight:800;line-height:1">'+count+'</span>'
+        +'<span style="font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.85;line-height:1.2;max-width:58px">'+countLabel+'</span></div>':'')
+      +'</div>';
+    if(chips&&chips.length)h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:9px">'+chips.map(function(t){return'<span style="font-size:10.5px;font-weight:600;background:rgba(255,255,255,.16);padding:3px 7px;border-radius:9px;white-space:nowrap">'+t+'</span>';}).join("")+'</div>';
+    if(note)h+='<div style="margin-top:8px;font-size:11px;opacity:.85;line-height:1.4">'+note+'</div>';
+    return h+'</div>';
+  }
+  var KCAL_CUT="1,700 / 1,600 kcal",PROT="Protein 150g+";
   if(bid==="p1"){
     var dl=isDeloadWk(currentDate),push=c>=parseLocal("2026-12-08"),n=push?daysTo("2027-01-04"):daysTo("2026-12-08");
-    if(isXmas(c))return card('#C4607A,#A04060','Phase 1 \u00B7 Christmas','Maintenance to 26 Dec','2,100 / 2,000 kcal for three days. Sessions as planned; Christmas Day\u2019s run is optional. Back on the cut on 27 Dec, through to 3 Jan.',n,n===1?'day of cut left':'days of cut left')+weeklyRateCard();
-    if(push)return card('#C4607A,#A04060','Phase 1 \u00B7 the push','Through to 3 Jan','1,700 training / 1,600 rest. Protein 150g+. 18,000 steps a day. Gym Mon, Tue, Thu with 30 min finishers. Runs Wed, Fri, Sun. Saturday is easy cardio unless recovery is slipping. Maintenance 24 to 26 Dec, then the move from 4 Jan.',n,n===1?'day to go':'days to go')+weeklyRateCard();
-    return card('#C4607A,#A04060','Phase 1 \u00B7 the cut','Steady to 7 Dec, then the push',
-      dl?'Deload week. Sets down ~40%, loads unchanged. Food and steps do not change. The new cut week starts Monday 2 Nov.'
-        :'1,700 training / 1,600 rest. Protein 150g+. Gym Mon, Tue, Thu with 30 min finishers. Runs Wed, Fri, Sun. Saturday off. The pace comes from moving more, not eating less. From 8 Dec: 18,000 steps a day and Saturday cardio, same food, through to 3 Jan.',
-      n,n===1?'day to the push':'days to the push')+weeklyRateCard();
+    if(isXmas(c))return card('#C4607A,#A04060','Phase 1 \u00B7 Christmas','Maintenance to 26\u00A0Dec',
+      ["2,100 / 2,000 kcal","Sessions as planned","25 Dec run optional",stepsChip()],
+      'Next: back on the cut 27 Dec',n,n===1?'day of cut left':'days of cut left')+weeklyRateCard();
+    if(push)return card('#C4607A,#A04060','Phase 1 \u00B7 the push','Through to 3\u00A0Jan',
+      [KCAL_CUT,PROT,"Gym Mon Tue Thu","Runs Wed Fri Sun","Sat cardio",stepsChip()],
+      'Next: maintenance 24\u201326 Dec \u00B7 the move from 4 Jan',n,n===1?'day to go':'days to go')+weeklyRateCard();
+    return card('#C4607A,#A04060','Phase 1 \u00B7 the cut','Steady to 7\u00A0Dec',
+      [KCAL_CUT,PROT,dl?"Deload: sets \u221240%":"Gym Mon Tue Thu","Runs Wed Fri Sun","Sat off",stepsChip()],
+      'Next: the push from 8 Dec \u00B7 18k steps + Sat cardio, same food',n,n===1?'day to the push':'days to the push')+weeklyRateCard();
   }
   if(bid==="p2"){
     var f=daysTo("2027-01-08");
-    return card('#0891b2,#0e7490','Phase 2 \u00B7 the move','Maintenance, 4 to 17 Jan',
-      '2,100 / 2,000 kcal, protein floor 120g. Same sessions until the flight, finishers optional. Then three lifts, three short easy runs and walking in NYC. Coming out at the same weight is the win.',
-      f>0?f:null,f===1?'day to flight':'days to flight');
+    return card('#0891b2,#0e7490','Phase 2 \u00B7 the move','Maintenance, 4 to 17\u00A0Jan',
+      ["2,100 / 2,000 kcal","Protein 120g+",stepsChip(),"NYC: 3 lifts + 3 runs"],
+      'Same sessions to the flight. Same weight out is the win.',f>0?f:null,f===1?'day to flight':'days to flight');
   }
   if(bid==="postblock")
-    return card('#059669,#047857','Settled in NYC','Maintain to the new year',
-      'Eat at maintenance, keep the loads, easy running only. Reassess in January.',null,'');
+    return card('#059669,#047857','Settled in NYC','Maintain to the new year',["Maintenance","Keep the loads","Easy running only"],'Reassess in January.',null,'');
   if(bid==="restart")
-    return card('#059669,#047857','Lead-in','Phase 1 starts 12 Oct',
-      'Normal training until the block begins.',daysTo("2026-10-12"),'days to go');
+    return card('#059669,#047857','Lead-in','Phase 1 starts 12 Oct',["Normal training until the block begins"],null,daysTo("2026-10-12"),'days to go');
   return "";
 }
 
