@@ -1,0 +1,8 @@
+{
+  "name": "training-app",
+  "private": true,
+  "description": "Netlify functions for the training app. @netlify/blobs stores phone step counts (netlify/functions/steps.js).",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.13"
+  }
+}
