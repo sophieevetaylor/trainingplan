@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="header">
-  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v8.2</div>
+  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v8.4</div>
   <div class="nav">
     <button id="prev">&#8592;</button>
     <div class="date-display" id="dateDisplay"></div>
@@ -21,11 +21,13 @@
   <div class="quick-nav">
     <button id="goHome">&#127968; Home</button>
     <button id="goToday">&#128205; Daily</button>
-    <button id="goCoach">&#128202; Coach</button>  </div>
+    <button id="goCoach">&#128202; Coach</button>
+    <button id="goHealth">&#129728; Health</button>  </div>
   <div id="blockInfo" class="block-info" style="display:none"></div>
 </div>
 <div id="dashboard" class="dash"></div>
 <div id="coachView" class="dash" style="display:none"></div>
+<div id="healthView" class="dash" style="display:none"></div>
 <div class="content" id="content"></div>
 <script>
 var _store = {};
@@ -158,14 +160,14 @@ return{name:"Strength D \u2013 Glute Pump (optional)",duration:m?"28 min":"35 mi
 function isDeloadWk(d){const c=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);
   return c>=parseLocal("2026-10-26")&&c<=parseLocal("2026-11-01")}
 
-function stepTarget(){const b=getBlock(currentDate);const dow=currentDate.getDay();
+function stepTarget(dt){const cd=dt||currentDate;const b=getBlock(cd);const dow=cd.getDay();
   const wknd=(dow===0||dow===6);
   if(!b)return wknd?"14,000 steps":"12,000 steps";
-  if(b.id==="p2"){const fc=new Date(currentDate.getFullYear(),currentDate.getMonth(),currentDate.getDate(),12,0,0),fly=parseLocal("2026-12-18");
+  if(b.id==="p2"){const fc=new Date(cd.getFullYear(),cd.getMonth(),cd.getDate(),12,0,0),fly=parseLocal("2026-12-18");
     if(fc<fly)return wknd?"14,000 steps":"12,000 steps";
     if(fc.getTime()===fly.getTime())return"8,000 steps";
     return"walk \u2014 NYC does it for you";}
-  if(b.id==="p1"){if(currentDate>=parseLocal("2026-11-02"))return wknd?"15,000 steps":"14,000 steps";return wknd?"14,000 steps":"12,000 steps";}
+  if(b.id==="p1"){if(cd>=parseLocal("2026-11-02"))return wknd?"15,000 steps":"14,000 steps";return wknd?"14,000 steps":"12,000 steps";}
   if(b.id==="postblock")return"10,000 steps";
   if(b.id==="holiday")return"walk, don\u2019t count";
   if(b.id==="restart")return"12,000 steps";
@@ -434,7 +436,10 @@ var inc=isDB?1:2.5;
 var top=repTop(ex.reps);
 var hitTop=last.r>0&&top>0&&last.r>=top;
 var msg,col,bg;
-if(hitTop){
+if(hitTop&&gHoldToday()){
+msg="\uD83C\uDFAF Target today: <b>"+last.w+" kg</b>. You hit "+last.w+" kg \u00D7 "+last.r+" last time, but recovery is low today: hold it and go up next session.";
+col="#B8883E";bg="rgba(184,136,62,0.1)";
+}else if(hitTop){
 var target=Math.round((last.w+inc)*10)/10;
 msg="\uD83C\uDFAF Target today: <b>"+target+" kg</b> \u2014 you hit "+last.w+" kg \u00D7 "+last.r+" last time. Time to go up.";
 col="#2D6A4F";bg="rgba(45,106,79,0.08)";
@@ -564,7 +569,7 @@ var last=getLastLog(ex.name);
 if(last){
 var isDB=(ex.load||"").indexOf("DB")>=0||ex.name.indexOf("DB")>=0;
 var top=repTop(ex.reps);
-if(last.r>0&&top>0&&last.r>=top)return Math.round((last.w+(isDB?1:2.5))*10)/10;
+if(last.r>0&&top>0&&last.r>=top)return gHoldToday()?last.w:Math.round((last.w+(isDB?1:2.5))*10)/10;
 return last.w;
 }
 var m=String(ex.load||"").match(/(\d+(?:\.\d+)?)/);
@@ -634,8 +639,8 @@ bars+='<div style="flex:1;height:4px;border-radius:2px;background:'+c+'"></div>'
 var last=bw?null:getLastLog(ex.name);
 var hint="";
 if(!bw&&last){
-var top=repTop(ex.reps),up=last.r>0&&top>0&&last.r>=top;
-hint='<div style="background:'+(up?"rgba(45,106,79,0.1)":"rgba(107,91,138,0.08)")+';border-radius:8px;padding:8px 11px;margin-bottom:12px;font-size:12px;color:'+(up?"#2D6A4F":"#6B5B8A")+'">\uD83C\uDFAF Target: <b>'+tw+' kg</b> \u2014 last time '+last.w+' kg'+(last.r?' \u00D7 '+last.r:'')+(up?'. Time to go up.':'. Chase '+(top||'more')+' clean reps.')+'</div>';
+var top=repTop(ex.reps),up=last.r>0&&top>0&&last.r>=top,hold=up&&gHoldToday();if(hold)up=false;
+hint='<div style="background:'+(up?"rgba(45,106,79,0.1)":"rgba(107,91,138,0.08)")+';border-radius:8px;padding:8px 11px;margin-bottom:12px;font-size:12px;color:'+(up?"#2D6A4F":"#6B5B8A")+'">\uD83C\uDFAF Target: <b>'+tw+' kg</b> \u2014 last time '+last.w+' kg'+(last.r?' \u00D7 '+last.r:'')+(up?'. Time to go up.':hold?'. Recovery is low today: hold it.':'. Chase '+(top||'more')+' clean reps.')+'</div>';
 }
 var rows="";
 var activeSeen=false;
@@ -937,7 +942,8 @@ if(walkMatch){const m=walkMatch;injectStrava(".treadmill-card",'<div style="marg
 if(viewMode==="coach")renderCoachTab();
 
 function render(){
-const dash=$("dashboard"),coach=$("coachView"),content=$("content");
+const dash=$("dashboard"),coach=$("coachView"),content=$("content");const hv=$("healthView");if(hv)hv.style.display=viewMode==="health"?"block":"none";
+if(viewMode==="health"){dash.style.display="none";coach.style.display="none";content.style.display="none";const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83E\uDEC0 Health";renderHealthTab();loadGarmin();loadPhoneSteps();return}
 if(viewMode==="home"){renderDashboard();dash.style.display="block";coach.style.display="none";content.style.display="none";const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);$("dateDisplay").textContent=fmt(currentDate);$("headerLabel").textContent="\uD83C\uDFE0 Home";return}
 if(viewMode==="coach"){dash.style.display="none";coach.style.display="block";content.style.display="none";$("headerLabel").textContent="\uD83D\uDCCA Coach";if(!stravaLoaded){document.getElementById("coachView").innerHTML='<div class="dash-section" style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83D\uDCCA</div><div style="color:#A898B0;font-size:14px">Connecting to Strava...</div></div>';loadStrava();}else{renderCoachTab();}return}
 dash.style.display="none";coach.style.display="none";content.style.display="flex";
@@ -946,6 +952,7 @@ const plan=getPlan(currentDate);const bi=$("blockInfo");
 if(plan.block){bi.style.display="block";bi.style.background=plan.block.color+"22";bi.style.border="1px solid "+plan.block.color+"44";bi.innerHTML='<div class="block-name" style="color:'+(plan.block.color)+'">'+(plan.block.name)+'</div><div class="block-detail">Week '+(plan.week)+' of '+(plan.block.weeks)+' \u2022 '+(plan.block.weeklyKm)+' km/week \u2022 '+(plan.block.focus)+'</div>'}else{bi.style.display="none"}
 let html="";
 if(plan.race){html+='<div class="race-banner"><div class="icon">\uD83C\uDFC1</div><div class="title">RACE DAY</div><div class="sub">Trust the work. Execute the plan.</div></div>'}
+html+='<div id="garmin-daily" style="display:none"></div>';
 const movedOut=getMovedOut(currentDate),movedIn=getMovedIn(currentDate);
 if(!movedOut.includes("run"))html+=renderRun(plan.run);
 html+='<div id="strava-daily"></div>';
@@ -967,21 +974,22 @@ html+=renderBridalArms();
 
 if(plan.notes&&plan.notes.length){html+='<div class="notes-card"><div class="notes-title">\uD83D\uDCDD Notes</div>'+plan.notes.map(function(n){return'<div class="notes-text">'+n+'</div>';}).join('')+'</div>';}
 if(!plan.run&&!plan.str&&!plan.other&&!plan.spin&&(!plan.notes||!plan.notes.length)&&!movedIn.length){if(plan.block){html+='<div class="rest-card"><div class="rest-icon">\uD83D\uDE34</div><div class="rest-title">Rest Day</div><div class="rest-sub">Recovery is training. Foam roll, stretch, eat well.</div></div>'}else{html+='<div class="rest-card"><div class="rest-title">'+(plan.message||"No training scheduled.")+'</div><div class="rest-sub">Navigate to Apr 2026 \u2013 Aug 2027</div></div>'}}
-$("content").innerHTML=html+(renderAddedSessions()||"")+('<button class="add-session-btn" onclick="showAddSessionModal()">\uFF0B Add a session</button>')+'<div class="steps-card"><div class="steps-left"><div class="steps-header">\uD83D\uDC5F Daily Steps</div><div class="steps-target">Target: '+stepTarget()+'</div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Hit '+stepTarget()+'</div></div></div><div class="steps-card" style="background:rgba(107,150,190,0.06);border-color:rgba(107,150,190,0.18)"><div class="steps-left"><div class="steps-header" style="color:#4A7A9E">\uD83D\uDCA7 Water</div><div class="steps-target">Target: 2L today</div></div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div>';
-function restoreSteps(){var s=getState();var ch=$("steps-check"),lb=$("steps-label");if(!ch)return;if(s.steps){ch.classList.add("done");lb.classList.add("done");lb.textContent=stepTarget()+" \u2713";}}
+$("content").innerHTML=html+(renderAddedSessions()||"")+('<button class="add-session-btn" onclick="showAddSessionModal()">\uFF0B Add a session</button>')+'<div class="steps-card"><div class="steps-left"><div class="steps-header">\uD83D\uDC5F Daily Steps</div><div class="steps-target">Target: '+stepTarget()+'</div><div class="steps-target" id="phone-steps-line" style="display:none;margin-top:2px"></div></div><div class="run-check-row" style="margin:0;padding:0;border:none;flex-shrink:0" onclick="toggleSteps()"><div class="run-check-box" id="steps-check"></div><div class="run-check-label" id="steps-label">Hit '+stepTarget()+'</div></div></div><div class="steps-card" style="background:rgba(107,150,190,0.06);border-color:rgba(107,150,190,0.18)"><div class="steps-left"><div class="steps-header" style="color:#4A7A9E">\uD83D\uDCA7 Water</div><div class="steps-target">Target: 2L today</div></div><div class="run-check-row" onclick="toggleWater()"><div class="run-check-box" id="water-check"></div><div class="run-check-label" id="water-label">Hit 2L+ water</div></div>';
+function restoreSteps(){var s=getState();var ch=$("steps-check"),lb=$("steps-label");if(!ch)return;if(s.steps){ch.classList.add("done");lb.classList.add("done");lb.textContent=stepTarget()+" \u2713"+(s.stepsPhone?" (phone)":"");}}
 function restoreWater(){var s=getState();var ch=$("water-check"),lb=$("water-label");if(!ch)return;if(s.water){ch.classList.add("done");lb.classList.add("done");lb.textContent="2L+ water \u2713";}}
 setTimeout(function(){
-  restoreChecks();restoreExLogs();restoreSteps();restoreWater();checkPerfectDay();
+  restoreChecks();restoreExLogs();restoreSteps();restoreWater();checkPerfectDay();applyGarminDaily();loadGarmin();loadPhoneSteps();
   if(stravaLoaded){renderStravaWidgets()}else{loadStrava()}
 },0);
 }
 
 function nav(n){const d=new Date(currentDate);d.setDate(d.getDate()+n);currentDate=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday")}
 $("prev").onclick=()=>nav(-1);$("next").onclick=()=>nav(1);
-function setActiveTab(id){["goHome","goToday","goCoach"].forEach(b=>{$(b).classList.remove("active")});$(id).classList.add("active")}
+function setActiveTab(id){["goHome","goToday","goCoach","goHealth"].forEach(b=>{$(b).classList.remove("active")});$(id).classList.add("active")}
 $("goToday").onclick=()=>{const n=new Date();currentDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);viewMode="day";render();setActiveTab("goToday");window.scrollTo({top:0,behavior:"smooth"})};
 $("goHome").onclick=()=>{viewMode="home";render();setActiveTab("goHome");window.scrollTo({top:0,behavior:"smooth"})};
 $("goCoach").onclick=()=>{viewMode="coach";render();setActiveTab("goCoach");window.scrollTo({top:0,behavior:"smooth"})};
+$("goHealth").onclick=()=>goHealthTab();
 const RACES2=[{name:"May 3 HM",date:new Date(2026,4,3,12,0,0)},{name:"City2Surf",date:new Date(2026,7,9,12,0,0)},{name:"A-Race HM",date:new Date(2026,9,25,12,0,0)},{name:"C2S 2027",date:new Date(2027,7,8,12,0,0)}];
 function getNextRace(){const n=new Date();const nn=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);return RACES2.find(r=>r.date>=nn)||RACES2[RACES2.length-1]}setActiveTab("goHome");
 
@@ -1245,10 +1253,12 @@ function weeklyRateCard(){
     else if(r2!=null&&r2<0.5){title="Under pace two weeks running: "+shown;body="Add 2,000 steps a day, or a 30 min easy spin on Thursday evening.";col="#B8883E";}
     else{title="Under pace this week: "+shown;body="One week isn\u2019t a trend. Hold the plan and re-check next Monday.";}
   }
+  var _gx=gMondayAdjust((a0!=null&&a1!=null)?r1:null,title,body,col);title=_gx.title;body=_gx.body;col=_gx.col;
   return '<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:12px;border:0.5px solid rgba(180,160,190,0.15)">'
     +'<div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:#A898B0;margin-bottom:4px">MONDAY CHECK \u00B7 TARGET 0.5\u20131% A WEEK</div>'
     +'<div style="font-size:14px;font-weight:700;color:'+col+';margin-bottom:4px">'+title+'</div>'
     +'<div style="font-size:12.5px;color:#4A3D5A;line-height:1.55">'+body+'</div>'
+    +_gx.html
     +'<div style="font-size:11px;color:#A898B0;line-height:1.45;margin-top:8px">7-day averages smooth out water swings, so read the trend, not one morning.</div>'
     +'</div>';
 }
@@ -1583,7 +1593,428 @@ function clearExLogs(){
 }
 
 
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){render();});}else{render();}
+
+// ===== Garmin health + phone steps (netlify/functions/garmin.js, steps.js) =====
+// The app key and both caches live under non "tp-" keys so they never land in backups.
+var GARMIN_URL="https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/garmin";
+var STEPS_URL="https://vermillion-donut-bd1fcf.netlify.app/.netlify/functions/steps";
+var SHORTCUT_URL="shortcuts://run-shortcut?name=Send%20Steps";
+var TRAVEL_FROM="2026-12-18",TRAVEL_TO="2026-12-24"; // flight day + the week jet lag skews the numbers
+var garmin={data:null,error:null,loading:false,fetchedAt:0};
+var phone={data:null,error:null,loading:false,fetchedAt:0,changed:false};
+(function(){try{var c=JSON.parse(localStorage.getItem("garmin-cache")||"null");if(c&&c.data&&c.data.ok){garmin.data=c.data;garmin.fetchedAt=c.at||0;}}catch(e){}
+  try{var p=JSON.parse(localStorage.getItem("steps-cache")||"null");if(p&&p.data&&p.data.ok){phone.data=p.data;phone.fetchedAt=p.at||0;}}catch(e){}})();
+// Steps come from your phone only. One-time undo of any ticks an earlier Garmin build added.
+(function(){try{if(localStorage.getItem("garmin-steps-v2"))return;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!/^tp-\d{4}-\d+-\d+$/.test(k||""))continue;var st=JSON.parse(localStorage.getItem(k)||"null");if(st&&st.stepsAuto){st.steps=false;delete st.stepsAuto;localStorage.setItem(k,JSON.stringify(st));}}localStorage.setItem("garmin-steps-v2","1");}catch(e){}})();
+
+function gDs(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function gN(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,",");}
+function gEsc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function gDur(s){if(s==null)return"\u2013";var h=Math.floor(s/3600),m=Math.round((s%3600)/60);if(m===60){h++;m=0;}return h+"h "+(m<10?"0":"")+m+"m";}
+function gAgo(ts){var m=Math.round((Date.now()-ts)/60000);if(m<1)return"just now";if(m<60)return m+" min ago";var h=Math.round(m/60);if(h<24)return h+"h ago";return Math.round(h/24)+"d ago";}
+function g12(t){if(!t)return"";var p=t.split(":"),h=+p[0];return((h%12)||12)+":"+p[1]+(h<12?"am":"pm");}
+function gClock(iso){var d=new Date(iso);if(isNaN(d.getTime()))return"";return g12(String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"));}
+function gMinusHrs(t,hrs){var p=t.split(":"),x=((+p[0])*60+(+p[1])-hrs*60+1440)%1440;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");}
+function gKey(){try{return localStorage.getItem("garmin-app-key")||""}catch(e){return""}}
+function gTargetNum(d){var m=String(stepTarget(d)).match(/([\d,]+)\s*steps/);return m?parseInt(m[1].replace(/,/g,""),10):null;}
+function gTravel(ds){return ds>=TRAVEL_FROM&&ds<=TRAVEL_TO;}
+function gCap(s){s=String(s||"");return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();}
+// Low recovery today: progression hints hold the weight instead of adding to it
+function gHoldToday(){var d=garmin.data,t=gDs();return!!(d&&d.recovery&&d.recovery.level==="low"&&d.date===t&&gDs(currentDate)===t);}
+
+function gFetch(url,cb){
+  var headers={},k=gKey();if(k)headers["x-app-key"]=k;
+  fetch(url+(url.indexOf("?")>-1?"&":"?")+"t="+Date.now(),{cache:"no-store",headers:headers})
+    .then(function(res){return res.text().then(function(t){var j=null;try{j=JSON.parse(t)}catch(e){}return{status:res.status,json:j};});})
+    .then(function(r){cb(r.json&&r.json.ok?null:{code:(r.json&&r.json.code)||("http_"+r.status),msg:(r.json&&r.json.error)||("Unexpected response (HTTP "+r.status+")")},r.json);})
+    .catch(function(e){cb({code:"network",msg:e.message},null);});
+}
+function loadGarmin(force){
+  if(garmin.loading)return;
+  var fresh=garmin.data&&garmin.data.date===gDs()&&(Date.now()-garmin.fetchedAt<10*60*1000);
+  if(fresh&&!force){garminRefreshViews();return;}
+  garmin.loading=true;
+  if(viewMode==="health")renderHealthTab();
+  gFetch(GARMIN_URL+"?date="+gDs(),function(err,json){
+    garmin.loading=false;
+    if(!err){garmin.data=json;garmin.fetchedAt=Date.now();garmin.error=null;try{localStorage.setItem("garmin-cache",JSON.stringify({at:garmin.fetchedAt,data:json}))}catch(e){}}
+    else{garmin.error=err;console.error("Garmin error:",err);}
+    garminRefreshViews();
+  });
+}
+function loadPhoneSteps(force){
+  if(phone.loading)return;
+  if(!force&&phone.data&&Date.now()-phone.fetchedAt<5*60*1000){phoneBackfill();garminRefreshViews();return;}
+  if(force&&Date.now()-phone.fetchedAt<20*1000)return;
+  phone.loading=true;
+  gFetch(STEPS_URL+"?date="+gDs(),function(err,json){
+    phone.loading=false;phone.fetchedAt=Date.now();
+    if(!err){phone.data=json;phone.error=null;try{localStorage.setItem("steps-cache",JSON.stringify({at:phone.fetchedAt,data:json}))}catch(e){}phoneBackfill();}
+    else{phone.error=err;if(err.code!=="http_404")console.error("Phone steps error:",err);}
+    garminRefreshViews();
+  });
+}
+function garminRefreshViews(){
+  if(viewMode==="health")renderHealthTab();
+  else if(viewMode==="day")applyGarminDaily();
+  else if(viewMode==="coach")renderCoachTab();
+  else if(viewMode==="home"&&phone.changed){phone.changed=false;renderDashboard();}
+}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"){loadPhoneSteps(true);loadGarmin();}});
+
+// ----- Phone steps -----
+function phoneDay(ds){var d=phone.data;return d&&d.days&&d.days[ds]?d.days[ds]:null;}
+// Tick "steps" on days (last 7) where the phone count hit the plan's target. Only touches days that
+// already have a record (or today), and never re-ticks a day you unticked yourself.
+function phoneBackfill(){
+  var d=phone.data;if(!d||!d.days)return;
+  var today=gDs(),lim=new Date();lim.setDate(lim.getDate()-7);var limDs=gDs(lim);
+  Object.keys(d.days).forEach(function(ds){
+    if(ds<limDs||ds>today)return;
+    var n=d.days[ds].steps,dt=parseLocal(ds),tg=gTargetNum(dt);
+    if(n==null||!tg||n<tg)return;
+    var k=dateKey(dt),st=null;
+    try{var raw=localStorage.getItem(k);st=raw?JSON.parse(raw):null}catch(e){return}
+    if(!st){if(ds!==today)return;st={ex:{},run:false,str:false,pil:false,tm:false,steps:false,spin:false,water:false,ba:false};}
+    if(st.steps||st.stepsPhone)return;
+    st.steps=true;st.stepsPhone=true;
+    try{localStorage.setItem(k,JSON.stringify(st))}catch(e){}
+    phone.changed=true;
+  });
+}
+
+function gSessions(d){
+  var p=getPlan(d),mo=getMovedOut(d),mi=getMovedIn(d),ad=getAddedSessions(d),str=null,run=null;
+  if(p.str&&mo.indexOf("str")<0)str=p.str.name;
+  if(p.run&&mo.indexOf("run")<0)run=p.run.type;
+  mi.forEach(function(x){if(x.originY===undefined)return;var op=getPlan(new Date(x.originY,x.originM,x.originD,12,0,0));if(x.type==="str"&&!str&&op.str)str=op.str.name;if(x.type==="run"&&!run&&op.run)run=op.run.type;});
+  ad.forEach(function(a){if(!str&&/^str[A-D]$/.test(a.type))str="Strength "+a.type.slice(3);if(!run&&a.type==="easyRun")run="Easy run";if(!run&&a.type==="longRun")run="Long run";});
+  return{str:str,run:run};
+}
+function gShort(n){return String(n||"").split(" \u2013 ")[0];}
+function gGuidance(lv,s,ds){
+  var str=s.str?gShort(s.str):null;
+  if(gTravel(ds)&&lv!=="good")return"Expected after the flight. Follow the move plan: easy sessions, loads by feel, morning daylight and a long walk.";
+  if(lv==="low"){
+    if(str)return"Do "+str+", but hold last session\u2019s weights. No jumps today.";
+    if(s.run)return"Keep the run fully conversational and cut it short if your HR runs high.";
+    return"Good timing for a lighter day. Walk, eat well and get to bed early.";
+  }
+  if(lv==="fair"){
+    if(str)return"Train as planned. Only go up if your warm-up sets feel easy.";
+    if(s.run)return"Run as planned and keep it genuinely easy.";
+    return"Nothing to change. Hit your steps.";
+  }
+  if(str)return"Green light for "+str+". If the app says go up, go up.";
+  if(s.run)return"Green light. Run as planned.";
+  return"Recovered. Hit your steps.";
+}
+function gLevelTitle(lv,ds){return lv?("Recovery "+lv+(gTravel(ds)&&lv!=="good"?" \u00B7 jet lag":"")):"Waiting on last night";}
+function gLevelStyle(lv){
+  if(lv==="good")return{col:"#2D6A4F",bg:"rgba(45,106,79,0.08)",bd:"rgba(45,106,79,0.2)",ic:"\u2705",grad:"#3D8A50,#2D6A4F"};
+  if(lv==="fair")return{col:"#B8883E",bg:"rgba(184,136,62,0.1)",bd:"rgba(184,136,62,0.3)",ic:"\uD83D\uDCA1",grad:"#C49A4A,#A87830"};
+  if(lv==="low")return{col:"#C4607A",bg:"rgba(196,96,122,0.08)",bd:"rgba(196,96,122,0.25)",ic:"\u26A0\uFE0F",grad:"#C4607A,#A04060"};
+  return{col:"#6B5B8A",bg:"rgba(107,91,138,0.07)",bd:"rgba(107,91,138,0.2)",ic:"\u2192",grad:"#8A7A9E,#6B5B8A"};
+}
+function gCycleLine(cy){
+  if(!cy)return"";
+  var ph={period:"period",follicular:"follicular phase",luteal:"luteal phase"}[cy.phase]||cy.phase;
+  return"Cycle day "+cy.day+" \u00B7 "+ph+(cy.daysToPeriod!=null&&cy.phase!=="period"?" \u00B7 period in ~"+cy.daysToPeriod+" day"+(cy.daysToPeriod===1?"":"s"):"");
+}
+function goHealthTab(){viewMode="health";render();setActiveTab("goHealth");window.scrollTo({top:0,behavior:"smooth"});}
+
+// ----- Daily view hooks -----
+function applyGarminDaily(){
+  var d=garmin.data,ds=gDs(currentDate);
+  var line=$("phone-steps-line"),pd=phoneDay(ds);
+  if(line){
+    var tg=gTargetNum(currentDate),isToday=ds===gDs();
+    if(pd){
+      line.style.display="block";
+      line.innerHTML='<span style="color:#6B5B8A;font-weight:700">'+gN(pd.steps)+'</span> on your phone'+(tg?(pd.steps>=tg?' \u00B7 target hit':' \u00B7 '+gN(tg-pd.steps)+' to go'):'')
+        +(pd.at?' \u00B7 '+gClock(pd.at):'')+(isToday?' \u00B7 <a href="'+SHORTCUT_URL+'" style="color:#6B5B8A;font-weight:600;text-decoration:none">\u21BB sync</a>':'');
+    }else if(isToday&&phone.data){
+      line.style.display="block";
+      line.innerHTML='No phone count yet today \u00B7 <a href="'+SHORTCUT_URL+'" style="color:#6B5B8A;font-weight:600;text-decoration:none">\u21BB sync</a>';
+    }else{line.style.display="none";}
+  }
+  var s=getState(),ch=$("steps-check"),lb=$("steps-label");
+  if(ch&&s.steps&&!ch.classList.contains("done")){ch.classList.add("done");if(lb){lb.classList.add("done");lb.textContent=stepTarget()+" \u2713"+(s.stepsPhone?" (phone)":"");}checkPerfectDay();}
+  var box=$("garmin-daily");
+  if(box){
+    if(d&&d.recovery&&d.date===ds&&ds===gDs()){
+      var r=d.recovery,ls=gLevelStyle(r.level);
+      box.style.display="block";
+      box.innerHTML='<div onclick="goHealthTab()" style="display:flex;gap:10px;align-items:center;padding:10px 14px;background:'+ls.bg+';border:0.5px solid '+ls.bd+';border-radius:12px;cursor:pointer">'
+        +'<span style="font-size:15px">'+ls.ic+'</span>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:'+ls.col+'">'+gLevelTitle(r.level,ds)+'</div>'
+        +'<div style="font-size:11.5px;color:#4A3D5A;line-height:1.45;margin-top:1px">'+gGuidance(r.level,gSessions(currentDate),ds)+'</div>'
+        +(r.reasons.length?'<div style="font-size:10.5px;color:#A898B0;line-height:1.4;margin-top:2px">'+gEsc(r.reasons.join(" \u00B7 "))+'</div>':'')+'</div>'
+        +'<span style="font-size:16px;color:#A898B0">\u203A</span></div>';
+    }else{box.style.display="none";box.innerHTML="";}
+  }
+}
+
+// ----- Monday check (Coach tab): recovery and cycle alongside the scale -----
+function gMondayAdjust(r1,title,body,col){
+  var d=garmin.data,rt=d&&d.recoveryTrend,cy=d&&d.cycle,out={title:title,body:body,col:col,html:""};
+  if(!rt&&!cy)return out;
+  var strain=!!(rt&&rt.strain),water=!!(cy&&cy.waterThisWeek);
+  if(r1!=null){
+    if(r1>1){if(strain)out.body=body+" Recovery is slipping too, so make the change this week.";}
+    else if(r1>=0.5){if(strain){out.title="On pace, but recovery is slipping";out.body="Keep the food the same. Protect your sleep (8h+) and keep runs genuinely easy. If it\u2019s still slipping next Monday, add 150 kcal on training days.";out.col="#B8883E";}}
+    else if(water){out.title="Under pace: likely cycle water";out.body="Water retention around your period can hide a week\u2019s loss on the scale. Hold the plan and re-check next Monday.";out.col="#6B5B8A";}
+    else if(strain){out.title="Under pace, recovery slipping";out.body="Don\u2019t add steps or cardio this week. Fix sleep first: short sleep and stress hold water and can mask fat loss. Re-check next Monday.";out.col="#B8883E";}
+  }
+  function cell(label,val,delta,c){return'<div style="flex:1;background:rgba(255,255,255,0.6);border-radius:9px;padding:7px 8px;border:0.5px solid rgba(180,160,190,0.15)"><div style="font-size:9.5px;font-weight:600;color:#A898B0;text-transform:uppercase;letter-spacing:0.5px">'+label+'</div><div style="font-size:13px;font-weight:700;color:#3D2E4A">'+val+'</div><div style="font-size:10.5px;font-weight:600;color:'+c+'">'+delta+'</div></div>';}
+  var h="";
+  if(rt){
+    var R=rt.restingHR,V=rt.hrv,S=rt.sleepSeconds;
+    h+='<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#A898B0;margin-top:12px;margin-bottom:5px">RECOVERY \u00B7 THIS WEEK VS THE 3 BEFORE</div><div style="display:flex;gap:6px">'
+      +cell("Resting HR",R?R.recent+" bpm":"\u2013",R?(R.delta>0?"+":"")+R.delta+" bpm":"no data",!R?"#A898B0":R.delta>=3?"#C4607A":R.delta>=1.5?"#B8883E":"#2D6A4F")
+      +cell("HRV",V?V.recent+" ms":"\u2013",V?(V.deltaPct>0?"+":"")+V.deltaPct+"%":"no data",!V?"#A898B0":V.deltaPct<=-10?"#C4607A":V.deltaPct<=-5?"#B8883E":"#2D6A4F")
+      +cell("Sleep",S?gDur(S.recent):"\u2013",S?(S.delta>=0?"+":"\u2212")+gDur(Math.abs(S.delta)).replace(/^0h /,""):"no data",!S?"#A898B0":S.recent<25200?"#C4607A":S.recent<28800?"#B8883E":"#2D6A4F")
+      +'</div>';
+  }
+  if(cy)h+='<div style="font-size:11px;color:#7A6B8A;margin-top:7px">'+gCycleLine(cy)+(water?' \u00B7 water retention likely this week':'')+'</div>';
+  out.html=h;
+  return out;
+}
+
+// ----- Health tab -----
+function gCard(title,right,inner){
+  return'<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px"><div style="font-size:15px;font-weight:700;color:#3D2E4A">'+title+'</div>'
+    +(right?'<div style="font-size:11px;color:#A898B0;text-align:right">'+right+'</div>':'')+'</div>'+inner+'</div>';
+}
+function gRow(label,val,col){return'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:0.5px solid rgba(180,160,190,0.1)"><span style="font-size:12.5px;color:#7A6B8A">'+label+'</span><span style="font-size:12.5px;font-weight:700;color:'+(col||"#3D2E4A")+';text-align:right">'+val+'</span></div>';}
+function gTile(label,val,sub,col){
+  return'<div style="background:rgba(255,255,255,0.6);border-radius:12px;padding:11px 12px;border:0.5px solid rgba(180,160,190,0.15)">'
+    +'<div style="font-size:10px;font-weight:600;letter-spacing:0.8px;color:#A898B0;text-transform:uppercase;margin-bottom:3px">'+label+'</div>'
+    +'<div style="font-size:20px;font-weight:800;color:#3D2E4A;line-height:1.15">'+val+'</div>'
+    +'<div style="font-size:11px;font-weight:600;color:'+col+';margin-top:2px">'+sub+'</div></div>';
+}
+function gProgress(pct,col){return'<div style="background:rgba(180,160,190,0.15);border-radius:4px;height:6px;overflow:hidden;margin:6px 0 4px"><div style="height:100%;width:'+Math.max(0,Math.min(100,pct))+'%;background:'+col+';border-radius:4px"></div></div>';}
+// 7-day bars: today last and bold. opts: color(v,i), fmt(v), target, max
+function gBars(vals,dates,opts){
+  var nums=vals.filter(function(v){return v!=null;});
+  var mx=Math.max.apply(null,nums.concat([opts.target||0,opts.max||0,1]));
+  var h='<div style="position:relative;display:flex;align-items:flex-end;gap:5px;height:70px;margin-top:10px">';
+  if(opts.target)h+='<div style="position:absolute;left:0;right:0;bottom:'+(opts.target/mx*80)+'%;border-top:1px dashed rgba(107,91,138,0.4)"></div>';
+  vals.forEach(function(v,i){
+    var pct=v==null?0:Math.max(4,v/mx*80);
+    h+='<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center">'
+      +'<div style="position:relative;z-index:1;font-size:8.5px;color:#A898B0;margin-bottom:2px;white-space:nowrap;background:rgba(253,248,250,0.92);padding:0 2px;border-radius:3px">'+(v==null?'':opts.fmt(v))+'</div>'
+      +'<div style="width:100%;height:'+(v==null?3:pct)+'%;background:'+(v==null?'rgba(180,160,190,0.18)':opts.color(v,i))+';border-radius:3px 3px 0 0"></div></div>';
+  });
+  h+='</div><div style="display:flex;gap:5px;margin-top:3px">';
+  dates.forEach(function(ds,i){var last=i===dates.length-1;h+='<div style="flex:1;text-align:center;font-size:9px;color:'+(last?'#6B5B8A':'#A898B0')+';font-weight:'+(last?700:400)+'">'+["S","M","T","W","T","F","S"][parseLocal(ds).getDay()]+'</div>';});
+  return h+'</div>';
+}
+// 28-day mini chart: last 7 days darker, gaps for missing days
+function gSpark(label,vals,col,fmt){
+  var nums=vals.filter(function(v){return v!=null;});if(!nums.length)return"";
+  var lo=Math.min.apply(null,nums),hi=Math.max.apply(null,nums),span=Math.max(hi-lo,1);
+  var h='<div style="display:flex;justify-content:space-between;font-size:10.5px;color:#A898B0;margin-top:10px"><span>'+label+'</span><span>'+fmt(lo)+'\u2013'+fmt(hi)+'</span></div><div style="display:flex;align-items:flex-end;gap:2px;height:30px;margin-top:3px">';
+  vals.forEach(function(v,i){var recent=i>=vals.length-7;h+='<div style="flex:1;height:'+(v==null?2:Math.round(20+(v-lo)/span*80))+'%;background:'+(v==null?'rgba(180,160,190,0.15)':recent?col:col.replace(/[\d.]+\)$/,"0.3)"))+';border-radius:2px"></div>';});
+  return h+'</div>';
+}
+function gMissingWeighIns(){
+  var d=garmin.data;if(!d||!d.weights)return[];
+  var m=getMeasurements();
+  return d.weights.filter(function(w){if(w.kg==null)return false;var ex=m.filter(function(e){return e.d===w.date;})[0];return!ex||ex.weight==null;});
+}
+function gImportWeights(){
+  var miss=gMissingWeighIns();if(!miss.length)return;
+  var arr=getMeasurements();
+  miss.forEach(function(w){
+    var ex=arr.filter(function(e){return e.d===w.date;})[0];
+    if(!ex){ex={waist:null,hips:null,thigh:null,weight:null,bodyfat:null,muscle:null,d:w.date};arr.push(ex);}
+    if(ex.weight==null)ex.weight=w.kg;
+    if(ex.bodyfat==null&&w.bodyFatPct!=null)ex.bodyfat=w.bodyFatPct;
+    if(ex.muscle==null&&w.muscleKg!=null)ex.muscle=w.muscleKg;
+  });
+  arr.sort(function(a,b){return a.d<b.d?-1:1;});
+  setMeasurements(arr);
+  showToast("\u2705 Added "+miss.length+" weigh-in"+(miss.length===1?"":"s"));
+  renderHealthTab();
+}
+function gSaveKey(){var el=$("g-key"),v=el?el.value.trim():"";if(!v){showToast("Enter your app key");return;}try{localStorage.setItem("garmin-app-key",v)}catch(e){}garmin.error=null;phone.error=null;loadGarmin(true);phone.fetchedAt=0;loadPhoneSteps(true);}
+function gResetKey(){if(!confirm("Remove the app key from this device?"))return;try{localStorage.removeItem("garmin-app-key")}catch(e){}loadGarmin(true);}
+function gErrorCard(e){
+  var c=e.code,title,body,extra="";
+  if(c==="app_key_required"){
+    title="\uD83D\uDD12 Enter your app key";
+    body="Your health functions are locked. Enter the GARMIN_APP_SECRET value you set in Netlify. It\u2019s saved on this device only and isn\u2019t included in backups.";
+    extra='<div style="display:flex;gap:8px;margin-top:10px"><input id="g-key" type="password" autocomplete="off" placeholder="App key" style="flex:1;padding:9px 10px;border-radius:9px;border:0.5px solid rgba(180,160,190,0.4);font-size:14px;background:#fff;color:#3D2E4A"><button onclick="gSaveKey()" style="background:#6B5B8A;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff;-webkit-appearance:none">Save</button></div>';
+  }else if(c==="key_rejected"){
+    title="\u26A0\uFE0F Garmin key expired or deleted";
+    body="Create a new key at connect.garmin.com/app/settings/personalApiToken, paste it into GARMIN_API_KEY in Netlify, then redeploy.";
+  }else if(c==="not_configured"){
+    title="Garmin isn\u2019t set up yet";
+    body="Add GARMIN_API_KEY in Netlify (Site configuration \u2192 Environment variables), then redeploy.";
+  }else if(c==="http_404"){
+    title="Garmin function not deployed";
+    body="Add netlify/functions/garmin.js to the GitHub repo. Netlify picks it up on the next deploy.";
+  }else if(c==="rate_limited"){
+    title="Garmin is rate-limiting";
+    body="Too many requests in a short window. Try again in a few minutes.";
+  }else{
+    title="\u26A0\uFE0F Garmin not pulling";
+    body=gEsc(e.msg||"Something went wrong.");
+  }
+  return'<div style="background:rgba(220,38,38,0.05);border:0.5px solid rgba(220,38,38,0.2);border-radius:14px;padding:14px 16px;margin-bottom:10px">'
+    +'<div style="color:'+(c==="app_key_required"?"#6B5B8A":"#DC2626")+';font-weight:700;font-size:13px;margin-bottom:4px">'+title+'</div>'
+    +'<div style="color:#7A6B8A;font-size:12px;line-height:1.5">'+body+'</div>'+extra
+    +(c==="app_key_required"?'':'<div onclick="loadGarmin(true)" style="margin-top:10px;display:inline-block;cursor:pointer;font-size:12px;font-weight:600;color:#007CC3;background:rgba(0,124,195,0.08);padding:6px 12px;border-radius:8px">\u21BB Try again</div>')
+    +'</div>';
+}
+
+function renderHealthTab(){
+  var hv=$("healthView");if(!hv)return;
+  var d=garmin.data,e=garmin.error;
+  var html='<div style="padding:2px 0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#A898B0">HEALTH SNAPSHOT</span>'
+    +'<span onclick="loadGarmin(true);loadPhoneSteps(true)" style="cursor:pointer;font-size:11px;font-weight:600;color:#007CC3">'+(garmin.loading?'\u21BB Syncing\u2026':'\u21BB Refresh')+'</span></div>';
+  if(e&&(!d||e.code==="app_key_required"||e.code==="key_rejected"))html+=gErrorCard(e);
+  else if(phone.error&&phone.error.code==="app_key_required")html+=gErrorCard(phone.error);
+  if(!d){
+    if(!e)html+='<div style="text-align:center;padding:40px 20px"><div style="font-size:28px;margin-bottom:8px">\uD83E\uDEC0</div><div style="color:#A898B0;font-size:14px">Pulling from Garmin\u2026</div></div>';
+    hv.innerHTML=html+'</div>';return;
+  }
+  var t=d.today||{},b=d.baseline||{},rec=d.recovery,sl=t.sleep,hrv=t.hrv,bb=t.bodyBattery||{},trend=d.trend||[],cy=d.cycle;
+  var dates=trend.map(function(x){return x.date;}),todayDs=gDs(),isToday=d.date===todayDs;
+  if(!isToday)html+='<div style="font-size:12px;color:#B8883E;background:rgba(184,136,62,0.08);border-radius:10px;padding:8px 12px;margin-bottom:10px">Showing '+fmt(parseLocal(d.date))+'. '+(garmin.loading?'Syncing today\u2026':'Tap refresh for today.')+'</div>';
+  if(e&&e.code!=="app_key_required"&&e.code!=="key_rejected")html+='<div style="font-size:11.5px;color:#B8883E;margin:-4px 0 10px">Last refresh failed ('+gEsc(e.msg)+'). Showing the last good sync.</div>';
+
+  // Hero: recovery verdict + what it means for today's session
+  var lv=rec?rec.level:null,ls=gLevelStyle(lv),sess=gSessions(currentDate);
+  var todayBits=[];if(sess.str)todayBits.push(gShort(sess.str));if(sess.run)todayBits.push(sess.run);
+  var chips=rec?(rec.reasons.length?rec.reasons:["All signals in range"]):[];
+  var tm=new Date(currentDate);tm.setDate(tm.getDate()+1);var ts=gSessions(tm),nudge="";
+  var bigTomorrow=ts.str&&/Strength A/.test(ts.str)?"Strength A":(ts.run&&/tempo|interval|hill|speed|rehearsal|race/i.test(ts.run)?ts.run:null);
+  if(bigTomorrow)nudge="Tomorrow: "+gEsc(bigTomorrow)+". Aim for 8h+ tonight"+(sl&&sl.wake?", so lights out by "+g12(gMinusHrs(sl.wake,8)):"")+".";
+  var foot=['Today: '+(todayBits.length?gEsc(todayBits.join(" + ")):"rest day")];
+  if(nudge)foot.push(nudge);
+  if(cy)foot.push(gCycleLine(cy));
+  if(rec&&rec.context&&rec.context.length)foot.push(gEsc(rec.context.join(". "))+".");
+  if(gTravel(d.date))foot.push("Flight week: sleep, HRV and resting HR will read worse for a few days. That\u2019s jet lag, not lost fitness.");
+  html+='<div style="background:linear-gradient(135deg,'+ls.grad+');border-radius:16px;padding:16px 18px;margin-bottom:12px;color:#fff">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div style="flex:1">'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;opacity:.7">Recovery \u00B7 '+fmt(parseLocal(d.date))+'</div>'
+    +'<div style="font-size:18px;font-weight:800;margin-top:4px">'+gLevelTitle(lv,d.date)+'</div>'
+    +'<div style="font-size:12.5px;opacity:.9;line-height:1.55;margin-top:6px">'+(lv?gGuidance(lv,sess,d.date):"Open Garmin Connect on your phone so the watch syncs, then refresh.")+'</div>'
+    +(chips.length?'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">'+chips.map(function(c){return'<span style="font-size:11px;font-weight:600;background:rgba(255,255,255,0.18);padding:3px 9px;border-radius:12px">'+gEsc(c)+'</span>';}).join("")+'</div>':'')
+    +'</div>'+(rec?'<div style="text-align:right;flex-shrink:0"><div style="font-size:40px;font-weight:800;line-height:1">'+(rec.signals-rec.reasons.length)+'/'+rec.signals+'</div><div style="font-size:10px;font-weight:600;opacity:.7;text-transform:uppercase;letter-spacing:1px">signals<br>in range</div></div>':'')
+    +'</div><div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2);font-size:11.5px;opacity:.88;line-height:1.55">'+foot.join("<br>")+'</div></div>';
+
+  // Four headline tiles
+  var sc=sl&&sl.score!=null?sl.score:null,scCol=sc==null?"#A898B0":sc>=80?"#2D6A4F":sc>=60?"#B8883E":"#C4607A";
+  var hs=hrv&&hrv.status,hCol=!hs?"#A898B0":hs==="BALANCED"?"#2D6A4F":hs==="UNBALANCED"?"#B8883E":"#C4607A";
+  var rDiff=(t.restingHR!=null&&b.restingHR!=null)?Math.round(t.restingHR-b.restingHR):null,rCol=rDiff==null?"#A898B0":rDiff>=5?"#C4607A":rDiff>=3?"#B8883E":"#2D6A4F";
+  var bbCol=bb.max==null?"#A898B0":bb.max>=70?"#2D6A4F":bb.max>=40?"#B8883E":"#C4607A";
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
+    +gTile("Sleep",sl?gDur(sl.seconds):"\u2013",sc!=null?"Score "+sc+(sl.quality?" \u00B7 "+sl.quality.toLowerCase():""):(sl?"No score":"No data yet"),scCol)
+    +gTile("HRV",hrv&&hrv.lastNight!=null?hrv.lastNight+" ms":"\u2013",hs?gCap(hs):"No status yet",hCol)
+    +gTile("Resting HR",t.restingHR!=null?t.restingHR+" bpm":"\u2013",rDiff==null?"Building baseline":rDiff>=3?"+"+rDiff+" vs usual":rDiff<=-3?rDiff+" vs usual":"Your usual",rCol)
+    +gTile("Body Battery",bb.latest!=null?bb.latest:"\u2013",bb.max!=null?"Peaked at "+bb.max:"No data yet",bbCol)
+    +'</div>';
+
+  // Sleep
+  if(sl&&sl.seconds!=null){
+    var tgt=d.sleepTargetSeconds||28800,sCol=sl.seconds>=tgt?"#5B8A5E":sl.seconds>=25200?"#B8883E":"#C4607A";
+    var stg=[["Deep",sl.deep,"#5B4A9E"],["Light",sl.light,"#9A8FD8"],["REM",sl.rem,"#C9A8E8"],["Awake",sl.awake,"#F2B8C6"]].filter(function(x){return x[1]!=null&&x[1]>0;});
+    var tot=stg.reduce(function(a,x){return a+x[1];},0);
+    var inner='<div style="display:flex;justify-content:space-between;font-size:12.5px;color:#7A6B8A"><span>'+gDur(sl.seconds)+' of '+gDur(tgt)+' target</span><span style="font-weight:700;color:'+sCol+'">'+(sl.seconds>=tgt?"Target hit":gDur(tgt-sl.seconds)+" short")+'</span></div>'+gProgress(sl.seconds/tgt*100,sCol);
+    if(tot){
+      inner+='<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:10px">'+stg.map(function(x){return'<div style="width:'+(x[1]/tot*100)+'%;background:'+x[2]+'"></div>';}).join("")+'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px">'+stg.map(function(x){return'<span style="font-size:11px;color:#7A6B8A"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+x[2]+';margin-right:4px"></span>'+x[0]+' '+gDur(x[1]).replace(/^0h /,"")+'</span>';}).join("")+'</div>';
+    }
+    inner+=gBars(trend.map(function(x){return x.sleepSeconds==null?null:x.sleepSeconds/3600;}),dates,{target:tgt/3600,color:function(v){return v*3600>=tgt?"#5B8A5E":v>=7?"rgba(184,136,62,0.6)":"#C4607A";},fmt:function(v){return v.toFixed(1);}});
+    inner+='<div style="font-size:11px;color:#A898B0;margin-top:8px">7-night average '+gDur(b.sleepSeconds)+(sl.awakeCount!=null?' \u00B7 woke '+sl.awakeCount+'\u00D7 last night':'')+'. Dashed line is your 8h target.</div>';
+    html+=gCard("\uD83D\uDE34 Sleep",sl.bedtime&&sl.wake?g12(sl.bedtime)+" \u2192 "+g12(sl.wake):"",inner);
+  }
+
+  // HRV
+  if(hrv&&hrv.lastNight!=null){
+    var inner2="";
+    if(hrv.baselineLow!=null&&hrv.baselineHigh!=null){
+      var pts=[hrv.lastNight,hrv.baselineLow,hrv.baselineHigh];if(hrv.weeklyAvg!=null)pts.push(hrv.weeklyAvg);
+      var lo=Math.min.apply(null,pts)*0.85,hi=Math.max.apply(null,pts)*1.1,P=function(x){return Math.max(0,Math.min(100,(x-lo)/(hi-lo)*100));};
+      inner2+='<div style="position:relative;height:10px;background:rgba(180,160,190,0.18);border-radius:5px;margin:16px 8px 8px">'
+        +'<div style="position:absolute;top:0;bottom:0;left:'+P(hrv.baselineLow)+'%;width:'+(P(hrv.baselineHigh)-P(hrv.baselineLow))+'%;background:rgba(45,106,79,0.3);border-radius:5px"></div>'
+        +(hrv.weeklyAvg!=null?'<div style="position:absolute;top:-3px;left:calc('+P(hrv.weeklyAvg)+'% - 8px);width:16px;height:16px;border-radius:50%;border:2px solid #6B5B8A;background:#fff;box-sizing:border-box"></div>':'')
+        +'<div style="position:absolute;top:-3px;left:calc('+P(hrv.lastNight)+'% - 8px);width:16px;height:16px;border-radius:50%;background:'+hCol+';border:2px solid #fff;box-sizing:border-box;box-shadow:0 0 0 0.5px rgba(0,0,0,0.15)"></div></div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:#7A6B8A;margin-bottom:6px"><span><b style="color:'+hCol+'">\u25CF</b> Last night '+hrv.lastNight+'</span>'+(hrv.weeklyAvg!=null?'<span><b style="color:#6B5B8A">\u25CB</b> 7-day avg '+hrv.weeklyAvg+'</span>':'')+'<span><b style="color:rgba(45,106,79,0.6)">\u25A0</b> Your normal '+hrv.baselineLow+'\u2013'+hrv.baselineHigh+' ms</span></div>';
+    }
+    var hTxt={BALANCED:"Inside your normal range.",UNBALANCED:"Outside your normal range. A hard session, alcohol, a late meal or a short night can each do it.",LOW:"Below your normal range for several days. Protect your sleep and keep the runs easy.",POOR:"Well below your normal range. Prioritise sleep and keep training light until it comes back."}[hs]||"Garmin needs about three weeks of nightly readings to set your normal range.";
+    if(cy&&cy.phase==="luteal"&&hs&&hs!=="BALANCED")hTxt+=" HRV often dips in the luteal phase too.";
+    inner2+='<div style="font-size:12.5px;color:#4A3D5A;line-height:1.55">'+hTxt+'</div>';
+    inner2+=gBars(trend.map(function(x){return x.hrv;}),dates,{color:function(v){return hrv.baselineLow!=null&&(v<hrv.baselineLow||v>hrv.baselineHigh)?"rgba(184,136,62,0.65)":"rgba(45,106,79,0.55)";},fmt:function(v){return Math.round(v);}});
+    html+=gCard("\uD83D\uDC9A HRV",hs?gCap(hs):"",inner2);
+  }
+
+  // Resting HR
+  if(t.restingHR!=null){
+    var inner3=gRow("This morning",t.restingHR+" bpm")+gRow("Your usual (last 6 days)",b.restingHR!=null?b.restingHR+" bpm":"\u2013");
+    inner3+=gBars(trend.map(function(x){return x.restingHR;}),dates,{color:function(v){return b.restingHR!=null&&v-b.restingHR>=5?"#C4607A":"rgba(196,96,122,0.3)";},fmt:function(v){return Math.round(v);}});
+    inner3+='<div style="font-size:11px;color:#A898B0;margin-top:8px">Lower is better. A jump of 5+ bpm over your usual is an early sign of fatigue, illness or a big night'+(cy&&cy.phase==="luteal"?'; in the luteal phase the app allows a couple of extra beats':'')+'.</div>';
+    html+=gCard("\u2764\uFE0F Resting heart rate",rDiff!=null?(rDiff>0?"+":"")+rDiff+" bpm vs usual":"",inner3);
+  }
+
+  // Last 4 weeks: is the cut costing recovery?
+  var rt=d.recoveryTrend,hist=d.history||[];
+  if(rt){
+    var R=rt.restingHR,V=rt.hrv,S=rt.sleepSeconds,inner6="";
+    if(R)inner6+=gRow("Resting HR",R.recent+" bpm <span style=\"font-weight:600;color:"+(R.delta>=3?"#C4607A":R.delta>=1.5?"#B8883E":"#2D6A4F")+"\">("+(R.delta>0?"+":"")+R.delta+")</span>");
+    if(V)inner6+=gRow("HRV",V.recent+" ms <span style=\"font-weight:600;color:"+(V.deltaPct<=-10?"#C4607A":V.deltaPct<=-5?"#B8883E":"#2D6A4F")+"\">("+(V.deltaPct>0?"+":"")+V.deltaPct+"%)</span>");
+    if(S)inner6+=gRow("Sleep average",gDur(S.recent)+" <span style=\"font-weight:600;color:"+(S.recent<25200?"#C4607A":S.recent<28800?"#B8883E":"#2D6A4F")+"\">("+(S.delta>=0?"+":"\u2212")+gDur(Math.abs(S.delta)).replace(/^0h /,"")+")</span>");
+    inner6+=gSpark("HRV, 28 nights",hist.map(function(x){return x.hrv;}),"rgba(45,106,79,0.75)",function(v){return Math.round(v);});
+    inner6+=gSpark("Resting HR, 28 mornings",hist.map(function(x){return x.restingHR;}),"rgba(196,96,122,0.75)",function(v){return Math.round(v);});
+    var vt=rt.strain?"Recovery has slipped this week: "+gEsc(rt.flags.join(", "))+". Protect sleep before adding any training.":rt.flags.length?"One signal to watch: "+gEsc(rt.flags[0])+".":"Recovery is holding steady. The deficit isn\u2019t costing you yet.";
+    inner6+='<div style="font-size:12.5px;color:#4A3D5A;line-height:1.55;margin-top:10px">'+vt+(gTravel(d.date)?" The flight will skew these for about a week.":"")+'</div>';
+    html+=gCard("\uD83D\uDCC8 Last 4 weeks","this week vs the 3 before",inner6);
+  }
+
+  // Activity. Steps come from your phone (Shortcut -> steps.js), never from Garmin.
+  var im=t.intensityMinutes||{},stz=t.stress||{},inner4="",tgS=gTargetNum(currentDate),pToday=phoneDay(todayDs);
+  if(pToday){
+    var hit=tgS&&pToday.steps>=tgS;
+    inner4+='<div style="display:flex;justify-content:space-between;font-size:12.5px;color:#7A6B8A"><span>'+gN(pToday.steps)+(tgS?' of '+gN(tgS):'')+' on your phone</span><span style="font-weight:700;color:'+(hit?"#2D6A4F":"#6B5B8A")+'">'+(tgS?(hit?"Target hit":gN(tgS-pToday.steps)+" to go"):gEsc(stepTarget()))+'</span></div>'+(tgS?gProgress(pToday.steps/tgS*100,hit?"#5B8A5E":"#6B5B8A"):'');
+  }else{
+    inner4+=gRow("Steps today \u00B7 "+gEsc(stepTarget()),getState().steps?"Ticked \u2713":"Not ticked yet");
+  }
+  var pDates=[];for(var di=6;di>=0;di--){var pd=new Date(currentDate);pd.setDate(pd.getDate()-di);pDates.push(gDs(pd));}
+  var pVals=pDates.map(function(ds){var x=phoneDay(ds);return x?x.steps:null;});
+  if(pVals.some(function(v){return v!=null;})){
+    var hitDays=0,full=0;pDates.forEach(function(ds,i){if(i<6&&pVals[i]!=null){full++;var tg=gTargetNum(parseLocal(ds));if(tg&&pVals[i]>=tg)hitDays++;}});
+    inner4+=gBars(pVals,pDates,{target:tgS||undefined,color:function(v,i){var tg=gTargetNum(parseLocal(pDates[i]));return tg&&v>=tg?"#5B8A5E":i===pDates.length-1?"#6B5B8A":"rgba(107,91,138,0.3)";},fmt:function(v){return v>=1000?(v/1000).toFixed(1)+"k":Math.round(v);}});
+    inner4+='<div style="font-size:11px;color:#A898B0;margin-top:8px;margin-bottom:4px">'+hitDays+' of '+full+' full days on target. Green bars hit that day\u2019s plan target.</div>';
+  }
+  if(im.moderate!=null||im.vigorous!=null)inner4+=gRow("Intensity minutes today",(im.moderate||0)+" moderate \u00B7 "+(im.vigorous||0)+" vigorous");
+  if(stz.avg!=null)inner4+=gRow("Average stress",stz.avg+(stz.qualifier?" \u00B7 "+gEsc(stz.qualifier.replace(/_/g," ")):""));
+  if(bb.charged!=null||bb.drained!=null)inner4+=gRow("Body Battery today","+"+(bb.charged||0)+" charged \u00B7 \u2212"+(bb.drained||0)+" drained");
+  var pNote=phone.error&&phone.error.code==="http_404"?"Phone steps aren\u2019t connected yet: deploy steps.js and set up the Send Steps shortcut.":phone.error&&phone.error.code==="storage_unavailable"?"Phone steps storage isn\u2019t working: check package.json is in the repo and redeploy.":pToday&&pToday.at?"Phone count synced "+gClock(pToday.at)+".":"Steps come from your phone, never Garmin.";
+  inner4+='<div style="font-size:11px;color:#A898B0;margin-top:8px">'+pNote+' <a href="'+SHORTCUT_URL+'" style="color:#6B5B8A;font-weight:600;text-decoration:none">\u21BB Sync phone steps</a></div>';
+  html+=gCard("\uD83D\uDC5F Activity","",inner4);
+
+  // Weigh-ins from a Garmin scale (only shows if there are any)
+  if(d.weight&&d.weight.kg!=null){
+    var w=d.weight,miss=gMissingWeighIns();
+    var inner5=gRow("Weight",w.kg+" kg")+(w.bodyFatPct!=null?gRow("Body fat",w.bodyFatPct+"%"):"")+(w.muscleKg!=null?gRow("Muscle",w.muscleKg+" kg"):"");
+    if(miss.length)inner5+='<button onclick="gImportWeights()" style="margin-top:12px;width:100%;background:#C4607A;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;-webkit-appearance:none">Add '+miss.length+' Garmin weigh-in'+(miss.length===1?'':'s')+' to Measurements</button>';
+    else inner5+='<div style="font-size:11px;color:#2D6A4F;margin-top:8px">\u2713 All recent Garmin weigh-ins are in Measurements.</div>';
+    inner5+='<div style="font-size:11px;color:#A898B0;margin-top:8px;line-height:1.45">These feed the Monday check on the Coach tab. Adding never overwrites a number you logged yourself. Fat and muscle readings drift with hydration'+(cy&&cy.waterToday?', and around your period,':'')+' so read the multi-week trend.</div>';
+    html+=gCard("\u2696\uFE0F Latest weigh-in",mFmtDate(w.date),inner5);
+  }
+
+  var errs=d.errors?Object.keys(d.errors):[];
+  html+='<div style="font-size:10.5px;color:#B8A5C0;text-align:center;line-height:1.6;margin:6px 0 4px">Garmin Connect \u00B7 synced '+(garmin.fetchedAt?gAgo(garmin.fetchedAt):"\u2013")
+    +(errs.length?'<br>Couldn\u2019t load: '+gEsc(errs.join(", ")):'')
+    +(gKey()?'<br><span onclick="gResetKey()" style="cursor:pointer;text-decoration:underline">Remove app key from this device</span>':'')+'</div>';
+  hv.innerHTML=html+'</div>';
+}
+
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){render();loadGarmin();loadPhoneSteps();});}else{render();loadGarmin();loadPhoneSteps();}
 </script>
 </body>
 </html>
