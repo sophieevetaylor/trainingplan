@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="header">
-  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v9.0</div>
+  <div class="label" id="headerLabel">&#127968; Home</div><div style="position:absolute;top:6px;right:10px;font-size:9px;color:#C8B8D0;font-weight:600">v9.2</div>
   <div class="nav">
     <button id="prev">&#8592;</button>
     <div class="date-display" id="dateDisplay"></div>
@@ -1605,7 +1605,7 @@ var SHORTCUT_URL="shortcuts://run-shortcut?name=Send%20Steps";
 var TRAVEL_FROM="2027-01-08",TRAVEL_TO="2027-01-14"; // flight day + the week jet lag skews the numbers
 var garmin={data:null,error:null,loading:false,fetchedAt:0};
 var phone={data:null,error:null,loading:false,fetchedAt:0,changed:false};
-(function(){try{var c=JSON.parse(localStorage.getItem("garmin-cache")||"null");if(c&&c.data&&c.data.ok){garmin.data=c.data;garmin.fetchedAt=c.at||0;}}catch(e){}
+(function(){try{var c=JSON.parse(localStorage.getItem("garmin-cache")||"null");if(c&&c.data&&c.data.ok){garmin.data=c.data;garmin.fetchedAt=c.at||0;saveNights(c.data.history);}}catch(e){}
   try{var p=JSON.parse(localStorage.getItem("steps-cache")||"null");if(p&&p.data&&p.data.ok){phone.data=p.data;phone.fetchedAt=p.at||0;}}catch(e){}})();
 // Steps come from your phone only. One-time undo of any ticks an earlier Garmin build added.
 (function(){try{if(localStorage.getItem("garmin-steps-v2"))return;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!/^tp-\d{4}-\d+-\d+$/.test(k||""))continue;var st=JSON.parse(localStorage.getItem(k)||"null");if(st&&st.stepsAuto){st.steps=false;delete st.stepsAuto;localStorage.setItem(k,JSON.stringify(st));}}localStorage.setItem("garmin-steps-v2","1");}catch(e){}})();
@@ -1617,7 +1617,6 @@ function gDur(s){if(s==null)return"\u2013";var h=Math.floor(s/3600),m=Math.round
 function gAgo(ts){var m=Math.round((Date.now()-ts)/60000);if(m<1)return"just now";if(m<60)return m+" min ago";var h=Math.round(m/60);if(h<24)return h+"h ago";return Math.round(h/24)+"d ago";}
 function g12(t){if(!t)return"";var p=t.split(":"),h=+p[0];return((h%12)||12)+":"+p[1]+(h<12?"am":"pm");}
 function gClock(iso){var d=new Date(iso);if(isNaN(d.getTime()))return"";return g12(String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"));}
-function gMinusHrs(t,hrs){var p=t.split(":"),x=((+p[0])*60+(+p[1])-hrs*60+1440)%1440;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");}
 function gKey(){try{return localStorage.getItem("garmin-app-key")||""}catch(e){return""}}
 function gTargetNum(d){var m=String(stepTarget(d)).match(/([\d,]+)\s*steps/);return m?parseInt(m[1].replace(/,/g,""),10):null;}
 function gTravel(ds){return ds>=TRAVEL_FROM&&ds<=TRAVEL_TO;}
@@ -1640,7 +1639,7 @@ function loadGarmin(force){
   if(viewMode==="health")renderHealthTab();
   gFetch(GARMIN_URL+"?date="+gDs(),function(err,json){
     garmin.loading=false;
-    if(!err){garmin.data=json;garmin.fetchedAt=Date.now();garmin.error=null;try{localStorage.setItem("garmin-cache",JSON.stringify({at:garmin.fetchedAt,data:json}))}catch(e){}}
+    if(!err){garmin.data=json;garmin.fetchedAt=Date.now();garmin.error=null;saveNights(json.history);try{localStorage.setItem("garmin-cache",JSON.stringify({at:garmin.fetchedAt,data:json}))}catch(e){}}
     else{garmin.error=err;console.error("Garmin error:",err);}
     garminRefreshViews();
   });
@@ -1795,6 +1794,194 @@ function gMondayAdjust(r1,title,body,col){
   return out;
 }
 
+// ----- Drinks (Health tab). The log and the saved nights use tp- keys, so they're in backups. -----
+// Drinks on day D are compared with the night Garmin files under D+1 (sleep is dated by the morning you wake).
+var drinksDay="today";
+function drinksLog(){try{return JSON.parse(localStorage.getItem("tp-drinks")||"{}")||{}}catch(e){return{}}}
+function nightsStore(){try{return JSON.parse(localStorage.getItem("tp-nights")||"{}")||{}}catch(e){return{}}}
+// Keep each night's numbers past Garmin's 28-day window, so the comparison builds up over months
+function saveNights(hist){
+  if(!hist||!hist.length)return;
+  var st=nightsStore();
+  // Only nights the watch was worn: a daytime-only resting HR would skew every comparison
+  hist.forEach(function(h){if(!gWorn(h)){delete st[h.date];return;}st[h.date]={sl:h.sleepSeconds,sc:h.sleepScore,hrv:h.hrv,rhr:h.restingHR,bt:h.bedtime||null,wk:h.wake||null,dp:h.deep!=null?h.deep:null,rm:h.rem!=null?h.rem:null,aw:h.awake!=null?h.awake:null};});
+  var keys=Object.keys(st).sort();keys.slice(0,Math.max(0,keys.length-180)).forEach(function(k){delete st[k];});
+  try{localStorage.setItem("tp-nights",JSON.stringify(st))}catch(e){}
+}
+function drinksDate(){var d=new Date();if(drinksDay==="yesterday")d.setDate(d.getDate()-1);return gDs(d);}
+function drinksPick(which){drinksDay=which;renderHealthTab();}
+function setDrinks(n){var l=drinksLog();l[drinksDate()]=n;try{localStorage.setItem("tp-drinks",JSON.stringify(l))}catch(e){}showToast(n===0?"\u2705 Logged a dry day":"\uD83C\uDF77 Logged "+(n>=6?"6+":n)+" drink"+(n===1?"":"s"));renderHealthTab();}
+// Groups the nights after each logged day. Days you didn't log, after your first log, count as dry.
+function drinksAnalysis(){
+  var log=drinksLog(),nights=nightsStore(),keys=Object.keys(log).sort(),today=gDs();
+  var out={first:keys[0]||null,anyNight:Object.keys(nights).some(function(k){var n=nights[k];return n.sc!=null||n.sl!=null||n.hrv!=null;}),groups:{dry:[],light:[],heavy:[]}};
+  if(!keys.length)return out;
+  for(var d=parseLocal(keys[0]);gDs(d)<today;d.setDate(d.getDate()+1)){
+    var ds=gDs(d),nx=new Date(d);nx.setDate(nx.getDate()+1);var nt=nights[gDs(nx)];
+    if(!nt||(nt.sc==null&&nt.sl==null&&nt.hrv==null))continue;
+    var n=log[ds]!=null?log[ds]:0;
+    (n===0?out.groups.dry:n<=2?out.groups.light:out.groups.heavy).push(nt);
+  }
+  return out;
+}
+function gMean(arr,k){var v=arr.map(function(x){return x[k];}).filter(function(x){return x!=null;});return v.length?v.reduce(function(a,b){return a+b;},0)/v.length:null;}
+function drinksCard(){
+  var log=drinksLog(),sel=drinksDate(),cur=log[sel];
+  var seg=function(id,label){var on=drinksDay===id;return'<span onclick="drinksPick(\''+id+'\')" style="cursor:pointer;font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:8px;'+(on?'background:#fff;color:#3D2E4A;box-shadow:0 1px 2px rgba(0,0,0,.08)':'color:#7A6B8A')+'">'+label+'</span>';};
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="display:inline-flex;background:rgba(180,160,190,0.18);border-radius:10px;padding:2px">'+seg("today","Today")+seg("yesterday","Yesterday")+'</div>'
+    +'<span style="font-size:11px;color:#A898B0">'+(cur==null?"Not logged":cur===0?"Dry \u2713":(cur>=6?"6+":cur)+" logged \u2713")+'</span></div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px">';
+  for(var n=0;n<=6;n++){var on=cur===n;h+='<button onclick="setDrinks('+n+')" style="-webkit-appearance:none;border:0.5px solid '+(on?'#6B5B8A':'rgba(180,160,190,0.35)')+';background:'+(on?'#6B5B8A':'rgba(255,255,255,0.7)')+';color:'+(on?'#fff':'#3D2E4A')+';border-radius:9px;padding:8px 0;font-size:14px;font-weight:700;cursor:pointer">'+(n===6?"6+":n)+'</button>';}
+  h+='</div>';
+  // Last 14 days strip
+  var first=Object.keys(log).sort()[0];
+  h+='<div style="display:flex;gap:3px;margin-top:12px">';
+  for(var i=13;i>=0;i--){var dd=new Date();dd.setDate(dd.getDate()-i);var ds=gDs(dd),v=log[ds];if(v==null&&first&&ds>=first&&i>0)v=0;
+    var bg=v==null?"rgba(180,160,190,0.1)":v===0?"rgba(45,106,79,0.12)":v<=2?"rgba(184,136,62,0.25)":"rgba(196,96,122,0.35)";
+    h+='<div style="flex:1;text-align:center;background:'+bg+';border-radius:5px;padding:3px 0"><div style="font-size:10.5px;font-weight:700;color:#3D2E4A;height:14px">'+(v==null||v===0?"":(v>=6?"6+":v))+'</div><div style="font-size:8.5px;color:'+(i===0?'#6B5B8A':'#A898B0')+';font-weight:'+(i===0?700:400)+'">'+["S","M","T","W","T","F","S"][dd.getDay()]+'</div></div>';}
+  h+='</div>';
+  // Analysis
+  var a=drinksAnalysis(),G=a.groups,ok=function(g){return g.length>=2;};
+  if(!a.first){
+    h+='<div style="font-size:12px;color:#7A6B8A;line-height:1.5;margin-top:12px">Log drinks on the days you have them. Once there are 2+ drinking nights and 2+ dry nights, this shows what drinking does to your sleep, HRV and resting HR.</div>';
+  }else if(!a.anyNight){
+    h+='<div style="font-size:12px;color:#B8883E;line-height:1.5;margin-top:12px">Garmin hasn\u2019t sent any sleep or HRV data yet. Wear your watch to bed and this fills in.</div>';
+  }else if(!(ok(G.dry)&&(ok(G.light)||ok(G.heavy)))){
+    h+='<div style="font-size:12px;color:#7A6B8A;line-height:1.5;margin-top:12px">Building your comparison: '+G.dry.length+' dry night'+(G.dry.length===1?'':'s')+', '+(G.light.length+G.heavy.length)+' after drinks so far. It needs 2+ of each.</div>';
+  }else{
+    var cols=[["Dry",G.dry],["1\u20132",G.light],["3+",G.heavy]];
+    var rows=[["Sleep score","sc",function(v){return Math.round(v);},function(v,b){return Math.round(v-b);},false],
+              ["Sleep","sl",function(v){return gDur(v);},null,false],
+              ["Deep","dp",function(v){return Math.round(v/60)+"m";},function(v,b){var x=Math.round((v-b)/60);return(x>0?"+":"")+x+"m";},false],
+              ["REM","rm",function(v){return Math.round(v/60)+"m";},function(v,b){var x=Math.round((v-b)/60);return(x>0?"+":"")+x+"m";},false],
+              ["HRV","hrv",function(v){return Math.round(v)+" ms";},function(v,b){return Math.round((v-b)/b*100)+"%";},false],
+              ["Resting HR","rhr",function(v){return Math.round(v)+" bpm";},function(v,b){return(v-b>0?"+":"")+Math.round(v-b);},true]];
+    var t='<div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:0;margin-top:12px;font-size:12px">';
+    t+='<div></div>'+cols.map(function(c){return'<div style="text-align:right;font-size:10px;font-weight:700;color:#A898B0;letter-spacing:.5px;padding-bottom:4px">'+c[0].toUpperCase()+'<br><span style="font-weight:600">'+c[1].length+' night'+(c[1].length===1?'':'s')+'</span></div>';}).join("");
+    rows.forEach(function(r){
+      var base=gMean(G.dry,r[1]);
+      t+='<div style="padding:6px 0;border-top:0.5px solid rgba(180,160,190,0.15);color:#7A6B8A">'+r[0]+'</div>';
+      cols.forEach(function(c,ci){var m=ok(c[1])?gMean(c[1],r[1]):null;var txt=m==null?"\u2013":r[2](m),sub="";
+        if(ci>0&&m!=null&&base!=null){var diff=m-base,worse=r[4]?diff>0:diff<0,tiny=r[1]==="sl"?Math.abs(diff)<30:r[1]==="dp"||r[1]==="rm"?Math.abs(diff)<60:r[1]==="hrv"?Math.abs(diff/base)<0.005:Math.abs(diff)<0.5;var dtxt=tiny?"0":r[3]?r[3](m,base):(diff>=0?"+":"\u2212")+gDur(Math.abs(diff)).replace(/^0h 0?/,"");sub='<div style="font-size:10px;font-weight:600;color:'+(tiny?'#A898B0':worse?'#C4607A':'#2D6A4F')+'">'+dtxt+'</div>';}
+        t+='<div style="text-align:right;padding:6px 0;border-top:0.5px solid rgba(180,160,190,0.15);font-weight:700;color:#3D2E4A">'+txt+sub+'</div>';});
+    });
+    t+='</div>';
+    var g=ok(G.heavy)?["3+ drinks",G.heavy]:["1\u20132 drinks",G.light],bits=[];
+    var sd=gMean(g[1],"sc"),sb=gMean(G.dry,"sc");if(sd!=null&&sb!=null){var x1=Math.round(sd-sb);bits.push("sleep score "+(x1===0?"unchanged":(x1>0?"+":"\u2212")+Math.abs(x1)));}
+    var md=gMean(g[1],"rm"),mb=gMean(G.dry,"rm");if(md!=null&&mb!=null){var x4=Math.round((md-mb)/60);bits.push("REM "+(x4===0?"unchanged":(x4>0?"+":"\u2212")+Math.abs(x4)+" min"));}
+    var hd=gMean(g[1],"hrv"),hb=gMean(G.dry,"hrv");if(hd!=null&&hb){var x2=Math.round((hd-hb)/hb*100);bits.push("HRV "+(x2===0?"unchanged":(x2>0?"+":"\u2212")+Math.abs(x2)+"%"));}
+    var rd=gMean(g[1],"rhr"),rb=gMean(G.dry,"rhr");if(rd!=null&&rb!=null){var x3=Math.round(rd-rb);bits.push("resting HR "+(x3===0?"unchanged":(x3>0?"+":"\u2212")+Math.abs(x3)+" bpm"));}
+    h+='<div style="font-size:12.5px;color:#4A3D5A;line-height:1.5;margin-top:12px"><b>After '+g[0]+':</b> '+(bits.length?bits.join(", "):"no clear difference yet")+' vs dry nights ('+g[1].length+' nights).</div>'+t;
+  }
+  h+='<div style="font-size:10.5px;color:#A898B0;line-height:1.45;margin-top:10px">Days you don\u2019t log, after your first log, count as dry. Small numbers, so read it as a pattern, not proof.</div>';
+  return gCard("\uD83C\uDF77 Drinks","vs that night\u2019s sleep",h);
+}
+
+// ----- Sleep rhythm (Health tab). Garmin files each night under the morning you wake. -----
+// Times become minutes since noon on the evening the night began, so 10pm < 1am < 7am.
+function gMin(t){if(!t)return null;var p=String(t).split(":");return(+p[0])*60+(+p[1]);}
+function gBedM(t){var m=gMin(t);return m==null?null:m>=720?m-720:m+720;}
+function gWakeM(t){var m=gMin(t);return m==null?null:m+720;}
+function gFromM(x){var m=((Math.round(x)+720)%1440+1440)%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");}
+function gHourLabel(x){var h=+gFromM(x).slice(0,2);return((h%12)||12)+(h<12?"am":"pm");}
+function gMeanA(a){return a.length?a.reduce(function(s,v){return s+v;},0)/a.length:null;}
+function gMedian(a){if(!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;}),k=Math.floor(s.length/2);return s.length%2?s[k]:(s[k-1]+s[k])/2;}
+function gSD(a){if(a.length<2)return 0;var m=gMeanA(a);return Math.sqrt(a.reduce(function(s,v){return s+(v-m)*(v-m);},0)/(a.length-1));}
+function gWorn(h){return h.overnight!=null?!!h.overnight:(h.sleepSeconds!=null||h.hrv!=null);}
+// The last n nights ending on the synced day: saved nights first (they reach back 180 days), then Garmin's 28
+function gNights(n){
+  var st=nightsStore(),d=garmin.data,end=d&&d.date?parseLocal(d.date):new Date(),hist={},out=[];
+  (d&&d.history||[]).forEach(function(h){hist[h.date]=h;});
+  for(var i=n-1;i>=0;i--){
+    var x=new Date(end);x.setDate(x.getDate()-i);var ds=gDs(x),s=st[ds],h=hist[ds],r={};
+    if(s)r={sl:s.sl,bt:s.bt,wk:s.wk,dp:s.dp,rm:s.rm,aw:s.aw};
+    else if(h&&gWorn(h))r={sl:h.sleepSeconds,bt:h.bedtime,wk:h.wake,dp:h.deep,rm:h.rem,aw:h.awake};
+    r.date=ds;out.push(r);
+  }
+  return out;
+}
+// Your wake time is the anchor: same alarm every day. Saved under a tp- key so it's in backups.
+var WAKE_DEFAULT="06:30";
+function gWakeTarget(){var v=null;try{v=localStorage.getItem("tp-wake")}catch(e){}return/^\d{2}:\d{2}$/.test(v||"")?v:WAKE_DEFAULT;}
+function gSetWake(v){if(!/^\d{2}:\d{2}$/.test(v||""))return;try{localStorage.setItem("tp-wake",v)}catch(e){}showToast("\u23F0 Wake time set to "+g12(v));renderHealthTab();}
+// Works back from your wake time: 8h asleep + your usual awake time in the night + 15 min to drop off
+function gLightsOut(){
+  var n=gNights(14).filter(function(x){return x.wk!=null&&x.sl!=null;});
+  var wake=gWakeM(gWakeTarget()),aw=n.length?gMedian(n.map(function(x){return x.aw!=null?x.aw/60:0;})):0;
+  var need=((garmin.data&&garmin.data.sleepTargetSeconds)||28800)/60,lo=Math.floor((wake-need-aw-15)/5)*5;
+  return{lightsOut:gFromM(lo),loM:lo,wake:gWakeTarget(),wakeM:wake,nights:n.length};
+}
+function gRhythmCard(){
+  var N=gNights(14),have=N.filter(function(x){return x.bt!=null&&x.wk!=null;});
+  if(!have.length)return"";
+  var LO=gLightsOut(),h="",tgtS=(garmin.data&&garmin.data.sleepTargetSeconds)||28800;
+  if(LO)h+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(107,91,138,0.08);border-radius:10px;padding:9px 12px;margin-bottom:6px">'
+    +'<div><div style="font-size:9.5px;font-weight:700;letter-spacing:.8px;color:#A898B0;text-transform:uppercase">Tonight</div><div style="font-size:17px;font-weight:800;color:#3D2E4A">Lights out '+g12(LO.lightsOut)+'</div></div>'
+    +'<div style="font-size:11px;color:#7A6B8A;text-align:right;line-height:1.4">'+gDur(tgtS).replace(/ 00m$/,"")+' asleep, up at<br><input id="g-wake" type="time" value="'+LO.wake+'" onchange="gSetWake(this.value)" style="-webkit-appearance:none;appearance:none;border:0.5px solid rgba(107,91,138,0.35);background:#fff;border-radius:7px;padding:2px 6px;font:inherit;font-weight:700;color:#3D2E4A;margin-top:3px;min-height:0"></div></div>';
+  // Chart: one column per night, bar from falling asleep to waking
+  var bm=have.map(function(x){return gBedM(x.bt);}),wm=have.map(function(x){return gWakeM(x.wk);});
+  var top=Math.floor((Math.min.apply(null,bm.concat(LO?[LO.loM]:[]))-20)/60)*60,bot=Math.ceil((Math.max.apply(null,wm.concat(LO?[LO.wakeM]:[]))+20)/60)*60,span=Math.max(bot-top,60);
+  var step=span>720?180:120,P=function(x){return((x-top)/span*100).toFixed(2)+"%";};
+  h+='<div style="display:flex;gap:6px;margin-top:12px"><div style="position:relative;width:30px;height:128px;flex-shrink:0">';
+  for(var g=top;g<=bot;g+=step)h+='<div style="position:absolute;right:0;top:'+P(g)+';transform:translateY(-50%);font-size:8.5px;color:#A898B0;white-space:nowrap">'+gHourLabel(g)+'</div>';
+  h+='</div><div style="flex:1"><div style="position:relative;height:128px">';
+  for(var g2=top;g2<=bot;g2+=step)h+='<div style="position:absolute;left:0;right:0;top:'+P(g2)+';border-top:0.5px solid rgba(180,160,190,0.18)"></div>';
+  if(LO)h+='<div style="position:absolute;left:0;right:0;top:'+P(LO.loM)+';border-top:1px dashed rgba(107,91,138,0.55);z-index:2"></div>'
+    +'<div style="position:absolute;left:0;right:0;top:'+P(LO.wakeM)+';border-top:1px dashed rgba(107,91,138,0.55);z-index:2"></div>';
+  h+='<div style="position:absolute;inset:0;display:flex;gap:3px">';
+  N.forEach(function(x){
+    var dow=parseLocal(x.date).getDay(),wk=dow===6||dow===0,col='<div style="flex:1;position:relative;border-radius:3px;'+(wk?'background:rgba(180,160,190,0.1)':'')+'">';
+    if(x.bt!=null&&x.wk!=null){var b=gBedM(x.bt),w=gWakeM(x.wk),c=x.sl==null?"rgba(107,91,138,0.35)":x.sl>=tgtS?"#5B8A5E":x.sl>=25200?"rgba(184,136,62,0.65)":"#C4607A";
+      col+='<div style="position:absolute;left:0;right:0;top:'+P(b)+';height:'+((w-b)/span*100).toFixed(2)+'%;background:'+c+';border-radius:3px"></div>';}
+    h+=col+'</div>';
+  });
+  h+='</div></div><div style="display:flex;gap:3px;margin-top:3px">';
+  N.forEach(function(x,i){var last=i===N.length-1;h+='<div style="flex:1;text-align:center;font-size:8.5px;color:'+(last?'#6B5B8A':'#A898B0')+';font-weight:'+(last?700:400)+'">'+["S","M","T","W","T","F","S"][parseLocal(x.date).getDay()]+'</div>';});
+  h+='</div></div></div><div style="font-size:10.5px;color:#A898B0;margin:6px 0 4px">Each bar runs from falling asleep to waking, under the morning you woke. Shaded columns are weekend nights'+(LO?'. Dashed lines are lights out and your '+g12(LO.wake)+' wake':'')+'.</div>';
+  // The anchor: up within 15 min of your wake time
+  if(LO){var onT=have.filter(function(x){return Math.abs(gWakeM(x.wk)-LO.wakeM)<=15;}).length;
+    h+=gRow("Up within 15 min of "+g12(LO.wake),onT+" of "+have.length+" morning"+(have.length===1?"":"s"),onT/have.length>=0.8?"#2D6A4F":onT/have.length>=0.5?"#B8883E":"#C4607A");}
+  // Consistency
+  var bsd=null,shift=null;
+  if(have.length>=4){
+    bsd=gSD(bm);var wsd=gSD(wm),lab=function(sd){return sd<=30?["steady","#2D6A4F"]:sd<=60?["drifting","#B8883E"]:["all over the place","#C4607A"];};
+    h+=gRow("Bedtime varies by","\u00B1"+Math.round(bsd)+" min \u00B7 "+lab(bsd)[0],lab(bsd)[1]);
+    h+=gRow("Wake time varies by","\u00B1"+Math.round(wsd)+" min \u00B7 "+lab(wsd)[0],lab(wsd)[1]);
+    var we=[],wd=[];have.forEach(function(x){var dw=parseLocal(x.date).getDay(),mid=(gBedM(x.bt)+gWakeM(x.wk))/2;(dw===6||dw===0?we:wd).push(mid);});
+    if(we.length>=2&&wd.length>=3){shift=Math.round(gMeanA(we)-gMeanA(wd));
+      h+=gRow("Weekend shift",Math.abs(shift)<15?"none":Math.abs(shift)+" min "+(shift>0?"later":"earlier"),Math.abs(shift)>=60?"#C4607A":Math.abs(shift)>=30?"#B8883E":"#2D6A4F");}
+  }
+  // Deep and REM: averages only, because single-night stages are rough
+  var st7=N.slice(-7).filter(function(x){return x.dp!=null&&x.sl;}),dAvg=null;
+  if(st7.length){
+    var lbl=st7.length>=7?"7-night avg":st7.length===1?"last night":"last "+st7.length+" nights";
+    var slA=gMeanA(st7.map(function(x){return x.sl/60;}));dAvg=gMeanA(st7.map(function(x){return x.dp/60;}));
+    var rms=st7.filter(function(x){return x.rm!=null;}),rAvg=rms.length?gMeanA(rms.map(function(x){return x.rm/60;})):null;
+    var colFor=function(v,ref){return v>=ref*0.8?"#2D6A4F":v>=ref*0.5?"#B8883E":"#C4607A";};
+    var mins=function(v){return gDur(v*60).replace(/^0h /,"");};
+    h+=gRow("Deep sleep, "+lbl,mins(dAvg)+" \u00B7 "+Math.round(dAvg/slA*100)+"%",colFor(dAvg,71));
+    if(rAvg!=null)h+=gRow("REM, "+lbl,mins(rAvg)+" \u00B7 "+Math.round(rAvg/slA*100)+"%",colFor(rAvg,92));
+    // 14-night deep + REM columns
+    var mx=Math.max.apply(null,N.map(function(x){return(x.dp||0)+(x.rm||0);}).concat([10800]));
+    h+='<div style="display:flex;align-items:flex-end;gap:3px;height:44px;margin-top:10px">';
+    N.forEach(function(x){h+='<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end">'
+      +(x.dp==null?'<div style="height:3px;background:rgba(180,160,190,0.18);border-radius:2px"></div>'
+        :'<div style="height:'+((x.rm||0)/mx*100).toFixed(1)+'%;background:#C9A8E8;border-radius:2px 2px 0 0"></div><div style="height:'+(x.dp/mx*100).toFixed(1)+'%;background:#5B4A9E;'+(x.rm?'':'border-radius:2px 2px 0 0')+'"></div>')+'</div>';});
+    h+='</div><div style="display:flex;gap:12px;font-size:10.5px;color:#7A6B8A;margin-top:5px;white-space:nowrap"><span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#5B4A9E;margin-right:4px"></span>Deep</span><span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#C9A8E8;margin-right:4px"></span>REM</span></div>'
+      +'<div style="font-size:10.5px;color:#A898B0;margin-top:3px">For reference, Garmin\u2019s average for women is 1h 11m deep and 1h 32m REM.</div>';
+  }
+  // One lever at a time
+  var tip;
+  if(have.length<5)tip="Building: "+have.length+" of 5 nights. Start with two anchors, every day including weekends: up at "+g12(LO.wake)+", lights out by "+g12(LO.lightsOut)+".";
+  else if(bsd!=null&&bsd>45)tip="Biggest lever right now: a steady bedtime. Lights out by "+g12(LO.lightsOut)+", within 30 min, every night including weekends, and up at "+g12(LO.wake)+".";
+  else if(shift!=null&&shift>=60)tip="Weeknights are steady, but weekends push you "+shift+" min later. That\u2019s a mini jet lag every Monday. Keep weekend lights out within 30 min.";
+  else if(dAvg!=null&&dAvg<45)tip="Your rhythm is steady, so work on deep sleep next: no alcohol, caffeine before midday, last big meal 3h before bed, and a cool, dark room.";
+  else tip="Steady rhythm and decent deep sleep. Hold the routine.";
+  h+='<div style="font-size:12.5px;color:#4A3D5A;line-height:1.55;margin-top:10px">'+gEsc(tip)+'</div>';
+  h+='<div style="font-size:10.5px;color:#A898B0;line-height:1.45;margin-top:6px">Watches estimate stages roughly (REM especially), so judge deep and REM on the weekly average, never one night. Bedtime, wake and total sleep are the reliable numbers.</div>';
+  return gCard("\uD83C\uDF19 Sleep rhythm","last 14 nights",h);
+}
+
 // ----- Health tab -----
 function gCard(title,right,inner){
   return'<div style="background:rgba(255,255,255,0.55);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:0.5px solid rgba(180,160,190,0.15)">'
@@ -1906,7 +2093,8 @@ function renderHealthTab(){
   var chips=rec?(rec.reasons.length?rec.reasons:["All signals in range"]):[];
   var tm=new Date(currentDate);tm.setDate(tm.getDate()+1);var ts=gSessions(tm),nudge="";
   var bigTomorrow=ts.str&&/Strength A/.test(ts.str)?"Strength A":(ts.run&&/tempo|interval|hill|speed|rehearsal|race/i.test(ts.run)?ts.run:null);
-  if(bigTomorrow)nudge="Tomorrow: "+gEsc(bigTomorrow)+". Aim for 8h+ tonight"+(sl&&sl.wake?", so lights out by "+g12(gMinusHrs(sl.wake,8)):"")+".";
+  var LO=gLightsOut();
+  if(bigTomorrow)nudge="Tomorrow: "+gEsc(bigTomorrow)+". Aim for 8h+ tonight"+(LO?", so lights out by "+g12(LO.lightsOut):"")+".";
   var foot=['Today: '+(todayBits.length?gEsc(todayBits.join(" + ")):"rest day")];
   if(nudge)foot.push(nudge);
   if(cy)foot.push(gCycleLine(cy));
@@ -1919,12 +2107,14 @@ function renderHealthTab(){
   // Four headline tiles
   var sc=sl&&sl.score!=null?sl.score:null,scCol=sc==null?"#A898B0":sc>=80?"#2D6A4F":sc>=60?"#B8883E":"#C4607A";
   var hs=hrv&&hrv.status,hCol=!hs?"#A898B0":hs==="BALANCED"?"#2D6A4F":hs==="UNBALANCED"?"#B8883E":"#C4607A";
-  var rDiff=(t.restingHR!=null&&b.restingHR!=null)?Math.round(t.restingHR-b.restingHR):null,rCol=rDiff==null?"#A898B0":rDiff>=5?"#C4607A":rDiff>=3?"#B8883E":"#2D6A4F";
+  var tWorn=!!((sl&&sl.seconds!=null)||(hrv&&hrv.lastNight!=null)),need=b.restingHRNightsNeeded||3,got=b.restingHRNights;
+  var rBuild=got!=null&&b.restingHR==null?"Baseline "+got+" of "+need+" nights":"Building baseline";
+  var rDiff=(tWorn&&t.restingHR!=null&&b.restingHR!=null)?Math.round(t.restingHR-b.restingHR):null,rCol=rDiff==null?"#A898B0":rDiff>=5?"#C4607A":rDiff>=3?"#B8883E":"#2D6A4F";
   var bbCol=bb.max==null?"#A898B0":bb.max>=70?"#2D6A4F":bb.max>=40?"#B8883E":"#C4607A";
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
     +gTile("Sleep",sl?gDur(sl.seconds):"\u2013",sc!=null?"Score "+sc+(sl.quality?" \u00B7 "+sl.quality.toLowerCase():""):(sl?"No score":"No data yet"),scCol)
     +gTile("HRV",hrv&&hrv.lastNight!=null?hrv.lastNight+" ms":"\u2013",hs?gCap(hs):"No status yet",hCol)
-    +gTile("Resting HR",t.restingHR!=null?t.restingHR+" bpm":"\u2013",rDiff==null?"Building baseline":rDiff>=3?"+"+rDiff+" vs usual":rDiff<=-3?rDiff+" vs usual":"Your usual",rCol)
+    +gTile("Resting HR",t.restingHR!=null?t.restingHR+" bpm":"\u2013",t.restingHR!=null&&!tWorn?"Daytime estimate":rDiff==null?rBuild:rDiff>=3?"+"+rDiff+" vs usual":rDiff<=-3?rDiff+" vs usual":"Your usual",rCol)
     +gTile("Body Battery",bb.latest!=null?bb.latest:"\u2013",bb.max!=null?"Peaked at "+bb.max:"No data yet",bbCol)
     +'</div>';
 
@@ -1942,6 +2132,7 @@ function renderHealthTab(){
     inner+='<div style="font-size:11px;color:#A898B0;margin-top:8px">7-night average '+gDur(b.sleepSeconds)+(sl.awakeCount!=null?' \u00B7 woke '+sl.awakeCount+'\u00D7 last night':'')+'. Dashed line is your 8h target.</div>';
     html+=gCard("\uD83D\uDE34 Sleep",sl.bedtime&&sl.wake?g12(sl.bedtime)+" \u2192 "+g12(sl.wake):"",inner);
   }
+  html+=gRhythmCard();
 
   // HRV
   if(hrv&&hrv.lastNight!=null){
@@ -1964,8 +2155,10 @@ function renderHealthTab(){
 
   // Resting HR
   if(t.restingHR!=null){
-    var inner3=gRow("This morning",t.restingHR+" bpm")+gRow("Your usual (last 6 days)",b.restingHR!=null?b.restingHR+" bpm":"\u2013");
-    inner3+=gBars(trend.map(function(x){return x.restingHR;}),dates,{color:function(v){return b.restingHR!=null&&v-b.restingHR>=5?"#C4607A":"rgba(196,96,122,0.3)";},fmt:function(v){return Math.round(v);}});
+    var inner3=gRow("This morning",t.restingHR+" bpm"+(tWorn?"":" (daytime estimate)"))+gRow("Your usual (worn nights)",b.restingHR!=null?b.restingHR+" bpm":(got||0)+" of "+need+" nights so far");
+    var anyDay=trend.some(function(x){return x.restingHR!=null&&!gWorn(x);});
+    inner3+=gBars(trend.map(function(x){return x.restingHR;}),dates,{color:function(v,i){return!gWorn(trend[i])?"rgba(180,160,190,0.28)":b.restingHR!=null&&v-b.restingHR>=5?"#C4607A":"rgba(196,96,122,0.45)";},fmt:function(v){return Math.round(v);}});
+    if(anyDay)inner3+='<div style="font-size:11px;color:#A898B0;margin-top:8px">Grey bars: no sleep recorded that night, so Garmin estimated from daytime heart rate, which runs higher. Those days stay out of your usual.</div>';
     inner3+='<div style="font-size:11px;color:#A898B0;margin-top:8px">Lower is better. A jump of 5+ bpm over your usual is an early sign of fatigue, illness or a big night'+(cy&&cy.phase==="luteal"?'; in the luteal phase the app allows a couple of extra beats':'')+'.</div>';
     html+=gCard("\u2764\uFE0F Resting heart rate",rDiff!=null?(rDiff>0?"+":"")+rDiff+" bpm vs usual":"",inner3);
   }
@@ -1978,11 +2171,13 @@ function renderHealthTab(){
     if(V)inner6+=gRow("HRV",V.recent+" ms <span style=\"font-weight:600;color:"+(V.deltaPct<=-10?"#C4607A":V.deltaPct<=-5?"#B8883E":"#2D6A4F")+"\">("+(V.deltaPct>0?"+":"")+V.deltaPct+"%)</span>");
     if(S)inner6+=gRow("Sleep average",gDur(S.recent)+" <span style=\"font-weight:600;color:"+(S.recent<25200?"#C4607A":S.recent<28800?"#B8883E":"#2D6A4F")+"\">("+(S.delta>=0?"+":"\u2212")+gDur(Math.abs(S.delta)).replace(/^0h /,"")+")</span>");
     inner6+=gSpark("HRV, 28 nights",hist.map(function(x){return x.hrv;}),"rgba(45,106,79,0.75)",function(v){return Math.round(v);});
-    inner6+=gSpark("Resting HR, 28 mornings",hist.map(function(x){return x.restingHR;}),"rgba(196,96,122,0.75)",function(v){return Math.round(v);});
+    inner6+=gSpark("Resting HR, worn nights",hist.map(function(x){return gWorn(x)?x.restingHR:null;}),"rgba(196,96,122,0.75)",function(v){return Math.round(v);});
     var vt=rt.strain?"Recovery has slipped this week: "+gEsc(rt.flags.join(", "))+". Protect sleep before adding any training.":rt.flags.length?"One signal to watch: "+gEsc(rt.flags[0])+".":"Recovery is holding steady. The deficit isn\u2019t costing you yet.";
     inner6+='<div style="font-size:12.5px;color:#4A3D5A;line-height:1.55;margin-top:10px">'+vt+(gTravel(d.date)?" The flight will skew these for about a week.":"")+'</div>';
     html+=gCard("\uD83D\uDCC8 Last 4 weeks","this week vs the 3 before",inner6);
   }
+
+  html+=drinksCard();
 
   // Activity. Steps come from your phone (Shortcut -> steps.js), never from Garmin.
   var im=t.intensityMinutes||{},stz=t.stress||{},inner4="",tgS=gTargetNum(currentDate),pToday=phoneDay(todayDs);
