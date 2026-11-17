@@ -36,6 +36,9 @@ const SLEEP_SCORE_POOR = 60;
 const RHR_ELEVATED_BPM = 5;       // flag at 5+ bpm over the prior 6-day average
 const RHR_LUTEAL_ALLOWANCE = 2;   // resting HR typically runs a few beats higher in the luteal phase
 const BB_PEAK_LOW = 40;           // flag if Body Battery never charged above this
+// Garmin's resting HR is only meaningful from nights the watch was worn. Without one it falls back to a
+// daytime estimate that runs much higher, so those days stay out of every baseline and trend.
+const RHR_MIN_NIGHTS = 3;         // overnight readings needed in the prior 6 days before resting HR has a baseline
 
 // Weekly (Monday check) thresholds: last 7 days vs the 21 before
 const WK_RHR_UP_BPM = 3;
@@ -286,7 +289,8 @@ function assessRecovery(today, baseline, cycle) {
     else if (hrv.status === 'UNBALANCED') reasons.push('HRV unbalanced');
   }
   const luteal = cycle && cycle.phase === 'luteal';
-  if (today.restingHR !== null && baseline.restingHR !== null) {
+  const overnight = !!((sleep && sleep.seconds !== null) || (hrv && hrv.lastNight !== null));
+  if (overnight && today.restingHR !== null && baseline.restingHR !== null) {
     signals++;
     const diff = Math.round(today.restingHR - baseline.restingHR);
     const limit = RHR_ELEVATED_BPM + (luteal ? RHR_LUTEAL_ALLOWANCE : 0);
@@ -302,14 +306,18 @@ function assessRecovery(today, baseline, cycle) {
   return { level, reasons, signals, context };
 }
 
+// A history row counts as an overnight reading if Garmin has sleep or overnight HRV for it
+const isOvernight = (x) => (x.overnight !== undefined ? !!x.overnight : x.sleepSeconds !== null || x.hrv !== null);
+
 // Last 7 days vs the 21 before: is the deficit starting to cost recovery?
 function recoveryTrend(history, cycle) {
   if (history.length < 14) return null;
   const recent = history.slice(-7);
   const prior = history.slice(0, -7);
+  const val = (x, k) => (k === 'restingHR' && !isOvernight(x) ? null : x[k]);
   const stat = (k, minRecent, minPrior) => {
-    const r = recent.map((x) => x[k]).filter((v) => v !== null);
-    const p = prior.map((x) => x[k]).filter((v) => v !== null);
+    const r = recent.map((x) => val(x, k)).filter((v) => v !== null && v !== undefined);
+    const p = prior.map((x) => val(x, k)).filter((v) => v !== null && v !== undefined);
     if (r.length < minRecent || p.length < minPrior) return null;
     return { recent: avg(r), prior: avg(p) };
   };
@@ -425,15 +433,28 @@ exports.handler = async (event) => {
     const cycle = normCycle(raw.cycle);
 
     const days = Array.from({ length: HISTORY_DAYS }, (_, i) => addDays(start28, i));
-    const history = days.map((d) => ({
-      date: d,
-      steps: summaries[d]?.steps ?? null,
-      restingHR: summaries[d]?.restingHR ?? null,
-      bodyBatteryMax: summaries[d]?.bodyBattery.max ?? null,
-      sleepSeconds: sleeps[d]?.seconds ?? null,
-      sleepScore: sleeps[d]?.score ?? null,
-      hrv: hrvs[d]?.lastNight ?? null,
-    }));
+    // Sleep is filed under the morning you wake, so each row's bedtime is the night before its date
+    const history = days.map((d) => {
+      const s = sleeps[d] || {};
+      const row = {
+        date: d,
+        steps: summaries[d]?.steps ?? null,
+        restingHR: summaries[d]?.restingHR ?? null,
+        bodyBatteryMax: summaries[d]?.bodyBattery.max ?? null,
+        sleepSeconds: s.seconds ?? null,
+        sleepScore: s.score ?? null,
+        hrv: hrvs[d]?.lastNight ?? null,
+        bedtime: s.bedtime ?? null,
+        wake: s.wake ?? null,
+        deep: s.deep ?? null,
+        rem: s.rem ?? null,
+        light: s.light ?? null,
+        awake: s.awake ?? null,
+        awakeCount: s.awakeCount ?? null,
+      };
+      row.overnight = isOvernight(row);
+      return row;
+    });
     const trend = history.slice(-7);
     const prior = trend.slice(0, 6); // the 6 days before today
 
@@ -443,8 +464,11 @@ exports.handler = async (event) => {
       sleep: sleeps[date] || null,
       hrv: hrvs[date] || null,
     };
+    const priorRhr = prior.filter((t) => t.overnight && t.restingHR !== null).map((t) => t.restingHR);
     const baseline = {
-      restingHR: round1(avg(prior.map((t) => t.restingHR))),
+      restingHR: priorRhr.length >= RHR_MIN_NIGHTS ? round1(avg(priorRhr)) : null,
+      restingHRNights: priorRhr.length,
+      restingHRNightsNeeded: RHR_MIN_NIGHTS,
       steps: Math.round(avg(prior.map((t) => t.steps)) || 0) || null,
       sleepSeconds: Math.round(avg(trend.map((t) => t.sleepSeconds)) || 0) || null,
     };
@@ -474,4 +498,4 @@ exports.handler = async (event) => {
 };
 
 // Exposed for tests only
-exports._internals = { normSummary, normSleep, normHrv, normCycle, weighIns, assessRecovery, recoveryTrend, hhmm, toKg, addDays, resetToken: () => { tokenCache = null; } };
+exports._internals = { isOvernight, normSummary, normSleep, normHrv, normCycle, weighIns, assessRecovery, recoveryTrend, hhmm, toKg, addDays, resetToken: () => { tokenCache = null; } };
